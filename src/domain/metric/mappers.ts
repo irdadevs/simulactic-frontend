@@ -1,6 +1,6 @@
 import { parseDateOrThrow } from "../../lib/date/parseDate";
 import { Metric } from "./Metric.aggregate";
-import { MetricApiResponse, MetricDTO, MetricProps } from "./types";
+import { MetricApiResponse, MetricDTO, MetricProps } from "../../types/metric.types";
 
 export const mapMetricApiToDomain = (input: MetricApiResponse): Metric =>
   Metric.rehydrate({
@@ -20,3 +20,4 @@ export const mapMetricApiToDomain = (input: MetricApiResponse): Metric =>
 export const mapMetricDomainToDTO = (metric: Metric): MetricDTO => metric.toDB();
 
 export const mapMetricDomainToView = (metric: Metric): MetricProps => metric.toJSON();
+

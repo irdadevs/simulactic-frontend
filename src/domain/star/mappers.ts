@@ -1,5 +1,5 @@
 import { Star } from "./Star.aggregate";
-import { StarApiResponse, StarDTO, StarProps } from "./types";
+import { StarApiResponse, StarDTO, StarProps } from "../../types/star.types";
 
 export const mapStarApiToDomain = (input: StarApiResponse): Star =>
   Star.rehydrate({
@@ -23,3 +23,4 @@ export const mapStarApiToDomain = (input: StarApiResponse): Star =>
 export const mapStarDomainToDTO = (star: Star): StarDTO => star.toDB();
 
 export const mapStarDomainToView = (star: Star): StarProps => star.toJSON();
+

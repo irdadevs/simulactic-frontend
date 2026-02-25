@@ -1,6 +1,6 @@
 import { parseDateOrThrow } from "../../lib/date/parseDate";
 import { Donation } from "./Donation.aggregate";
-import { DonationApiResponse, DonationDTO, DonationProps } from "./types";
+import { DonationApiResponse, DonationDTO, DonationProps } from "../../types/donation.types";
 
 const parseOptionalDate = (value: string | Date | null, field: string): Date | null => {
   if (!value) {
@@ -36,3 +36,4 @@ export const mapDonationDomainToDTO = (donation: Donation): DonationDTO =>
 
 export const mapDonationDomainToView = (donation: Donation): DonationProps =>
   donation.toJSON();
+

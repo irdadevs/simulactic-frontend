@@ -1,6 +1,6 @@
 import { Uuid } from "../shared/Uuid.vo";
 import { SystemName, SystemPositionValue } from "./System.vo";
-import { SystemCreateProps, SystemDTO, SystemPosition, SystemProps } from "./types";
+import { SystemCreateProps, SystemDTO, SystemPosition, SystemProps } from "../../types/system.types";
 
 type SystemState = {
   id: Uuid;
@@ -84,3 +84,4 @@ export class System {
     };
   }
 }
+

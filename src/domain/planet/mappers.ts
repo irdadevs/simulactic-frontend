@@ -1,5 +1,5 @@
 import { Planet } from "./Planet.aggregate";
-import { PlanetApiResponse, PlanetDTO, PlanetProps } from "./types";
+import { PlanetApiResponse, PlanetDTO, PlanetProps } from "../../types/planet.types";
 
 export const mapPlanetApiToDomain = (input: PlanetApiResponse): Planet =>
   Planet.rehydrate({
@@ -21,3 +21,4 @@ export const mapPlanetApiToDomain = (input: PlanetApiResponse): Planet =>
 export const mapPlanetDomainToDTO = (planet: Planet): PlanetDTO => planet.toDB();
 
 export const mapPlanetDomainToView = (planet: Planet): PlanetProps => planet.toJSON();
+

@@ -1,6 +1,6 @@
 import { REGEXP } from "../../lib/Regexp.map";
 import { ErrorFactory } from "../../lib/errors/Error.map";
-import { StarClass, StarColor, StarType } from "./types";
+import { StarClass, StarColor, StarType } from "../../types/star.types";
 
 export const ALLOWED_STAR_TYPES: readonly StarType[] = [
   "Blue supergiant",
@@ -122,3 +122,4 @@ export class StarColorValue {
     return this.value === other.value;
   }
 }
+

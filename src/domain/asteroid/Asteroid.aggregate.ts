@@ -5,7 +5,7 @@ import {
   AsteroidSizeValue,
   AsteroidTypeValue,
 } from "./Asteroid.vo";
-import { AsteroidCreateProps, AsteroidDTO, AsteroidSize, AsteroidProps, AsteroidType } from "./types";
+import { AsteroidCreateProps, AsteroidDTO, AsteroidSize, AsteroidProps, AsteroidType } from "../../types/asteroid.types";
 
 type AsteroidState = {
   id: Uuid;
@@ -125,3 +125,4 @@ export class Asteroid {
     };
   }
 }
+

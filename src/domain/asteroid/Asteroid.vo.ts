@@ -1,6 +1,6 @@
 import { REGEXP } from "../../lib/Regexp.map";
 import { ErrorFactory } from "../../lib/errors/Error.map";
-import { AsteroidSize, AsteroidType } from "./types";
+import { AsteroidSize, AsteroidType } from "../../types/asteroid.types";
 
 export const ALLOWED_ASTEROID_TYPES: readonly AsteroidType[] = ["single", "cluster"];
 export const ALLOWED_ASTEROID_SIZES: readonly AsteroidSize[] = [
@@ -65,3 +65,4 @@ export class AsteroidSizeValue {
     return this.value;
   }
 }
+

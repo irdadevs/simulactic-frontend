@@ -1,6 +1,6 @@
 import { REGEXP } from "../../lib/Regexp.map";
 import { ErrorFactory } from "../../lib/errors/Error.map";
-import { UserRole } from "./types";
+import { UserRole } from "../../types/user.types";
 
 export class Email {
   private constructor(private readonly value: string) {}
@@ -44,3 +44,4 @@ export class Role {
     return this.value === other.value;
   }
 }
+

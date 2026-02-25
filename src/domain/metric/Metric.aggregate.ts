@@ -1,7 +1,7 @@
 import { ErrorFactory } from "../../lib/errors/Error.map";
 import { Uuid } from "../shared/Uuid.vo";
 import { ALLOWED_METRIC_TYPES, MetricName, MetricSource } from "./Metric.vo";
-import { MetricCreateProps, MetricDTO, MetricProps } from "./types";
+import { MetricCreateProps, MetricDTO, MetricProps } from "../../types/metric.types";
 
 type MetricState = {
   id: string;
@@ -134,3 +134,4 @@ export class Metric {
     };
   }
 }
+

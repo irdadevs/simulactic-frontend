@@ -6,7 +6,7 @@ import {
   LogMessage,
   LogSource,
 } from "./Log.vo";
-import { LogCreateProps, LogDTO, LogProps } from "./types";
+import { LogCreateProps, LogDTO, LogProps } from "../../types/log.types";
 
 type LogState = {
   id: string;
@@ -203,3 +203,4 @@ export class Log {
     };
   }
 }
+

@@ -1,5 +1,5 @@
 import { User } from "./User.aggregate";
-import { UserApiResponse, UserDTO, UserProps } from "./types";
+import { UserApiResponse, UserDTO, UserProps } from "../../types/user.types";
 
 export const mapUserApiToDomain = (input: UserApiResponse): User =>
   User.rehydrate({
@@ -12,3 +12,4 @@ export const mapUserApiToDomain = (input: UserApiResponse): User =>
 export const mapUserDomainToDTO = (user: User): UserDTO => user.toDB();
 
 export const mapUserDomainToView = (user: User): UserProps => user.toJSON();
+

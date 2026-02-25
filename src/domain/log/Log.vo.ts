@@ -1,5 +1,5 @@
 import { ErrorFactory } from "../../lib/errors/Error.map";
-import { LogCategory, LogLevel } from "./types";
+import { LogCategory, LogLevel } from "../../types/log.types";
 
 export const ALLOWED_LOG_LEVELS: readonly LogLevel[] = [
   "debug",
@@ -47,3 +47,4 @@ export class LogMessage {
     return this.value;
   }
 }
+

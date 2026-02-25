@@ -1,5 +1,5 @@
 import { ErrorFactory } from "../../lib/errors/Error.map";
-import { MetricType } from "./types";
+import { MetricType } from "../../types/metric.types";
 
 export const ALLOWED_METRIC_TYPES: readonly MetricType[] = [
   "http",
@@ -44,3 +44,4 @@ export class MetricSource {
     return this.value;
   }
 }
+

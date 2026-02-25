@@ -1,5 +1,5 @@
 import { Moon } from "./Moon.aggregate";
-import { MoonApiResponse, MoonDTO, MoonProps } from "./types";
+import { MoonApiResponse, MoonDTO, MoonProps } from "../../types/moon.types";
 
 export const mapMoonApiToDomain = (input: MoonApiResponse): Moon =>
   Moon.rehydrate({
@@ -19,3 +19,4 @@ export const mapMoonApiToDomain = (input: MoonApiResponse): Moon =>
 export const mapMoonDomainToDTO = (moon: Moon): MoonDTO => moon.toDB();
 
 export const mapMoonDomainToView = (moon: Moon): MoonProps => moon.toJSON();
+

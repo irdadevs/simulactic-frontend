@@ -1,6 +1,6 @@
 import { REGEXP } from "../../lib/Regexp.map";
 import { ErrorFactory } from "../../lib/errors/Error.map";
-import { MoonSize } from "./types";
+import { MoonSize } from "../../types/moon.types";
 
 export const ALLOWED_MOON_SIZES: readonly MoonSize[] = ["dwarf", "medium", "giant"];
 
@@ -42,3 +42,4 @@ export class MoonSizeValue {
     return this.value;
   }
 }
+

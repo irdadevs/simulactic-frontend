@@ -1,5 +1,5 @@
 import { Asteroid } from "./Asteroid.aggregate";
-import { AsteroidApiResponse, AsteroidDTO, AsteroidProps } from "./types";
+import { AsteroidApiResponse, AsteroidDTO, AsteroidProps } from "../../types/asteroid.types";
 
 export const mapAsteroidApiToDomain = (input: AsteroidApiResponse): Asteroid =>
   Asteroid.rehydrate({
@@ -16,3 +16,4 @@ export const mapAsteroidDomainToDTO = (asteroid: Asteroid): AsteroidDTO =>
 
 export const mapAsteroidDomainToView = (asteroid: Asteroid): AsteroidProps =>
   asteroid.toJSON();
+

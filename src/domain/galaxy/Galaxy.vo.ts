@@ -1,6 +1,6 @@
 import { REGEXP } from "../../lib/Regexp.map";
 import { ErrorFactory } from "../../lib/errors/Error.map";
-import { GalaxyShapeValue } from "./types";
+import { GalaxyShapeValue } from "../../types/galaxy.types";
 
 export const ALLOWED_GALAXY_SHAPES = [
   "spherical",
@@ -52,3 +52,4 @@ export class GalaxyShape {
     return this.value === other.value;
   }
 }
+

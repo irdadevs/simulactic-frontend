@@ -4,7 +4,7 @@ import {
   GalaxyDTO,
   GalaxyProps,
   GalaxyShapeValue,
-} from "./types";
+} from "../../types/galaxy.types";
 import { ALLOWED_GALAXY_SHAPES, GalaxyName, GalaxyShape } from "./Galaxy.vo";
 
 type GalaxyState = {
@@ -133,3 +133,4 @@ export class Galaxy {
     };
   }
 }
+

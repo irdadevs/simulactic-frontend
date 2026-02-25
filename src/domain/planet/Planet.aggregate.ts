@@ -6,7 +6,7 @@ import {
   PlanetSizeValue,
   PlanetTypeValue,
 } from "./Planet.vo";
-import { PlanetBiome, PlanetCreateProps, PlanetDTO, PlanetProps } from "./types";
+import { PlanetBiome, PlanetCreateProps, PlanetDTO, PlanetProps } from "../../types/planet.types";
 
 type PlanetState = {
   id: Uuid;
@@ -182,3 +182,4 @@ export class Planet {
     };
   }
 }
+

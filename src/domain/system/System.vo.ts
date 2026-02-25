@@ -1,6 +1,6 @@
 import { REGEXP } from "../../lib/Regexp.map";
 import { ErrorFactory } from "../../lib/errors/Error.map";
-import { SystemPosition } from "./types";
+import { SystemPosition } from "../../types/system.types";
 
 export class SystemName {
   private constructor(private readonly value: string) {}
@@ -54,3 +54,4 @@ export class SystemPositionValue {
     );
   }
 }
+

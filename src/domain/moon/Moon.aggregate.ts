@@ -1,7 +1,7 @@
 import { ErrorFactory } from "../../lib/errors/Error.map";
 import { Uuid } from "../shared/Uuid.vo";
 import { MoonName, MoonSizeValue } from "./Moon.vo";
-import { MoonCreateProps, MoonDTO, MoonProps } from "./types";
+import { MoonCreateProps, MoonDTO, MoonProps } from "../../types/moon.types";
 
 type MoonState = {
   id: Uuid;
@@ -162,3 +162,4 @@ export class Moon {
     };
   }
 }
+

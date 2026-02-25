@@ -1,6 +1,6 @@
 import { Uuid } from "../shared/Uuid.vo";
 import { Email, Role } from "./User.vo";
-import { UserCreateProps, UserDTO, UserProps, UserRole } from "./types";
+import { UserCreateProps, UserDTO, UserProps, UserRole } from "../../types/user.types";
 
 type UserState = {
   id: Uuid;
@@ -86,3 +86,4 @@ export class User {
     };
   }
 }
+

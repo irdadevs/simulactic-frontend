@@ -1,6 +1,6 @@
 import { parseDateOrThrow } from "../../lib/date/parseDate";
 import { Log } from "./Log.aggregate";
-import { LogApiResponse, LogDTO, LogProps } from "./types";
+import { LogApiResponse, LogDTO, LogProps } from "../../types/log.types";
 
 const parseOptionalDate = (value: string | Date | null, field: string): Date | null => {
   if (!value) {
@@ -34,3 +34,4 @@ export const mapLogApiToDomain = (input: LogApiResponse): Log =>
 export const mapLogDomainToDTO = (log: Log): LogDTO => log.toDB();
 
 export const mapLogDomainToView = (log: Log): LogProps => log.toJSON();
+

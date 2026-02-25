@@ -7,7 +7,7 @@ import {
   STAR_CLASS_COLOR,
   StarTypeValue,
 } from "./Star.vo";
-import { StarCreateProps, StarDTO, StarProps } from "./types";
+import { StarCreateProps, StarDTO, StarProps } from "../../types/star.types";
 
 type StarState = {
   id: Uuid;
@@ -235,3 +235,4 @@ export class Star {
     };
   }
 }
+

@@ -1,6 +1,6 @@
 import { REGEXP } from "../../lib/Regexp.map";
 import { ErrorFactory } from "../../lib/errors/Error.map";
-import { PlanetBiome, PlanetSize, PlanetType } from "./types";
+import { PlanetBiome, PlanetSize, PlanetType } from "../../types/planet.types";
 
 export const ALLOWED_PLANET_TYPES: readonly PlanetType[] = ["solid", "gas"] as const;
 
@@ -94,3 +94,4 @@ export class PlanetBiomeValue {
     return this.value;
   }
 }
+

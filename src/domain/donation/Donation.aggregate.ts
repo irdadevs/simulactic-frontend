@@ -13,7 +13,7 @@ import {
   DonationStatus,
   DonationType,
   PaymentProvider,
-} from "./types";
+} from "../../types/donation.types";
 
 type DonationState = {
   id: Uuid;
@@ -238,3 +238,4 @@ export class Donation {
     };
   }
 }
+

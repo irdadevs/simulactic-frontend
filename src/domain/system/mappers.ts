@@ -1,5 +1,5 @@
 import { System } from "./System.aggregate";
-import { SystemApiResponse, SystemDTO, SystemProps } from "./types";
+import { SystemApiResponse, SystemDTO, SystemProps } from "../../types/system.types";
 
 export const mapSystemApiToDomain = (input: SystemApiResponse): System =>
   System.rehydrate({
@@ -16,3 +16,4 @@ export const mapSystemApiToDomain = (input: SystemApiResponse): System =>
 export const mapSystemDomainToDTO = (system: System): SystemDTO => system.toDB();
 
 export const mapSystemDomainToView = (system: System): SystemProps => system.toJSON();
+

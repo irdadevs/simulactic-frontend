@@ -1,5 +1,5 @@
 import { ErrorFactory } from "../../lib/errors/Error.map";
-import { DonationStatus, DonationType } from "./types";
+import { DonationStatus, DonationType } from "../../types/donation.types";
 
 export const ALLOWED_DONATION_TYPES: readonly DonationType[] = [
   "one_time",
@@ -49,3 +49,4 @@ export class Money {
     return this.amountMinorValue;
   }
 }
+
