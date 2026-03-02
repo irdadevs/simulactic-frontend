@@ -5,15 +5,15 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { useAuth } from "../../application/hooks/useAuth";
 import { ActionButton } from "../../ui/components/buttons/ActionButton";
-import { AuthCard } from "../../ui/components/layout/AuthCard";
+import { AuthCard } from "../../ui/components/layout/auth/AuthCard";
 import styles from "../../styles/skeleton.module.css";
 
-export default function RegisterPage() {
+export default function SignupPage() {
   const router = useRouter();
   const { signup } = useAuth();
 
-  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [rawPassword, setRawPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,10 +23,10 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await signup({ email, username, rawPassword });
+      await signup({ username, email, rawPassword });
       router.push("/dashboard");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Registration failed";
+      const message = err instanceof Error ? err.message : "Signup failed";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -35,55 +35,56 @@ export default function RegisterPage() {
 
   return (
     <AuthCard
-      title="Register"
-      subtitle="Create your account to start building galaxies."
+      title="Sign up"
+      subtitle="Create your Simulactic account."
       error={error}
       footer={
         <p className={styles.subtitle}>
-          Already registered? <Link href="/login">Go to login</Link>
+          Already have an account? <Link href="/login">Login</Link>
         </p>
       }
     >
-        <form className={styles.form} onSubmit={onSubmit}>
-          <div className={styles.field}>
-            <label htmlFor="register-email">Email</label>
-            <input
-              id="register-email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-          </div>
+      <form className={styles.form} onSubmit={onSubmit}>
+        <div className={styles.field}>
+          <label htmlFor="signup-username">Username</label>
+          <input
+            id="signup-username"
+            type="text"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            minLength={3}
+            maxLength={25}
+            required
+          />
+        </div>
 
-          <div className={styles.field}>
-            <label htmlFor="register-username">Username</label>
-            <input
-              id="register-username"
-              type="text"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              required
-              minLength={3}
-            />
-          </div>
+        <div className={styles.field}>
+          <label htmlFor="signup-email">Email</label>
+          <input
+            id="signup-email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+          />
+        </div>
 
-          <div className={styles.field}>
-            <label htmlFor="register-password">Password</label>
-            <input
-              id="register-password"
-              type="password"
-              value={rawPassword}
-              onChange={(event) => setRawPassword(event.target.value)}
-              required
-              minLength={6}
-            />
-          </div>
+        <div className={styles.field}>
+          <label htmlFor="signup-password">Password</label>
+          <input
+            id="signup-password"
+            type="password"
+            value={rawPassword}
+            onChange={(event) => setRawPassword(event.target.value)}
+            minLength={6}
+            required
+          />
+        </div>
 
-          <ActionButton type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Account"}
-          </ActionButton>
-        </form>
+        <ActionButton type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Creating account..." : "Sign up"}
+        </ActionButton>
+      </form>
     </AuthCard>
   );
 }

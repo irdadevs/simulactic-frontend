@@ -9,6 +9,7 @@ const SHAPES: GalaxyShapeValue[] = ["spherical", "3-arm spiral", "5-arm spiral",
 
 type CreateGalaxyModalProps = {
   open: boolean;
+  disabled?: boolean;
   onClose: () => void;
   onSubmit: (payload: {
     name: string;
@@ -17,7 +18,12 @@ type CreateGalaxyModalProps = {
   }) => Promise<void>;
 };
 
-export function CreateGalaxyModal({ open, onClose, onSubmit }: CreateGalaxyModalProps) {
+export function CreateGalaxyModal({
+  open,
+  disabled = false,
+  onClose,
+  onSubmit,
+}: CreateGalaxyModalProps) {
   const [name, setName] = useState("");
   const [shape, setShape] = useState<GalaxyShapeValue>("spherical");
   const [systemCount, setSystemCount] = useState(12);
@@ -28,6 +34,7 @@ export function CreateGalaxyModal({ open, onClose, onSubmit }: CreateGalaxyModal
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (disabled) return;
     setIsSubmitting(true);
     setError(null);
     try {
@@ -98,7 +105,7 @@ export function CreateGalaxyModal({ open, onClose, onSubmit }: CreateGalaxyModal
           </div>
 
           <div className={styles.modalActions}>
-            <ActionButton type="submit" disabled={isSubmitting}>
+            <ActionButton type="submit" disabled={isSubmitting || disabled}>
               {isSubmitting ? "Creating..." : "Create Galaxy"}
             </ActionButton>
             <ActionButton variant="secondary" type="button" onClick={onClose}>

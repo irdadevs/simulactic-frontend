@@ -52,8 +52,10 @@ type RenderState = {
     reason?: RenderTransitionReason;
   }) => boolean;
   requestSystemTransitionByZoom: (systemId: string) => boolean;
+  enterSystem: (systemId: string) => boolean;
   commitSystemTransition: (detail: SystemRenderDetail) => boolean;
   requestGalaxyTransition: (reason?: RenderTransitionReason) => boolean;
+  exitSystem: () => boolean;
   commitGalaxyTransition: (input?: { nodes?: GalaxyRenderNode[] }) => boolean;
   failTransition: () => void;
   resetRender: () => void;
@@ -121,6 +123,13 @@ export const useRenderStore = create<RenderState>((set, get) => ({
     });
   },
 
+  enterSystem: (systemId) => {
+    return get().requestSystemTransition({
+      systemId,
+      reason: "user_select_system",
+    });
+  },
+
   commitSystemTransition: (detail) => {
     const state = get();
     if (state.machineState !== "system_loading") return false;
@@ -145,6 +154,10 @@ export const useRenderStore = create<RenderState>((set, get) => ({
       transitionToken: prev.transitionToken + 1,
     }));
     return true;
+  },
+
+  exitSystem: () => {
+    return get().requestGalaxyTransition("user_back_to_galaxy");
   },
 
   commitGalaxyTransition: (input) => {

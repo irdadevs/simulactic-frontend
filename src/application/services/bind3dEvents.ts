@@ -12,8 +12,8 @@ export const bind3dEvents = (eventBridge: EventBridge): (() => void) => {
   );
 
   unsubscribers.push(
-    eventBridge.on("starClicked", ({ systemId }) => {
-      useUiStore.getState().openSystemPopup(systemId);
+    eventBridge.on("starClicked", ({ systemId, starId }) => {
+      useUiStore.getState().openStarPopup({ systemId, starId });
     }),
   );
 
@@ -49,7 +49,9 @@ export const bind3dEvents = (eventBridge: EventBridge): (() => void) => {
 
   unsubscribers.push(
     eventBridge.on("hoverCleared", () => {
-      useUiStore.getState().clearPopupRequest();
+      const uiStore = useUiStore.getState();
+      uiStore.clearPopupRequest();
+      uiStore.setPopup(null);
     }),
   );
 

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import styles from "../../../styles/skeleton.module.css";
+import styles from "../../../../styles/skeleton.module.css";
 
 type AuthCardProps = {
   title: string;

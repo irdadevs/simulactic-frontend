@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "validate": "npm run lint && npm run typecheck && npm test -- --runInBand",
     "prepare": "husky",
     "test": "jest --detectOpenHandles",
     "test:watch": "jest --watch --detectOpenHandles"

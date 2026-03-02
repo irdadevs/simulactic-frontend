@@ -1,5 +1,5 @@
 import Link from "next/link";
-import styles from "../../../styles/skeleton.module.css";
+import styles from "../../../../styles/skeleton.module.css";
 
 export function NavBar() {
   return (
@@ -12,6 +12,7 @@ export function NavBar() {
           <Link href="/login">Login</Link>
           <Link href="/signup">Sign up</Link>
           <Link href="/dashboard">Dashboard</Link>
+          <Link href="/admin">Admin</Link>
         </nav>
       </div>
     </header>
