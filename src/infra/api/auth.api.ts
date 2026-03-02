@@ -13,7 +13,7 @@ export const signupRequestSchema = z.object({
 
 export const authUserSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     email: z.email(),
     username: z.string().min(1),
     role: z.enum(["User", "Admin"]),
@@ -21,12 +21,12 @@ export const authUserSchema = z
     isDeleted: z.boolean(),
     isArchived: z.boolean(),
     isSupporter: z.boolean(),
-    createdAt: z.string().datetime(),
-    lastActivityAt: z.string().datetime(),
-    verifiedAt: z.string().datetime().nullable(),
-    deletedAt: z.string().datetime().nullable(),
-    archivedAt: z.string().datetime().nullable(),
-    supporterFrom: z.string().datetime().nullable(),
+    createdAt: z.iso.datetime(),
+    lastActivityAt: z.iso.datetime(),
+    verifiedAt: z.iso.datetime().nullable(),
+    deletedAt: z.iso.datetime().nullable(),
+    archivedAt: z.iso.datetime().nullable(),
+    supporterFrom: z.iso.datetime().nullable(),
   })
   .strict();
 
