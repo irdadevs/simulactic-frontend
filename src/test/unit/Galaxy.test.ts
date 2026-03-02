@@ -195,11 +195,11 @@ describe("Galaxy mappers", () => {
   it("maps backend API payload to domain aggregate", () => {
     const aggregate = mapGalaxyApiToDomain({
       id: galaxyId,
-      owner_id: ownerId,
+      ownerId,
       name: "Androm",
       shape: "spherical",
-      system_count: 5,
-      created_at: "2026-02-22T00:00:00.000Z",
+      systemCount: 5,
+      createdAt: "2026-02-22T00:00:00.000Z",
     });
 
     expect(aggregate).toBeInstanceOf(Galaxy);
@@ -259,11 +259,11 @@ describe("Galaxy mappers", () => {
     try {
       mapGalaxyApiToDomain({
         id: galaxyId,
-        owner_id: ownerId,
+        ownerId,
         name: "Androm",
         shape: "spherical",
-        system_count: 5,
-        created_at: "not-a-date",
+        systemCount: 5,
+        createdAt: "not-a-date",
       });
       fail("Expected error was not thrown");
     } catch (error) {

@@ -31,7 +31,7 @@ export type AsteroidDTO = {
 
 export type AsteroidApiResponse = {
   id: string;
-  system_id: string;
+  systemId: string;
   name: string;
   type: AsteroidType;
   size: AsteroidSize;

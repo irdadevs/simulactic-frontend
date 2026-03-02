@@ -32,16 +32,16 @@ describe("Metric aggregate", () => {
   it("maps api/domain/dto", () => {
     const aggregate = mapMetricApiToDomain({
       id: "2",
-      metric_name: "http.request",
-      metric_type: "http",
+      metricName: "http.request",
+      metricType: "http",
       source: "gateway",
-      duration_ms: 9,
+      durationMs: 9,
       success: true,
-      user_id: userId,
-      request_id: "req-2",
+      userId,
+      requestId: "req-2",
       tags: { kind: "read" },
       context: { status: 200 },
-      occurred_at: "2026-02-24T00:00:00.000Z",
+      occurredAt: "2026-02-24T00:00:00.000Z",
     });
 
     expect(mapMetricDomainToView(aggregate).metricType).toBe("http");

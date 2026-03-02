@@ -25,10 +25,7 @@ describe("Planet aggregate", () => {
     orbital: 2,
     biome: "temperate" as const,
     relativeMass: 1,
-    absoluteMass: 5.97e24,
     relativeRadius: 1,
-    absoluteRadius: 6.37e6,
-    gravity: 9.8,
     temperature: 288,
   };
 
@@ -50,17 +47,14 @@ describe("Planet aggregate", () => {
   it("maps api/domain/dto", () => {
     const aggregate = mapPlanetApiToDomain({
       id: planetId,
-      system_id: systemId,
+      systemId,
       name: "Terra-3",
       type: "gas",
       size: "giant",
       orbital: 5,
       biome: "toxic",
-      relative_mass: 20,
-      absolute_mass: 1.2e26,
-      relative_radius: 4,
-      absolute_radius: 2.5e7,
-      gravity: 12,
+      relativeMass: 20,
+      relativeRadius: 4,
       temperature: 320,
     });
 

@@ -5,16 +5,16 @@ import { MetricApiResponse, MetricDTO, MetricProps } from "../../types/metric.ty
 export const mapMetricApiToDomain = (input: MetricApiResponse): Metric =>
   Metric.rehydrate({
     id: input.id,
-    metricName: input.metric_name,
-    metricType: input.metric_type,
+    metricName: input.metricName,
+    metricType: input.metricType,
     source: input.source,
-    durationMs: input.duration_ms,
+    durationMs: input.durationMs,
     success: input.success,
-    userId: input.user_id,
-    requestId: input.request_id,
-    tags: input.tags,
-    context: input.context,
-    occurredAt: parseDateOrThrow(input.occurred_at, "occurred_at"),
+    userId: input.userId ?? null,
+    requestId: input.requestId ?? null,
+    tags: input.tags ?? {},
+    context: input.context ?? {},
+    occurredAt: parseDateOrThrow(input.occurredAt, "occurredAt"),
   });
 
 export const mapMetricDomainToDTO = (metric: Metric): MetricDTO => metric.toDB();

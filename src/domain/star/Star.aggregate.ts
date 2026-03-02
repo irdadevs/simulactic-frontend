@@ -18,10 +18,7 @@ type StarState = {
   surfaceTemperature: number;
   color: StarColorValue;
   relativeMass: number;
-  absoluteMass: number;
   relativeRadius: number;
-  absoluteRadius: number;
-  gravity: number;
   isMain: boolean;
   orbital: number;
   orbitalStarter: number;
@@ -61,10 +58,7 @@ export class Star {
   static create(input: StarCreateProps): Star {
     ensurePositive("surfaceTemperature", input.surfaceTemperature);
     ensurePositive("relativeMass", input.relativeMass);
-    ensurePositive("absoluteMass", input.absoluteMass);
     ensurePositive("relativeRadius", input.relativeRadius);
-    ensurePositive("absoluteRadius", input.absoluteRadius);
-    ensureNonNegative("gravity", input.gravity);
     ensureNonNegative("orbital", input.orbital);
     ensureNonNegative("orbitalStarter", input.orbitalStarter);
 
@@ -94,10 +88,7 @@ export class Star {
       surfaceTemperature: input.surfaceTemperature,
       color,
       relativeMass: input.relativeMass,
-      absoluteMass: input.absoluteMass,
       relativeRadius: input.relativeRadius,
-      absoluteRadius: input.absoluteRadius,
-      gravity: input.gravity,
       isMain: input.isMain ?? true,
       orbital: input.orbital,
       orbitalStarter: input.orbitalStarter,
@@ -140,20 +131,8 @@ export class Star {
     return this.props.relativeMass;
   }
 
-  get absoluteMass(): number {
-    return this.props.absoluteMass;
-  }
-
   get relativeRadius(): number {
     return this.props.relativeRadius;
-  }
-
-  get absoluteRadius(): number {
-    return this.props.absoluteRadius;
-  }
-
-  get gravity(): number {
-    return this.props.gravity;
   }
 
   get isMain(): boolean {
@@ -205,10 +184,7 @@ export class Star {
       surfaceTemperature: this.surfaceTemperature,
       color: this.color,
       relativeMass: this.relativeMass,
-      absoluteMass: this.absoluteMass,
       relativeRadius: this.relativeRadius,
-      absoluteRadius: this.absoluteRadius,
-      gravity: this.gravity,
       isMain: this.isMain,
       orbital: this.orbital,
       orbitalStarter: this.orbitalStarter,
@@ -225,10 +201,7 @@ export class Star {
       surface_temperature: this.surfaceTemperature,
       color: this.color,
       relative_mass: this.relativeMass,
-      absolute_mass: this.absoluteMass,
       relative_radius: this.relativeRadius,
-      absolute_radius: this.absoluteRadius,
-      gravity: this.gravity,
       is_main: this.isMain,
       orbital: this.orbital,
       orbital_starter: this.orbitalStarter,

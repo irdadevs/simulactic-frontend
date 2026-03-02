@@ -17,10 +17,6 @@ export type DonationProps = {
   amountMinor: number;
   currency: string;
   status: DonationStatus;
-  provider: PaymentProvider;
-  providerSessionId: string;
-  providerCustomerId: string | null;
-  providerSubscriptionId: string | null;
   currentPeriodStart: Date | null;
   currentPeriodEnd: Date | null;
   createdAt: Date;
@@ -35,10 +31,6 @@ export type DonationCreateProps = {
   amountMinor: number;
   currency: string;
   status?: DonationStatus;
-  provider?: PaymentProvider;
-  providerSessionId: string;
-  providerCustomerId?: string | null;
-  providerSubscriptionId?: string | null;
   currentPeriodStart?: Date | null;
   currentPeriodEnd?: Date | null;
   createdAt?: Date;
@@ -53,10 +45,6 @@ export type DonationDTO = {
   amount_minor: number;
   currency: string;
   status: DonationStatus;
-  provider: PaymentProvider;
-  provider_session_id: string;
-  provider_customer_id: string | null;
-  provider_subscription_id: string | null;
   current_period_start: Date | null;
   current_period_end: Date | null;
   created_at: Date;
@@ -66,18 +54,14 @@ export type DonationDTO = {
 
 export type DonationApiResponse = {
   id: string;
-  user_id: string;
-  donation_type: DonationType;
-  amount_minor: number;
+  userId: string;
+  donationType: DonationType;
+  amountMinor: number;
   currency: string;
   status: DonationStatus;
-  provider: PaymentProvider;
-  provider_session_id: string;
-  provider_customer_id: string | null;
-  provider_subscription_id: string | null;
-  current_period_start: string | Date | null;
-  current_period_end: string | Date | null;
-  created_at: string | Date;
-  updated_at: string | Date;
-  canceled_at: string | Date | null;
+  currentPeriodStart: string | Date | null;
+  currentPeriodEnd: string | Date | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  canceledAt: string | Date | null;
 };

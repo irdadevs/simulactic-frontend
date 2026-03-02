@@ -18,10 +18,7 @@ describe("Moon aggregate", () => {
     size: "medium" as const,
     orbital: 1,
     relativeMass: 1,
-    absoluteMass: 7.3e22,
     relativeRadius: 1,
-    absoluteRadius: 1.7e6,
-    gravity: 1.62,
     temperature: 220,
   };
 
@@ -41,15 +38,12 @@ describe("Moon aggregate", () => {
   it("maps api/domain/dto", () => {
     const aggregate = mapMoonApiToDomain({
       id: moonId,
-      planet_id: planetId,
+      planetId,
       name: "Luna-3",
       size: "giant",
       orbital: 3,
-      relative_mass: 2,
-      absolute_mass: 1.4e23,
-      relative_radius: 1.4,
-      absolute_radius: 2.5e6,
-      gravity: 2,
+      relativeMass: 2,
+      relativeRadius: 1.4,
       temperature: 150,
     });
 

@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 export const loginRequestSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8),
 });
 
 export const signupRequestSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8),
   username: z.string().min(3).max(25),
 });
@@ -14,9 +14,19 @@ export const signupRequestSchema = z.object({
 export const authUserSchema = z
   .object({
     id: z.string().uuid(),
-    email: z.string().email(),
+    email: z.email(),
+    username: z.string().min(1),
     role: z.enum(["User", "Admin"]),
     verified: z.boolean(),
+    isDeleted: z.boolean(),
+    isArchived: z.boolean(),
+    isSupporter: z.boolean(),
+    createdAt: z.string().datetime(),
+    lastActivityAt: z.string().datetime(),
+    verifiedAt: z.string().datetime().nullable(),
+    deletedAt: z.string().datetime().nullable(),
+    archivedAt: z.string().datetime().nullable(),
+    supporterFrom: z.string().datetime().nullable(),
   })
   .strict();
 

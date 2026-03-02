@@ -30,10 +30,7 @@ export type StarProps = {
   surfaceTemperature: number;
   color: StarColor;
   relativeMass: number;
-  absoluteMass: number;
   relativeRadius: number;
-  absoluteRadius: number;
-  gravity: number;
   isMain: boolean;
   orbital: number;
   orbitalStarter: number;
@@ -48,10 +45,7 @@ export type StarCreateProps = {
   surfaceTemperature: number;
   color: StarColor;
   relativeMass: number;
-  absoluteMass: number;
   relativeRadius: number;
-  absoluteRadius: number;
-  gravity: number;
   isMain?: boolean;
   orbital: number;
   orbitalStarter: number;
@@ -66,10 +60,7 @@ export type StarDTO = {
   surface_temperature: number;
   color: StarColor;
   relative_mass: number;
-  absolute_mass: number;
   relative_radius: number;
-  absolute_radius: number;
-  gravity: number;
   is_main: boolean;
   orbital: number;
   orbital_starter: number;
@@ -77,18 +68,15 @@ export type StarDTO = {
 
 export type StarApiResponse = {
   id: string;
-  system_id: string;
+  systemId: string;
   name: string;
-  star_type: StarType;
-  star_class: StarClass;
-  surface_temperature: number;
+  starType: StarType;
+  starClass: StarClass;
+  surfaceTemperature: number;
   color: StarColor;
-  relative_mass: number;
-  absolute_mass: number;
-  relative_radius: number;
-  absolute_radius: number;
-  gravity: number;
-  is_main: boolean;
+  relativeMass: number;
+  relativeRadius: number;
+  isMain: boolean;
   orbital: number;
-  orbital_starter: number;
+  orbitalStarter: number;
 };

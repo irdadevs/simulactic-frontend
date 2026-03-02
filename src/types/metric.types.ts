@@ -44,14 +44,14 @@ export type MetricDTO = {
 
 export type MetricApiResponse = {
   id: string;
-  metric_name: string;
-  metric_type: MetricType;
+  metricName: string;
+  metricType: MetricType;
   source: string;
-  duration_ms: number;
+  durationMs: number;
   success: boolean;
-  user_id: string | null;
-  request_id: string | null;
-  tags: Record<string, unknown>;
-  context: Record<string, unknown>;
-  occurred_at: string | Date;
+  userId?: string | null;
+  requestId?: string | null;
+  tags?: Record<string, unknown>;
+  context?: Record<string, unknown>;
+  occurredAt: string | Date;
 };

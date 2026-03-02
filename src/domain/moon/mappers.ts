@@ -4,15 +4,12 @@ import { MoonApiResponse, MoonDTO, MoonProps } from "../../types/moon.types";
 export const mapMoonApiToDomain = (input: MoonApiResponse): Moon =>
   Moon.rehydrate({
     id: input.id,
-    planetId: input.planet_id,
+    planetId: input.planetId,
     name: input.name,
     size: input.size,
     orbital: input.orbital,
-    relativeMass: input.relative_mass,
-    absoluteMass: input.absolute_mass,
-    relativeRadius: input.relative_radius,
-    absoluteRadius: input.absolute_radius,
-    gravity: input.gravity,
+    relativeMass: input.relativeMass,
+    relativeRadius: input.relativeRadius,
     temperature: input.temperature,
   });
 

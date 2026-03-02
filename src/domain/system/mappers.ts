@@ -4,13 +4,9 @@ import { SystemApiResponse, SystemDTO, SystemProps } from "../../types/system.ty
 export const mapSystemApiToDomain = (input: SystemApiResponse): System =>
   System.rehydrate({
     id: input.id,
-    galaxyId: input.galaxy_id,
+    galaxyId: input.galaxyId,
     name: input.name,
-    position: {
-      x: input.position_x,
-      y: input.position_y,
-      z: input.position_z,
-    },
+    position: input.position,
   });
 
 export const mapSystemDomainToDTO = (system: System): SystemDTO => system.toDB();

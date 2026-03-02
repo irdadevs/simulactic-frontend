@@ -44,7 +44,7 @@ describe("Asteroid aggregate", () => {
   it("maps api/domain/dto", () => {
     const aggregate = mapAsteroidApiToDomain({
       id: asteroidId,
-      system_id: systemId,
+      systemId,
       name: "Rock-3",
       type: "cluster",
       size: "massive",
