@@ -1,9 +1,5 @@
-import styles from "../styles/page.module.css";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}></main>
-    </div>
-  );
+  redirect("/login");
 }
