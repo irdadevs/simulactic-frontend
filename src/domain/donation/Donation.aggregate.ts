@@ -12,7 +12,6 @@ import {
   DonationProps,
   DonationStatus,
   DonationType,
-  PaymentProvider,
 } from "../../types/donation.types";
 
 type DonationState = {
@@ -22,10 +21,6 @@ type DonationState = {
   amountMinor: number;
   currency: CurrencyCode;
   status: DonationStatus;
-  provider: PaymentProvider;
-  providerSessionId: string;
-  providerCustomerId: string | null;
-  providerSubscriptionId: string | null;
   currentPeriodStart: Date | null;
   currentPeriodEnd: Date | null;
   createdAt: Date;
@@ -54,13 +49,6 @@ export class Donation {
       });
     }
 
-    const providerSessionId = input.providerSessionId.trim();
-    if (!providerSessionId) {
-      throw ErrorFactory.domain("PRESENTATION.INVALID_FIELD", {
-        field: "providerSessionId",
-      });
-    }
-
     const money = Money.create(input.amountMinor);
 
     return new Donation({
@@ -70,10 +58,6 @@ export class Donation {
       amountMinor: money.amountMinor,
       currency: CurrencyCode.create(input.currency),
       status,
-      provider: input.provider ?? "stripe",
-      providerSessionId,
-      providerCustomerId: input.providerCustomerId ?? null,
-      providerSubscriptionId: input.providerSubscriptionId ?? null,
       currentPeriodStart: input.currentPeriodStart ?? null,
       currentPeriodEnd: input.currentPeriodEnd ?? null,
       createdAt: input.createdAt ?? new Date(),
@@ -90,10 +74,6 @@ export class Donation {
       amountMinor: Money.create(props.amountMinor).amountMinor,
       currency: CurrencyCode.create(props.currency),
       status: props.status,
-      provider: props.provider,
-      providerSessionId: props.providerSessionId,
-      providerCustomerId: props.providerCustomerId,
-      providerSubscriptionId: props.providerSubscriptionId,
       currentPeriodStart: props.currentPeriodStart,
       currentPeriodEnd: props.currentPeriodEnd,
       createdAt: props.createdAt,
@@ -126,22 +106,6 @@ export class Donation {
     return this.props.status;
   }
 
-  get provider(): PaymentProvider {
-    return this.props.provider;
-  }
-
-  get providerSessionId(): string {
-    return this.props.providerSessionId;
-  }
-
-  get providerCustomerId(): string | null {
-    return this.props.providerCustomerId;
-  }
-
-  get providerSubscriptionId(): string | null {
-    return this.props.providerSubscriptionId;
-  }
-
   get currentPeriodStart(): Date | null {
     return this.props.currentPeriodStart;
   }
@@ -168,15 +132,10 @@ export class Donation {
   }
 
   activateRecurring(params: {
-    providerCustomerId?: string | null;
-    providerSubscriptionId: string;
     currentPeriodStart?: Date | null;
     currentPeriodEnd?: Date | null;
   }): void {
     this.props.status = "active";
-    this.props.providerCustomerId =
-      params.providerCustomerId ?? this.props.providerCustomerId;
-    this.props.providerSubscriptionId = params.providerSubscriptionId;
     this.props.currentPeriodStart = params.currentPeriodStart ?? null;
     this.props.currentPeriodEnd = params.currentPeriodEnd ?? null;
     this.props.updatedAt = new Date();
@@ -206,10 +165,6 @@ export class Donation {
       amountMinor: this.amountMinor,
       currency: this.currency,
       status: this.status,
-      provider: this.provider,
-      providerSessionId: this.providerSessionId,
-      providerCustomerId: this.providerCustomerId,
-      providerSubscriptionId: this.providerSubscriptionId,
       currentPeriodStart: this.currentPeriodStart,
       currentPeriodEnd: this.currentPeriodEnd,
       createdAt: this.createdAt,
@@ -226,10 +181,6 @@ export class Donation {
       amount_minor: this.amountMinor,
       currency: this.currency,
       status: this.status,
-      provider: this.provider,
-      provider_session_id: this.providerSessionId,
-      provider_customer_id: this.providerCustomerId,
-      provider_subscription_id: this.providerSubscriptionId,
       current_period_start: this.currentPeriodStart,
       current_period_end: this.currentPeriodEnd,
       created_at: this.createdAt,

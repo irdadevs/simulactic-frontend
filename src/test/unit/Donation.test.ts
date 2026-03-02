@@ -18,7 +18,6 @@ describe("Donation aggregate", () => {
       donationType: "one_time",
       amountMinor: 500,
       currency: "usd",
-      providerSessionId: "sess_123",
     });
 
     aggregate.completeOneTime();
@@ -32,20 +31,16 @@ describe("Donation aggregate", () => {
   it("maps api/domain/dto", () => {
     const aggregate = mapDonationApiToDomain({
       id: donationId,
-      user_id: userId,
-      donation_type: "monthly",
-      amount_minor: 999,
+      userId,
+      donationType: "monthly",
+      amountMinor: 999,
       currency: "EUR",
       status: "active",
-      provider: "stripe",
-      provider_session_id: "sess_456",
-      provider_customer_id: "cus_1",
-      provider_subscription_id: "sub_1",
-      current_period_start: "2026-02-01T00:00:00.000Z",
-      current_period_end: "2026-03-01T00:00:00.000Z",
-      created_at: "2026-02-01T00:00:00.000Z",
-      updated_at: "2026-02-02T00:00:00.000Z",
-      canceled_at: null,
+      currentPeriodStart: "2026-02-01T00:00:00.000Z",
+      currentPeriodEnd: "2026-03-01T00:00:00.000Z",
+      createdAt: "2026-02-01T00:00:00.000Z",
+      updatedAt: "2026-02-02T00:00:00.000Z",
+      canceledAt: null,
     });
 
     expect(mapDonationDomainToView(aggregate).currency).toBe("EUR");
@@ -59,7 +54,6 @@ describe("Donation aggregate", () => {
         donationType: "one_time",
         amountMinor: 0,
         currency: "USD",
-        providerSessionId: "sess_789",
       });
       fail("Expected error was not thrown");
     } catch (error) {

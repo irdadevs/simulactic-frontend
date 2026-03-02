@@ -29,9 +29,7 @@ export type SystemDTO = {
 
 export type SystemApiResponse = {
   id: string;
-  galaxy_id: string;
+  galaxyId: string;
   name: string;
-  position_x: number;
-  position_y: number;
-  position_z: number;
+  position: SystemPosition;
 };

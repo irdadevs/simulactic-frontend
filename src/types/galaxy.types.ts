@@ -33,9 +33,9 @@ export type GalaxyDTO = {
 
 export type GalaxyApiResponse = {
   id: string;
-  owner_id: string;
+  ownerId: string;
   name: string;
-  shape: string;
-  system_count: number;
-  created_at: string | Date;
+  shape: GalaxyShapeValue;
+  systemCount: number;
+  createdAt: string | Date;
 };

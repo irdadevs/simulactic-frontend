@@ -4,7 +4,7 @@ import { AsteroidApiResponse, AsteroidDTO, AsteroidProps } from "../../types/ast
 export const mapAsteroidApiToDomain = (input: AsteroidApiResponse): Asteroid =>
   Asteroid.rehydrate({
     id: input.id,
-    systemId: input.system_id,
+    systemId: input.systemId,
     name: input.name,
     type: input.type,
     size: input.size,

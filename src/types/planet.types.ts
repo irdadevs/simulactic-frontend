@@ -20,10 +20,7 @@ export type PlanetProps = {
   orbital: number;
   biome: PlanetBiome;
   relativeMass: number;
-  absoluteMass: number;
   relativeRadius: number;
-  absoluteRadius: number;
-  gravity: number;
   temperature: number;
 };
 
@@ -36,10 +33,7 @@ export type PlanetCreateProps = {
   orbital: number;
   biome: PlanetBiome;
   relativeMass: number;
-  absoluteMass: number;
   relativeRadius: number;
-  absoluteRadius: number;
-  gravity: number;
   temperature: number;
 };
 
@@ -52,25 +46,19 @@ export type PlanetDTO = {
   orbital: number;
   biome: PlanetBiome;
   relative_mass: number;
-  absolute_mass: number;
   relative_radius: number;
-  absolute_radius: number;
-  gravity: number;
   temperature: number;
 };
 
 export type PlanetApiResponse = {
   id: string;
-  system_id: string;
+  systemId: string;
   name: string;
   type: PlanetType;
   size: PlanetSize;
   orbital: number;
   biome: PlanetBiome;
-  relative_mass: number;
-  absolute_mass: number;
-  relative_radius: number;
-  absolute_radius: number;
-  gravity: number;
+  relativeMass: number;
+  relativeRadius: number;
   temperature: number;
 };

@@ -4,17 +4,14 @@ import { PlanetApiResponse, PlanetDTO, PlanetProps } from "../../types/planet.ty
 export const mapPlanetApiToDomain = (input: PlanetApiResponse): Planet =>
   Planet.rehydrate({
     id: input.id,
-    systemId: input.system_id,
+    systemId: input.systemId,
     name: input.name,
     type: input.type,
     size: input.size,
     orbital: input.orbital,
     biome: input.biome,
-    relativeMass: input.relative_mass,
-    absoluteMass: input.absolute_mass,
-    relativeRadius: input.relative_radius,
-    absoluteRadius: input.absolute_radius,
-    gravity: input.gravity,
+    relativeMass: input.relativeMass,
+    relativeRadius: input.relativeRadius,
     temperature: input.temperature,
   });
 

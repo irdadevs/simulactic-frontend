@@ -5,11 +5,11 @@ import { GalaxyApiResponse, GalaxyDTO, GalaxyProps } from "../../types/galaxy.ty
 export const mapGalaxyApiToDomain = (input: GalaxyApiResponse): Galaxy =>
   Galaxy.rehydrate({
     id: input.id,
-    ownerId: input.owner_id,
+    ownerId: input.ownerId,
     name: input.name,
     shape: input.shape as GalaxyProps["shape"],
-    systemCount: input.system_count,
-    createdAt: parseDateOrThrow(input.created_at, "created_at"),
+    systemCount: input.systemCount,
+    createdAt: parseDateOrThrow(input.createdAt, "createdAt"),
   });
 
 export const mapGalaxyDomainToDTO = (galaxy: Galaxy): GalaxyDTO => galaxy.toDB();

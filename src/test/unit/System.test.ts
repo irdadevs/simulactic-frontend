@@ -33,11 +33,9 @@ describe("System aggregate", () => {
   it("maps api/domain/dto", () => {
     const aggregate = mapSystemApiToDomain({
       id: systemId,
-      galaxy_id: galaxyId,
+      galaxyId,
       name: "Sol-3",
-      position_x: 10,
-      position_y: 11,
-      position_z: 12,
+      position: { x: 10, y: 11, z: 12 },
     });
 
     expect(mapSystemDomainToView(aggregate)).toEqual({

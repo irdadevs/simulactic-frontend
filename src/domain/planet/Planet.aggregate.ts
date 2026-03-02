@@ -17,10 +17,7 @@ type PlanetState = {
   orbital: number;
   biome: PlanetBiomeValue;
   relativeMass: number;
-  absoluteMass: number;
   relativeRadius: number;
-  absoluteRadius: number;
-  gravity: number;
   temperature: number;
 };
 
@@ -46,10 +43,7 @@ export class Planet {
   static create(input: PlanetCreateProps): Planet {
     ensurePositive("orbital", input.orbital);
     ensurePositive("relativeMass", input.relativeMass);
-    ensurePositive("absoluteMass", input.absoluteMass);
     ensurePositive("relativeRadius", input.relativeRadius);
-    ensurePositive("absoluteRadius", input.absoluteRadius);
-    ensureNonNegative("gravity", input.gravity);
     ensurePositive("temperature", input.temperature);
 
     return new Planet({
@@ -61,10 +55,7 @@ export class Planet {
       orbital: input.orbital,
       biome: PlanetBiomeValue.create(input.biome),
       relativeMass: input.relativeMass,
-      absoluteMass: input.absoluteMass,
       relativeRadius: input.relativeRadius,
-      absoluteRadius: input.absoluteRadius,
-      gravity: input.gravity,
       temperature: input.temperature,
     });
   }
@@ -105,20 +96,8 @@ export class Planet {
     return this.props.relativeMass;
   }
 
-  get absoluteMass(): number {
-    return this.props.absoluteMass;
-  }
-
   get relativeRadius(): number {
     return this.props.relativeRadius;
-  }
-
-  get absoluteRadius(): number {
-    return this.props.absoluteRadius;
-  }
-
-  get gravity(): number {
-    return this.props.gravity;
   }
 
   get temperature(): number {
@@ -156,10 +135,7 @@ export class Planet {
       orbital: this.orbital,
       biome: this.biome,
       relativeMass: this.relativeMass,
-      absoluteMass: this.absoluteMass,
       relativeRadius: this.relativeRadius,
-      absoluteRadius: this.absoluteRadius,
-      gravity: this.gravity,
       temperature: this.temperature,
     };
   }
@@ -174,10 +150,7 @@ export class Planet {
       orbital: this.orbital,
       biome: this.biome,
       relative_mass: this.relativeMass,
-      absolute_mass: this.absoluteMass,
       relative_radius: this.relativeRadius,
-      absolute_radius: this.absoluteRadius,
-      gravity: this.gravity,
       temperature: this.temperature,
     };
   }

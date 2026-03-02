@@ -12,23 +12,16 @@ const parseOptionalDate = (value: string | Date | null, field: string): Date | n
 export const mapDonationApiToDomain = (input: DonationApiResponse): Donation =>
   Donation.rehydrate({
     id: input.id,
-    userId: input.user_id,
-    donationType: input.donation_type,
-    amountMinor: input.amount_minor,
+    userId: input.userId,
+    donationType: input.donationType,
+    amountMinor: input.amountMinor,
     currency: input.currency,
     status: input.status,
-    provider: input.provider,
-    providerSessionId: input.provider_session_id,
-    providerCustomerId: input.provider_customer_id,
-    providerSubscriptionId: input.provider_subscription_id,
-    currentPeriodStart: parseOptionalDate(
-      input.current_period_start,
-      "current_period_start",
-    ),
-    currentPeriodEnd: parseOptionalDate(input.current_period_end, "current_period_end"),
-    createdAt: parseDateOrThrow(input.created_at, "created_at"),
-    updatedAt: parseDateOrThrow(input.updated_at, "updated_at"),
-    canceledAt: parseOptionalDate(input.canceled_at, "canceled_at"),
+    currentPeriodStart: parseOptionalDate(input.currentPeriodStart, "currentPeriodStart"),
+    currentPeriodEnd: parseOptionalDate(input.currentPeriodEnd, "currentPeriodEnd"),
+    createdAt: parseDateOrThrow(input.createdAt, "createdAt"),
+    updatedAt: parseDateOrThrow(input.updatedAt, "updatedAt"),
+    canceledAt: parseOptionalDate(input.canceledAt, "canceledAt"),
   });
 
 export const mapDonationDomainToDTO = (donation: Donation): DonationDTO =>
