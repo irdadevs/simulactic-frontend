@@ -1,17 +1,35 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useGalaxy } from "../../application/hooks/useGalaxy";
-import { CreateGalaxyModal } from "../../ui/components/modals/CreateGalaxyModal";
-import { GalaxyListPanel } from "../../ui/components/layout/GalaxyListPanel";
-import { MockCanvasPanel } from "../../ui/components/layout/MockCanvasPanel";
+import { useRenderCoordinator } from "../../application/hooks/useRenderCoordinator";
+import { GalaxyListPanel } from "../../ui/components/layout/galaxy/GalaxyListPanel";
 import styles from "../../styles/skeleton.module.css";
+
+const MockCanvasPanel = dynamic(
+  () => import("../../ui/components/layout/MockCanvasPanel").then((mod) => mod.MockCanvasPanel),
+  { ssr: false },
+);
+
+const CreateGalaxyModal = dynamic(
+  () => import("../../ui/components/modals/CreateGalaxyModal").then((mod) => mod.CreateGalaxyModal),
+  { ssr: false },
+);
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isAuthenticated, loadMe, logout } = useAuth();
+  const {
+    machineState,
+    serializedGalaxyData,
+    serializedSystemData,
+    loadGalaxyForRender,
+    onWheelZoom,
+  } = useRenderCoordinator();
+
   const {
     galaxies,
     selectedGalaxy,
@@ -23,6 +41,8 @@ export default function DashboardPage() {
   } = useGalaxy();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const isSupporter = Boolean(user?.isSupporter);
+  const canCreateGalaxy = isSupporter || galaxies.length < 3;
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -32,25 +52,27 @@ export default function DashboardPage() {
         }
         const result = await loadGalaxies();
         if (result.rows.length > 0) {
-          await loadGalaxyById(result.rows[0].id);
+          const initialGalaxyId = result.rows[0].id;
+          await loadGalaxyById(initialGalaxyId);
+          await loadGalaxyForRender(initialGalaxyId);
         }
       } catch {
         router.push("/login");
       }
     };
     void bootstrap();
-  }, [isAuthenticated, loadGalaxies, loadGalaxyById, loadMe, router]);
-
-  const galaxyCountLabel = useMemo(() => `${galaxies.length} galaxies`, [galaxies.length]);
+  }, [isAuthenticated, loadGalaxies, loadGalaxyById, loadGalaxyForRender, loadMe, router]);
 
   const onCreateGalaxy = async (payload: {
     name: string;
     shape: Parameters<typeof createGalaxy>[0]["shape"];
     systemCount: number;
   }) => {
+    if (!canCreateGalaxy) return;
     try {
       const created = await createGalaxy(payload);
       await loadGalaxyById(created.id);
+      await loadGalaxyForRender(created.id);
     } catch {}
   };
 
@@ -70,8 +92,11 @@ export default function DashboardPage() {
           selectedGalaxyId={selectedGalaxy?.id ?? null}
           onSelectGalaxy={(galaxyId) => {
             void loadGalaxyById(galaxyId);
+            void loadGalaxyForRender(galaxyId);
           }}
           onCreateClick={() => setShowCreateModal(true)}
+          canCreateGalaxy={canCreateGalaxy}
+          isSupporter={isSupporter}
           error={error}
         />
 
@@ -79,6 +104,11 @@ export default function DashboardPage() {
           user={user}
           selectedGalaxy={selectedGalaxy}
           isLoading={isLoading}
+          isRenderReady={Boolean(selectedGalaxy)}
+          machineState={machineState}
+          galaxyData={serializedGalaxyData}
+          systemData={serializedSystemData}
+          onWheelZoom={onWheelZoom}
           onLogout={() => {
             void onLogout();
           }}
@@ -89,6 +119,7 @@ export default function DashboardPage() {
         open={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSubmit={onCreateGalaxy}
+        disabled={!canCreateGalaxy}
       />
     </>
   );

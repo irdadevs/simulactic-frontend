@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { useAuth } from "../../application/hooks/useAuth";
 import { ActionButton } from "../../ui/components/buttons/ActionButton";
-import { AuthCard } from "../../ui/components/layout/AuthCard";
+import { AuthCard } from "../../ui/components/layout/auth/AuthCard";
 import styles from "../../styles/skeleton.module.css";
 
 export default function LoginPage() {
@@ -39,37 +39,37 @@ export default function LoginPage() {
       error={error}
       footer={
         <p className={styles.subtitle}>
-          No account? <Link href="/register">Create one</Link>
+          No account? <Link href="/signup">Create one</Link>
         </p>
       }
     >
-        <form className={styles.form} onSubmit={onSubmit}>
-          <div className={styles.field}>
-            <label htmlFor="login-email">Email</label>
-            <input
-              id="login-email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-          </div>
+      <form className={styles.form} onSubmit={onSubmit}>
+        <div className={styles.field}>
+          <label htmlFor="login-email">Email</label>
+          <input
+            id="login-email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+          />
+        </div>
 
-          <div className={styles.field}>
-            <label htmlFor="login-password">Password</label>
-            <input
-              id="login-password"
-              type="password"
-              value={rawPassword}
-              onChange={(event) => setRawPassword(event.target.value)}
-              required
-            />
-          </div>
+        <div className={styles.field}>
+          <label htmlFor="login-password">Password</label>
+          <input
+            id="login-password"
+            type="password"
+            value={rawPassword}
+            onChange={(event) => setRawPassword(event.target.value)}
+            required
+          />
+        </div>
 
-          <ActionButton type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Signing in..." : "Sign In"}
-          </ActionButton>
-        </form>
+        <ActionButton type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Signing in..." : "Sign In"}
+        </ActionButton>
+      </form>
     </AuthCard>
   );
 }

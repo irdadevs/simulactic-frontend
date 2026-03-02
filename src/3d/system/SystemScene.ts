@@ -10,8 +10,7 @@ import {
 } from "three";
 import { EventBridge } from "../core/EventBridge";
 import { IRenderableScene } from "../core/SceneManager";
-import { SerializedSystemData } from "../core/serialized.types";
-import { OrbitRenderer } from "./OrbitRenderer";
+import { OrbitHelper } from "./OrbitHelper";
 import { PlanetMesh } from "./PlanetMesh";
 
 const SYSTEM_ID = Symbol("systemId");
@@ -23,13 +22,77 @@ const ASTEROID_ID = Symbol("asteroidId");
 export class SystemScene implements IRenderableScene {
   readonly kind = "system" as const;
   readonly group = new Group();
-  private readonly data: SerializedSystemData;
+  private data: {
+    systemId: string;
+    stars: Array<{
+      starId: string;
+      isMain: boolean;
+      orbital: number;
+      size: number;
+      color?: string;
+    }>;
+    planets: Array<{
+      planetId: string;
+      orbital: number;
+      size: number;
+      color?: string;
+      moons?: Array<{
+        moonId: string;
+        orbital: number;
+        size: number;
+        color?: string;
+      }>;
+    }>;
+    asteroids?: Array<{
+      asteroidId: string;
+      orbital: number;
+      size: number;
+      color?: string;
+    }>;
+  } = {
+    systemId: "",
+    stars: [],
+    planets: [],
+    asteroids: [],
+  };
   private readonly eventBridge: EventBridge;
+  private mounted = false;
 
-  constructor(eventBridge: EventBridge, data: SerializedSystemData) {
+  constructor(eventBridge: EventBridge) {
     this.eventBridge = eventBridge;
-    this.data = data;
+  }
 
+  mount(data: {
+    systemId: string;
+    stars: Array<{
+      starId: string;
+      isMain: boolean;
+      orbital: number;
+      size: number;
+      color?: string;
+    }>;
+    planets: Array<{
+      planetId: string;
+      orbital: number;
+      size: number;
+      color?: string;
+      moons?: Array<{
+        moonId: string;
+        orbital: number;
+        size: number;
+        color?: string;
+      }>;
+    }>;
+    asteroids?: Array<{
+      asteroidId: string;
+      orbital: number;
+      size: number;
+      color?: string;
+    }>;
+  }): void {
+    this.dispose();
+    this.mounted = true;
+    this.data = data;
     this.buildLighting();
     this.buildStars();
     this.buildPlanets();
@@ -92,6 +155,8 @@ export class SystemScene implements IRenderableScene {
   }
 
   dispose(): void {
+    if (!this.mounted && this.group.children.length === 0) return;
+    this.mounted = false;
     this.group.traverse((obj) => {
       const anyObj = obj as unknown as {
         geometry?: { dispose: () => void };
@@ -132,7 +197,7 @@ export class SystemScene implements IRenderableScene {
       this.group.add(mesh);
 
       if (star.orbital > 0) {
-        this.group.add(OrbitRenderer.create(star.orbital * 20, "#47524b"));
+        this.group.add(OrbitHelper.create(star.orbital * 20, "#47524b"));
       }
     });
   }
@@ -144,7 +209,7 @@ export class SystemScene implements IRenderableScene {
       mesh.position.set(radius, 0, 0);
       (mesh.userData as Record<symbol, string>)[PLANET_ID] = planet.planetId;
       this.group.add(mesh);
-      this.group.add(OrbitRenderer.create(radius));
+      this.group.add(OrbitHelper.create(radius));
 
       (planet.moons ?? []).forEach((moon, index) => {
         const moonMesh = PlanetMesh.create(moon.size, moon.color ?? "#c8d0cb");

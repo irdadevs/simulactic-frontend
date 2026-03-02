@@ -1,6 +1,6 @@
 import { BufferGeometry, Color, Float32BufferAttribute, Line, LineBasicMaterial } from "three";
 
-export class OrbitRenderer {
+export class OrbitHelper {
   static create(radius: number, color = "#5f6d65", segments = 96): Line {
     const positions: number[] = [];
     for (let i = 0; i <= segments; i += 1) {
@@ -15,7 +15,6 @@ export class OrbitRenderer {
       transparent: true,
       opacity: 0.35,
     });
-
     return new Line(geometry, material);
   }
 }

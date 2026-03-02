@@ -10,8 +10,7 @@ import {
 } from "three";
 import { EventBridge } from "../core/EventBridge";
 import { IRenderableScene } from "../core/SceneManager";
-import { SerializedGalaxyNode } from "../core/serialized.types";
-import { StarInstanceMesh } from "./StarInstanceMesh";
+import { StarInstancedMesh } from "./StarInstancedMesh";
 
 const SYSTEM_ID = Symbol("systemId");
 const INSTANCE_INDEX_TO_SYSTEM = Symbol("instanceIndexToSystem");
@@ -21,28 +20,41 @@ export class GalaxyScene implements IRenderableScene {
   readonly kind = "galaxy" as const;
   readonly group = new Group();
   private readonly eventBridge: EventBridge;
+  private mounted = false;
 
-  constructor(eventBridge: EventBridge, nodes: SerializedGalaxyNode[]) {
+  constructor(eventBridge: EventBridge) {
     this.eventBridge = eventBridge;
-    if (nodes.length > INSTANCING_THRESHOLD) {
-      const stars = StarInstanceMesh.build(nodes);
-      (stars.userData as Record<symbol, string[]>)[INSTANCE_INDEX_TO_SYSTEM] = nodes.map(
-        (node) => node.systemId,
+  }
+
+  mount(input: {
+    systems: {
+      id: string;
+      x: number;
+      y: number;
+      z: number;
+    }[];
+  }): void {
+    this.dispose();
+    this.mounted = true;
+
+    if (input.systems.length > INSTANCING_THRESHOLD) {
+      const stars = StarInstancedMesh.build(input.systems);
+      (stars.userData as Record<symbol, string[]>)[INSTANCE_INDEX_TO_SYSTEM] = input.systems.map(
+        (system) => system.id,
       );
       this.group.add(stars);
       return;
     }
 
     const geometry = new SphereGeometry(1, 14, 14);
-    nodes.forEach((node) => {
+    input.systems.forEach((system) => {
       const mesh = new Mesh(
         geometry.clone(),
-        new MeshBasicMaterial({ color: new Color(node.color ?? "#f8ffe5") }),
+        new MeshBasicMaterial({ color: new Color("#f8ffe5") }),
       );
-      const scale = Math.max(node.size ?? 1.5, 0.2);
-      mesh.scale.setScalar(scale);
-      mesh.position.set(node.position.x, node.position.y, node.position.z);
-      (mesh.userData as Record<symbol, string>)[SYSTEM_ID] = node.systemId;
+      mesh.scale.setScalar(1.5);
+      mesh.position.set(system.x, system.y, system.z);
+      (mesh.userData as Record<symbol, string>)[SYSTEM_ID] = system.id;
       this.group.add(mesh);
     });
   }
@@ -80,6 +92,8 @@ export class GalaxyScene implements IRenderableScene {
   }
 
   dispose(): void {
+    if (!this.mounted && this.group.children.length === 0) return;
+    this.mounted = false;
     this.group.traverse((obj) => {
       const anyObj = obj as unknown as {
         geometry?: { dispose: () => void };

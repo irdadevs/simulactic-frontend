@@ -8,9 +8,26 @@ import { SystemProps } from "../types/system.types";
 
 export type PopupPayload =
   | { kind: "galaxy"; data: GalaxyProps }
-  | { kind: "system"; data: SystemProps }
+  | {
+      kind: "system";
+      data: {
+        system: SystemProps;
+        stars: StarProps[];
+        planets: Array<{
+          planet: PlanetProps;
+          moons: MoonProps[];
+        }>;
+        asteroids: AsteroidProps[];
+      };
+    }
   | { kind: "star"; data: StarProps }
-  | { kind: "planet"; data: PlanetProps }
+  | {
+      kind: "planet";
+      data: {
+        planet: PlanetProps;
+        moons: MoonProps[];
+      };
+    }
   | { kind: "moon"; data: MoonProps }
   | { kind: "asteroid"; data: AsteroidProps };
 
@@ -50,12 +67,42 @@ export const useUiStore = create<UiState>((set) => ({
   setSidebarOpen: (open) => set({ isSidebarOpen: open }),
   setInspectorOpen: (open) => set({ isInspectorOpen: open }),
   setPopup: (popup) => set({ popup }),
-  openSystemPopup: (systemId) => set({ popupRequest: { kind: "system", systemId } }),
+  openSystemPopup: (systemId) =>
+    set((state) => {
+      const current = state.popupRequest;
+      if (current?.kind === "system" && current.systemId === systemId) return state;
+      return { popupRequest: { kind: "system", systemId } };
+    }),
   openStarPopup: ({ systemId, starId }) =>
-    set({ popupRequest: { kind: "star", systemId, starId } }),
-  openPlanetPopup: (planetId) => set({ popupRequest: { kind: "planet", planetId } }),
-  openMoonPopup: (moonId) => set({ popupRequest: { kind: "moon", moonId } }),
-  openAsteroidPopup: (asteroidId) => set({ popupRequest: { kind: "asteroid", asteroidId } }),
+    set((state) => {
+      const current = state.popupRequest;
+      if (
+        current?.kind === "star" &&
+        current.systemId === systemId &&
+        current.starId === starId
+      ) {
+        return state;
+      }
+      return { popupRequest: { kind: "star", systemId, starId } };
+    }),
+  openPlanetPopup: (planetId) =>
+    set((state) => {
+      const current = state.popupRequest;
+      if (current?.kind === "planet" && current.planetId === planetId) return state;
+      return { popupRequest: { kind: "planet", planetId } };
+    }),
+  openMoonPopup: (moonId) =>
+    set((state) => {
+      const current = state.popupRequest;
+      if (current?.kind === "moon" && current.moonId === moonId) return state;
+      return { popupRequest: { kind: "moon", moonId } };
+    }),
+  openAsteroidPopup: (asteroidId) =>
+    set((state) => {
+      const current = state.popupRequest;
+      if (current?.kind === "asteroid" && current.asteroidId === asteroidId) return state;
+      return { popupRequest: { kind: "asteroid", asteroidId } };
+    }),
   clearPopupRequest: () => set({ popupRequest: null }),
   setLoadingMessage: (message) => set({ loadingMessage: message }),
 

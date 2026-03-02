@@ -1,12 +1,14 @@
-import { GalaxyProps } from "../../../types/galaxy.types";
-import styles from "../../../styles/skeleton.module.css";
-import { ActionButton } from "../buttons/ActionButton";
+import { GalaxyProps } from "../../../../types/galaxy.types";
+import styles from "../../../../styles/skeleton.module.css";
+import { ActionButton } from "../../buttons/ActionButton";
 
 type GalaxyListPanelProps = {
   galaxies: GalaxyProps[];
   selectedGalaxyId: string | null;
   onSelectGalaxy: (galaxyId: string) => void;
   onCreateClick: () => void;
+  canCreateGalaxy: boolean;
+  isSupporter: boolean;
   error?: string | null;
 };
 
@@ -15,6 +17,8 @@ export function GalaxyListPanel({
   selectedGalaxyId,
   onSelectGalaxy,
   onCreateClick,
+  canCreateGalaxy,
+  isSupporter,
   error,
 }: GalaxyListPanelProps) {
   return (
@@ -24,12 +28,21 @@ export function GalaxyListPanel({
           <h2 className={styles.panelTitle}>Your Galaxies</h2>
           <p className={styles.meta}>{`${galaxies.length} galaxies`}</p>
         </div>
-        <ActionButton variant="secondary" onClick={onCreateClick}>
+        <ActionButton variant="secondary" onClick={onCreateClick} disabled={!canCreateGalaxy}>
           Create
         </ActionButton>
       </header>
 
-      {error && <p className={styles.error} style={{ margin: 14 }}>{error}</p>}
+      {!canCreateGalaxy && !isSupporter && (
+        <p className={styles.error} style={{ margin: 14 }}>
+          Non-supporters can create up to 3 galaxies.
+        </p>
+      )}
+      {error && (
+        <p className={styles.error} style={{ margin: 14 }}>
+          {error}
+        </p>
+      )}
 
       <div className={styles.list}>
         {galaxies.map((galaxy) => (
@@ -42,7 +55,7 @@ export function GalaxyListPanel({
           >
             <strong>{galaxy.name}</strong>
             <p className={styles.meta}>
-              {galaxy.shape} • {galaxy.systemCount} systems
+              {galaxy.shape} | {galaxy.systemCount} systems
             </p>
           </button>
         ))}
