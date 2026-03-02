@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import { AuthUser } from "../infra/api/auth.api";
+import { UserProps } from "../types/user.types";
 
 type AuthState = {
-  user: AuthUser | null;
+  user: UserProps | null;
   isAuthenticated: boolean;
-  setAuthenticatedUser: (user: AuthUser) => void;
+  setAuthenticatedUser: (user: UserProps) => void;
   clearSession: () => void;
 };
 
