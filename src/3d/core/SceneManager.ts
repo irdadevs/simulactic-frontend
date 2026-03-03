@@ -4,8 +4,10 @@ import {
   Object3D,
   Raycaster,
   Scene,
+  Vector3,
   Vector2,
 } from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { CameraController, CameraMode } from "./CameraController";
 import { EventBridge } from "./EventBridge";
 import { Renderer } from "./Renderer";
@@ -29,11 +31,16 @@ export class SceneManager {
   readonly scene: Scene;
   readonly renderer: Renderer;
   readonly cameraController: CameraController;
+  readonly controls: OrbitControls;
 
   private activeScene: IRenderableScene | null = null;
   private readonly raycaster = new Raycaster();
   private readonly pointer = new Vector2();
   private readonly canvas: HTMLCanvasElement;
+  private focusedSystemId: string | null = null;
+  private focusedPoint: Vector3 = new Vector3(0, 0, 0);
+  private hasRequestedSystemView = false;
+  private unsubscribeSystemClick: (() => void) | null = null;
   private pointerHandler: ((event: PointerEvent) => void) | null = null;
   private pointerMoveHandler: ((event: PointerEvent) => void) | null = null;
   private disposed = false;
@@ -44,14 +51,50 @@ export class SceneManager {
     this.scene = new Scene();
     this.renderer = new Renderer(input.canvas);
     this.cameraController = new CameraController(this.getAspect(input.canvas));
+    this.controls = new OrbitControls(this.cameraController.camera, input.canvas);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.09;
+    this.controls.rotateSpeed = 0.7;
+    this.controls.zoomSpeed = 0.95;
+    this.controls.panSpeed = 0.8;
+    this.controls.target.set(0, 0, 0);
+    this.controls.enablePan = true;
+    this.controls.enableRotate = true;
+    this.controls.enableZoom = true;
+    this.setMode("galaxy");
+
+    const controlsWithZoomToCursor = this.controls as OrbitControls & { zoomToCursor?: boolean };
+    if (typeof controlsWithZoomToCursor.zoomToCursor === "boolean") {
+      controlsWithZoomToCursor.zoomToCursor = true;
+    }
 
     this.renderer.resize(input.canvas.clientWidth, input.canvas.clientHeight);
     this.bindPointer(input.canvas);
+    this.unsubscribeSystemClick = this.eventBridge.on("systemClicked", ({ systemId, focusPoint }) => {
+      this.focusedSystemId = systemId;
+      this.focusedPoint.set(focusPoint.x, focusPoint.y, focusPoint.z);
+      this.controls.target.copy(this.focusedPoint);
+      this.hasRequestedSystemView = false;
+      this.controls.update();
+    });
     this.renderer.start((delta) => this.update(delta));
   }
 
   setMode(mode: CameraMode): void {
     this.cameraController.setMode(mode);
+    if (mode === "galaxy") {
+      this.controls.minDistance = 12;
+      this.controls.maxDistance = 1800;
+      this.controls.maxPolarAngle = Math.PI - 0.02;
+    } else {
+      this.controls.minDistance = 4;
+      this.controls.maxDistance = 800;
+      this.controls.maxPolarAngle = Math.PI - 0.02;
+      this.focusedSystemId = null;
+      this.hasRequestedSystemView = false;
+      this.controls.target.set(0, 0, 0);
+    }
+    this.controls.update();
   }
 
   showGalaxyScene(nextScene: IRenderableScene): void {
@@ -98,6 +141,16 @@ export class SceneManager {
 
   private update(deltaSeconds: number): void {
     if (this.disposed) return;
+    this.controls.update();
+
+    if (this.activeScene?.kind === "galaxy" && this.focusedSystemId && !this.hasRequestedSystemView) {
+      const distance = this.cameraController.camera.position.distanceTo(this.focusedPoint);
+      if (distance <= 48) {
+        this.hasRequestedSystemView = true;
+        this.eventBridge.emit("requestSystemView", { systemId: this.focusedSystemId });
+      }
+    }
+
     this.activeScene?.update(deltaSeconds);
     this.renderer.render(this.scene, this.cameraController.camera);
   }
@@ -146,6 +199,9 @@ export class SceneManager {
       this.canvas.removeEventListener("pointermove", this.pointerMoveHandler);
       this.pointerMoveHandler = null;
     }
+    this.unsubscribeSystemClick?.();
+    this.unsubscribeSystemClick = null;
+    this.controls.dispose();
     this.unmountScene();
     this.renderer.dispose();
     this.eventBridge.clear();

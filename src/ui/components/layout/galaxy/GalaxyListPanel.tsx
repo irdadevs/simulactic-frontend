@@ -3,6 +3,7 @@ import styles from "../../../../styles/skeleton.module.css";
 import { ActionButton } from "../../buttons/ActionButton";
 
 type GalaxyListPanelProps = {
+  currentUsername?: string | null;
   galaxies: GalaxyProps[];
   selectedGalaxyId: string | null;
   onSelectGalaxy: (galaxyId: string) => void;
@@ -13,6 +14,7 @@ type GalaxyListPanelProps = {
 };
 
 export function GalaxyListPanel({
+  currentUsername,
   galaxies,
   selectedGalaxyId,
   onSelectGalaxy,
@@ -25,6 +27,9 @@ export function GalaxyListPanel({
     <aside className={styles.panel}>
       <header className={styles.panelHeader}>
         <div>
+          <p className={styles.meta} style={{ marginBottom: 6 }}>
+            {currentUsername ? `Logged as ${currentUsername}` : "Logged user"}
+          </p>
           <h2 className={styles.panelTitle}>Your Galaxies</h2>
           <p className={styles.meta}>{`${galaxies.length} galaxies`}</p>
         </div>

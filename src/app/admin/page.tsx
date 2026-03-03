@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useMetrics } from "../../application/hooks/useMetrics";
@@ -23,8 +23,12 @@ const RecentFailuresTable = dynamic(
 export default function AdminDashboard() {
   const { user, isAuthenticated, loadMe } = useAuth();
   const { dashboard, loadDashboard, isLoading, error } = useMetrics();
+  const hasBootstrappedRef = useRef(false);
 
   useEffect(() => {
+    if (hasBootstrappedRef.current) return;
+    hasBootstrappedRef.current = true;
+
     const run = async () => {
       if (!isAuthenticated) {
         try {

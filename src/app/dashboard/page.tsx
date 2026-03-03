@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useGalaxy } from "../../application/hooks/useGalaxy";
@@ -21,7 +21,7 @@ const CreateGalaxyModal = dynamic(
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isAuthenticated, loadMe, logout } = useAuth();
+  const { user, isAuthenticated, loadMe } = useAuth();
   const {
     machineState,
     serializedGalaxyData,
@@ -41,10 +41,14 @@ export default function DashboardPage() {
   } = useGalaxy();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const hasBootstrappedRef = useRef(false);
   const isSupporter = Boolean(user?.isSupporter);
   const canCreateGalaxy = isSupporter || galaxies.length < 3;
 
   useEffect(() => {
+    if (hasBootstrappedRef.current) return;
+    hasBootstrappedRef.current = true;
+
     const bootstrap = async () => {
       try {
         if (!isAuthenticated) {
@@ -76,18 +80,11 @@ export default function DashboardPage() {
     } catch {}
   };
 
-  const onLogout = async () => {
-    try {
-      await logout();
-    } finally {
-      router.push("/login");
-    }
-  };
-
   return (
     <>
       <section className={styles.dashboardGrid}>
         <GalaxyListPanel
+          currentUsername={user?.username ?? null}
           galaxies={galaxies}
           selectedGalaxyId={selectedGalaxy?.id ?? null}
           onSelectGalaxy={(galaxyId) => {
@@ -101,7 +98,6 @@ export default function DashboardPage() {
         />
 
         <MockCanvasPanel
-          user={user}
           selectedGalaxy={selectedGalaxy}
           isLoading={isLoading}
           isRenderReady={Boolean(selectedGalaxy)}
@@ -109,9 +105,6 @@ export default function DashboardPage() {
           galaxyData={serializedGalaxyData}
           systemData={serializedSystemData}
           onWheelZoom={onWheelZoom}
-          onLogout={() => {
-            void onLogout();
-          }}
         />
       </section>
 

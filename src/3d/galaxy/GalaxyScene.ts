@@ -32,6 +32,8 @@ export class GalaxyScene implements IRenderableScene {
       x: number;
       y: number;
       z: number;
+      color?: string;
+      size?: number;
     }[];
   }): void {
     this.dispose();
@@ -51,9 +53,9 @@ export class GalaxyScene implements IRenderableScene {
     systems.forEach((system) => {
       const mesh = new Mesh(
         geometry.clone(),
-        new MeshBasicMaterial({ color: new Color("#f8ffe5") }),
+        new MeshBasicMaterial({ color: new Color(system.color ?? "#f8ffe5") }),
       );
-      mesh.scale.setScalar(1.5);
+      mesh.scale.setScalar(Math.max(system.size ?? 2, 1.1));
       mesh.position.set(system.x, system.y, system.z);
       (mesh.userData as Record<symbol, string>)[SYSTEM_ID] = system.id;
       this.group.add(mesh);
@@ -69,11 +71,18 @@ export class GalaxyScene implements IRenderableScene {
     }
 
     const hit = intersections[0].object;
-    const systemId = this.findSystemId(intersections[0], hit);
+    const intersection = intersections[0];
+    const systemId = this.findSystemId(intersection, hit);
     if (!systemId) return;
 
-    this.eventBridge.emit("systemClicked", { systemId });
-    this.eventBridge.emit("requestSystemView", { systemId });
+    this.eventBridge.emit("systemClicked", {
+      systemId,
+      focusPoint: {
+        x: intersection.point.x,
+        y: intersection.point.y,
+        z: intersection.point.z,
+      },
+    });
   }
 
   onPointerMove(intersections: Intersection<Object3D>[]): void {
@@ -129,8 +138,8 @@ export class GalaxyScene implements IRenderableScene {
   }
 
   private normalizeSystems(
-    systems: Array<{ id: string; x: number; y: number; z: number }>,
-  ): Array<{ id: string; x: number; y: number; z: number }> {
+    systems: Array<{ id: string; x: number; y: number; z: number; color?: string; size?: number }>,
+  ): Array<{ id: string; x: number; y: number; z: number; color?: string; size?: number }> {
     if (systems.length === 0) return systems;
 
     const center = systems.reduce(
@@ -165,6 +174,8 @@ export class GalaxyScene implements IRenderableScene {
       x: (system.x - centroid.x) * scale,
       y: (system.y - centroid.y) * scale,
       z: (system.z - centroid.z) * scale,
+      color: system.color,
+      size: system.size,
     }));
   }
 }
