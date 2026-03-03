@@ -78,12 +78,14 @@ export type ChangeUsernameRequest = {
 const BASE = "/users";
 
 export const authApi = {
-  login: (body: LoginRequest): Promise<AuthUserEnvelope> => apiPost(`${BASE}/login`, { body }),
+  login: (body: LoginRequest): Promise<AuthUserEnvelope> =>
+    apiPost(`${BASE}/login`, { body, timeoutMs: 90000 }),
 
-  signup: (body: SignupRequest): Promise<AuthUserEnvelope> => apiPost(`${BASE}/signup`, { body }),
+  signup: (body: SignupRequest): Promise<AuthUserEnvelope> =>
+    apiPost(`${BASE}/signup`, { body, timeoutMs: 90000 }),
 
   refresh: (body?: RefreshRequest): Promise<{ ok: true }> =>
-    apiPost(`${BASE}/token/refresh`, body ? { body } : undefined),
+    apiPost(`${BASE}/token/refresh`, body ? { body, timeoutMs: 90000 } : { timeoutMs: 90000 }),
 
   logout: (body?: LogoutRequest): Promise<void> =>
     apiPost(`${BASE}/logout`, body ? { body } : undefined),

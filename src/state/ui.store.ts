@@ -43,10 +43,12 @@ type UiState = {
   isInspectorOpen: boolean;
   popup: PopupPayload | null;
   popupRequest: PopupRequest | null;
+  popupLoading: boolean;
   loadingMessage: string | null;
   setSidebarOpen: (open: boolean) => void;
   setInspectorOpen: (open: boolean) => void;
   setPopup: (popup: PopupPayload | null) => void;
+  setPopupLoading: (loading: boolean) => void;
   openSystemPopup: (systemId: string) => void;
   openStarPopup: (input: { systemId: string; starId: string }) => void;
   openPlanetPopup: (planetId: string) => void;
@@ -62,11 +64,13 @@ export const useUiStore = create<UiState>((set) => ({
   isInspectorOpen: false,
   popup: null,
   popupRequest: null,
+  popupLoading: false,
   loadingMessage: null,
 
   setSidebarOpen: (open) => set({ isSidebarOpen: open }),
   setInspectorOpen: (open) => set({ isInspectorOpen: open }),
   setPopup: (popup) => set({ popup }),
+  setPopupLoading: (popupLoading) => set({ popupLoading }),
   openSystemPopup: (systemId) =>
     set((state) => {
       const current = state.popupRequest;
@@ -112,5 +116,6 @@ export const useUiStore = create<UiState>((set) => ({
       isInspectorOpen: false,
       popup: null,
       popupRequest: null,
+      popupLoading: false,
     }),
 }));
