@@ -9,6 +9,7 @@ import { SystemPopup } from "./SystemPopup";
 
 export function PopupLayer() {
   const { popup } = usePopupController();
+  const popupLoading = useUiStore((state) => state.popupLoading);
 
   const openSystemPopup = useUiStore((state) => state.openSystemPopup);
   const openStarPopup = useUiStore((state) => state.openStarPopup);
@@ -16,11 +17,17 @@ export function PopupLayer() {
   const openMoonPopup = useUiStore((state) => state.openMoonPopup);
   const setPopup = useUiStore((state) => state.setPopup);
 
-  if (!popup) return null;
+  if (!popup && !popupLoading) return null;
 
   return (
     <div className={styles.popupLayer}>
-      {popup.kind === "system" && (
+      {popupLoading && (
+        <div className={styles.popupLoader} aria-label="Preparing popup">
+          <span className={styles.popupLoaderSpinner} />
+        </div>
+      )}
+
+      {popup?.kind === "system" && (
         <SystemPopup
           system={popup.data.system}
           stars={popup.data.stars}
@@ -31,7 +38,7 @@ export function PopupLayer() {
         />
       )}
 
-      {popup.kind === "planet" && (
+      {popup?.kind === "planet" && (
         <PlanetPopup
           planet={popup.data.planet}
           moons={popup.data.moons}
@@ -41,7 +48,7 @@ export function PopupLayer() {
         />
       )}
 
-      {popup.kind === "moon" && (
+      {popup?.kind === "moon" && (
         <MoonPopup
           moon={popup.data}
           onBack={() => openPlanetPopup(popup.data.planetId)}
@@ -49,14 +56,14 @@ export function PopupLayer() {
         />
       )}
 
-      {popup.kind === "star" && (
+      {popup?.kind === "star" && (
         <section className={styles.popupCard}>
           <h3 className={styles.panelTitle}>{popup.data.name}</h3>
           <p className={styles.meta}>Star</p>
         </section>
       )}
 
-      {popup.kind === "asteroid" && (
+      {popup?.kind === "asteroid" && (
         <section className={styles.popupCard}>
           <h3 className={styles.panelTitle}>{popup.data.name}</h3>
           <p className={styles.meta}>Asteroid</p>

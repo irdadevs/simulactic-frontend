@@ -24,10 +24,12 @@ type RequestOptions = {
   body?: unknown;
   headers?: HeadersInit;
   signal?: AbortSignal;
+  timeoutMs?: number;
 };
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/+$/, "");
 const API_PREFIX = "/api/v1";
+const API_REQUEST_TIMEOUT_MS = 60000;
 
 const toQueryString = (query?: QueryParams): string => {
   if (!query) return "";
@@ -58,7 +60,8 @@ const toQueryString = (query?: QueryParams): string => {
 
 const buildUrl = (path: string, query?: QueryParams): string => {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  const base = `${API_BASE_URL}${API_PREFIX}${normalizedPath}`;
+  const apiOrigin = typeof window === "undefined" ? API_BASE_URL : "";
+  const base = `${apiOrigin}${API_PREFIX}${normalizedPath}`;
   return `${base}${toQueryString(query)}`;
 };
 
@@ -82,18 +85,44 @@ const request = async <T>(
 ): Promise<T> => {
   const url = buildUrl(path, options?.query);
   const hasBody = options?.body !== undefined;
+  const timeoutMs = options?.timeoutMs ?? API_REQUEST_TIMEOUT_MS;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  let cleanupAbortForward: (() => void) | undefined;
+
+  if (options?.signal) {
+    const forwardAbort = () => controller.abort();
+    if (options.signal.aborted) {
+      controller.abort();
+    } else {
+      options.signal.addEventListener("abort", forwardAbort, { once: true });
+      cleanupAbortForward = () => options.signal?.removeEventListener("abort", forwardAbort);
+    }
+  }
   const headers: HeadersInit = {
     ...(hasBody ? { "Content-Type": "application/json" } : {}),
     ...(options?.headers ?? {}),
   };
 
-  const response = await fetch(url, {
-    method,
-    headers,
-    credentials: "include",
-    signal: options?.signal,
-    body: hasBody ? JSON.stringify(options.body) : undefined,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method,
+      headers,
+      credentials: "include",
+      signal: controller.signal,
+      body: hasBody ? JSON.stringify(options.body) : undefined,
+    });
+  } catch (error: unknown) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error(`Request timeout after ${timeoutMs}ms: ${method} ${url}`);
+    }
+    const message = error instanceof Error ? error.message : "Unknown network error";
+    throw new Error(`Network request failed: ${method} ${url}. ${message}`);
+  } finally {
+    cleanupAbortForward?.();
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     const errorBody = await parseResponse<unknown>(response);

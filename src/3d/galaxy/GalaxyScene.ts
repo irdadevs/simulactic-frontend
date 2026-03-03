@@ -36,10 +36,11 @@ export class GalaxyScene implements IRenderableScene {
   }): void {
     this.dispose();
     this.mounted = true;
+    const systems = this.normalizeSystems(input.systems);
 
-    if (input.systems.length > INSTANCING_THRESHOLD) {
-      const stars = StarInstancedMesh.build(input.systems);
-      (stars.userData as Record<symbol, string[]>)[INSTANCE_INDEX_TO_SYSTEM] = input.systems.map(
+    if (systems.length > INSTANCING_THRESHOLD) {
+      const stars = StarInstancedMesh.build(systems);
+      (stars.userData as Record<symbol, string[]>)[INSTANCE_INDEX_TO_SYSTEM] = systems.map(
         (system) => system.id,
       );
       this.group.add(stars);
@@ -47,7 +48,7 @@ export class GalaxyScene implements IRenderableScene {
     }
 
     const geometry = new SphereGeometry(1, 14, 14);
-    input.systems.forEach((system) => {
+    systems.forEach((system) => {
       const mesh = new Mesh(
         geometry.clone(),
         new MeshBasicMaterial({ color: new Color("#f8ffe5") }),
@@ -125,5 +126,45 @@ export class GalaxyScene implements IRenderableScene {
       current = current.parent;
     }
     return null;
+  }
+
+  private normalizeSystems(
+    systems: Array<{ id: string; x: number; y: number; z: number }>,
+  ): Array<{ id: string; x: number; y: number; z: number }> {
+    if (systems.length === 0) return systems;
+
+    const center = systems.reduce(
+      (acc, system) => ({
+        x: acc.x + system.x,
+        y: acc.y + system.y,
+        z: acc.z + system.z,
+      }),
+      { x: 0, y: 0, z: 0 },
+    );
+
+    const centroid = {
+      x: center.x / systems.length,
+      y: center.y / systems.length,
+      z: center.z / systems.length,
+    };
+
+    const maxDistance = systems.reduce((max, system) => {
+      const dx = system.x - centroid.x;
+      const dy = system.y - centroid.y;
+      const dz = system.z - centroid.z;
+      return Math.max(max, Math.sqrt(dx * dx + dy * dy + dz * dz));
+    }, 0);
+
+    if (maxDistance <= 0) return systems;
+
+    const targetRadius = 180;
+    const scale = Math.max(0.25, Math.min(7.5, targetRadius / maxDistance));
+
+    return systems.map((system) => ({
+      id: system.id,
+      x: (system.x - centroid.x) * scale,
+      y: (system.y - centroid.y) * scale,
+      z: (system.z - centroid.z) * scale,
+    }));
   }
 }

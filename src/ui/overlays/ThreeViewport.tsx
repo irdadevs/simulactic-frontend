@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { bind3dEvents } from "../../application/services/bind3dEvents";
 import type { SceneManager } from "../../3d/core/SceneManager";
 import { SerializedGalaxyViewData, SerializedSystemViewData } from "../../3d/core/serialized.types";
@@ -23,6 +23,7 @@ function ThreeViewportComponent({
   const managerRef = useRef<SceneManager | null>(null);
   const cleanupEventsRef = useRef<(() => void) | null>(null);
   const onWheelZoomRef = useRef(onWheelZoom);
+  const [managerReadyToken, setManagerReadyToken] = useState(0);
 
   useEffect(() => {
     onWheelZoomRef.current = onWheelZoom;
@@ -48,6 +49,7 @@ function ThreeViewportComponent({
       const manager = new SceneManager({ canvas, eventBridge });
       managerRef.current = manager;
       cleanupEventsRef.current = bind3dEvents(eventBridge);
+      setManagerReadyToken((prev) => prev + 1);
 
       observer = new ResizeObserver(() => {
         manager.resize(canvas.clientWidth, canvas.clientHeight);
@@ -119,7 +121,7 @@ function ThreeViewportComponent({
     return () => {
       isCancelled = true;
     };
-  }, [galaxyData, machineState, systemData]);
+  }, [galaxyData, machineState, systemData, managerReadyToken]);
 
   return (
     <div className={styles.canvasWrap}>

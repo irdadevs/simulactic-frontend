@@ -17,7 +17,7 @@ export class CameraController {
 
   setMode(mode: CameraMode): void {
     if (mode === "galaxy") {
-      this.camera.position.set(0, 220, 520);
+      this.camera.position.set(0, 120, 300);
       this.camera.lookAt(new Vector3(0, 0, 0));
       return;
     }
