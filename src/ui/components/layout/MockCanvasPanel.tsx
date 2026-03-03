@@ -1,10 +1,8 @@
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
 import { SerializedGalaxyViewData, SerializedSystemViewData } from "../../../3d/core/serialized.types";
-import { UserProps } from "../../../types/user.types";
 import { GalaxyProps } from "../../../types/galaxy.types";
 import styles from "../../../styles/skeleton.module.css";
-import { ActionButton } from "../buttons/ActionButton";
 
 const LazyThreeViewport = dynamic(
   () => import("../../overlays/ThreeViewport").then((mod) => mod.ThreeViewport),
@@ -17,7 +15,6 @@ const LazyPopupLayer = dynamic(
 );
 
 type MockCanvasPanelProps = {
-  user: UserProps | null;
   selectedGalaxy: GalaxyProps | null;
   isLoading: boolean;
   isRenderReady: boolean;
@@ -25,11 +22,9 @@ type MockCanvasPanelProps = {
   galaxyData: SerializedGalaxyViewData;
   systemData: SerializedSystemViewData | null;
   onWheelZoom: (deltaY: number) => void;
-  onLogout: () => void;
 };
 
 export function MockCanvasPanel({
-  user,
   selectedGalaxy,
   isLoading,
   isRenderReady,
@@ -37,7 +32,6 @@ export function MockCanvasPanel({
   galaxyData,
   systemData,
   onWheelZoom,
-  onLogout,
 }: MockCanvasPanelProps) {
   const showCanvas = useMemo(
     () => isRenderReady && machineState !== "idle",
@@ -47,13 +41,7 @@ export function MockCanvasPanel({
   return (
     <section className={styles.panel}>
       <header className={styles.panelHeader}>
-        <div>
-          <h2 className={styles.panelTitle}>Dashboard</h2>
-          <p className={styles.meta}>{user ? `Logged as ${user.username}` : "Loading user..."}</p>
-        </div>
-        <ActionButton variant="secondary" onClick={onLogout}>
-          Logout
-        </ActionButton>
+        <h2 className={styles.panelTitle}>Galaxy Viewport</h2>
       </header>
 
       {showCanvas ? (

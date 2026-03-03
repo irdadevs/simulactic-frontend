@@ -4,7 +4,6 @@ import {
   SerializedSystemViewData,
 } from "../../3d/core/serialized.types";
 import { useRenderStore } from "../../state/render.store";
-import { useUiStore } from "../../state/ui.store";
 import { AsteroidSize } from "../../types/asteroid.types";
 import { PlanetSize } from "../../types/planet.types";
 import { useGalaxyView } from "./useGalaxyView";
@@ -38,9 +37,6 @@ export const useRenderCoordinator = () => {
   const initializeGalaxy = useRenderStore((state) => state.initializeGalaxy);
   const commitGalaxyTransition = useRenderStore((state) => state.commitGalaxyTransition);
   const failTransition = useRenderStore((state) => state.failTransition);
-  const requestSystemTransitionByZoom = useRenderStore(
-    (state) => state.requestSystemTransitionByZoom,
-  );
   const requestGalaxyTransition = useRenderStore((state) => state.requestGalaxyTransition);
   const commitSystemTransition = useRenderStore((state) => state.commitSystemTransition);
 
@@ -97,7 +93,7 @@ export const useRenderCoordinator = () => {
         systemId: node.system.id,
         position: node.system.position,
         color: node.mainStar?.color,
-        size: Math.max(node.mainStar?.relativeRadius ?? 1.2, 0.8),
+        size: Math.max(1.2, Math.min(8, (node.mainStar?.relativeRadius ?? 1.2) * 3)),
       })),
     }),
     [galaxyNodes],
@@ -138,29 +134,11 @@ export const useRenderCoordinator = () => {
       const nextZoom = Math.max(0.4, Math.min(3, zoom + (deltaY > 0 ? 0.08 : -0.08)));
       setZoom(nextZoom);
 
-      if (viewMode === "galaxy" && nextZoom <= 0.6) {
-        const popupRequest = useUiStore.getState().popupRequest;
-        if (popupRequest?.kind === "system") {
-          requestSystemTransitionByZoom(popupRequest.systemId);
-          return;
-        }
-        const firstSystemId = serializedGalaxyData.systems[0]?.systemId;
-        if (firstSystemId) requestSystemTransitionByZoom(firstSystemId);
-        return;
-      }
-
       if (viewMode === "system" && nextZoom >= 1.45) {
         requestGalaxyTransition("zoom_threshold");
       }
     },
-    [
-      requestGalaxyTransition,
-      requestSystemTransitionByZoom,
-      serializedGalaxyData.systems,
-      setZoom,
-      viewMode,
-      zoom,
-    ],
+    [requestGalaxyTransition, setZoom, viewMode, zoom],
   );
 
   return {

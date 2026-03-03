@@ -1,6 +1,6 @@
 type EventMap = {
   starClicked: { starId: string; systemId: string };
-  systemClicked: { systemId: string };
+  systemClicked: { systemId: string; focusPoint: { x: number; y: number; z: number } };
   systemHovered: { systemId: string };
   starHovered: { starId: string; systemId: string };
   planetHovered: { planetId: string };

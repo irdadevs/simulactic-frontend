@@ -2,6 +2,7 @@ import {
   Color,
   Group,
   Intersection,
+  AmbientLight,
   Mesh,
   MeshStandardMaterial,
   Object3D,
@@ -173,6 +174,9 @@ export class SystemScene implements IRenderableScene {
   }
 
   private buildLighting(): void {
+    const ambient = new AmbientLight("#9fb2ff", 0.45);
+    this.group.add(ambient);
+
     const mainLight = new PointLight("#f8ffe5", 1.8, 2200, 2);
     mainLight.position.set(0, 0, 0);
     this.group.add(mainLight);
@@ -190,21 +194,21 @@ export class SystemScene implements IRenderableScene {
         }),
       );
 
-      const x = star.orbital * 20;
+      const x = star.orbital * 16;
       mesh.position.set(x, 0, 0);
       (mesh.userData as Record<symbol, string>)[STAR_ID] = star.starId;
       (mesh.userData as Record<symbol, string>)[SYSTEM_ID] = this.data.systemId;
       this.group.add(mesh);
 
       if (star.orbital > 0) {
-        this.group.add(OrbitHelper.create(star.orbital * 20, "#47524b"));
+        this.group.add(OrbitHelper.create(star.orbital * 16, "#47524b"));
       }
     });
   }
 
   private buildPlanets(): void {
     this.data.planets.forEach((planet) => {
-      const radius = planet.orbital * 30;
+      const radius = planet.orbital * 20;
       const mesh = PlanetMesh.create(planet.size, planet.color ?? "#0da1bf");
       mesh.position.set(radius, 0, 0);
       (mesh.userData as Record<symbol, string>)[PLANET_ID] = planet.planetId;
@@ -213,7 +217,7 @@ export class SystemScene implements IRenderableScene {
 
       (planet.moons ?? []).forEach((moon, index) => {
         const moonMesh = PlanetMesh.create(moon.size, moon.color ?? "#c8d0cb");
-        moonMesh.position.set(radius + moon.orbital * 4 + index, 0, 0);
+        moonMesh.position.set(radius + moon.orbital * 2.6 + index * 0.75, 0, 0);
         (moonMesh.userData as Record<symbol, string>)[MOON_ID] = moon.moonId;
         this.group.add(moonMesh);
       });
@@ -223,7 +227,7 @@ export class SystemScene implements IRenderableScene {
   private buildAsteroids(): void {
     (this.data.asteroids ?? []).forEach((asteroid) => {
       const mesh = PlanetMesh.create(asteroid.size, asteroid.color ?? "#77887e");
-      mesh.position.set(asteroid.orbital * 30, 0, 0);
+      mesh.position.set(asteroid.orbital * 20, 0, 0);
       (mesh.userData as Record<symbol, string>)[ASTEROID_ID] = asteroid.asteroidId;
       this.group.add(mesh);
     });

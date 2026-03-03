@@ -100,6 +100,8 @@ function ThreeViewportComponent({
             x: system.position.x,
             y: system.position.y,
             z: system.position.z,
+            color: system.color,
+            size: system.size,
           })),
         });
         managerRef.current.showGalaxyScene(scene);

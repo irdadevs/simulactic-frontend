@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useAuthStore } from "../../state/auth.store";
 import {
   AuthUser,
@@ -25,62 +26,62 @@ export const useAuth = () => {
   );
   const clearSession = useAuthStore((state) => state.clearSession);
 
-  const signInWithUser = (nextUser: AuthUser): void => {
+  const signInWithUser = useCallback((nextUser: AuthUser): void => {
     const mapped = mapUserDomainToView(mapUserApiToDomain(nextUser));
     setAuthenticatedUser(mapped);
-  };
+  }, [setAuthenticatedUser]);
 
-  const login = async (body: LoginRequest): Promise<void> => {
+  const login = useCallback(async (body: LoginRequest): Promise<void> => {
     const response = await authApi.login(body);
     const mapped = mapUserDomainToView(mapUserApiToDomain(response.user));
     setAuthenticatedUser(mapped);
-  };
+  }, [setAuthenticatedUser]);
 
-  const signup = async (body: SignupRequest): Promise<void> => {
+  const signup = useCallback(async (body: SignupRequest): Promise<void> => {
     const response = await authApi.signup(body);
     const mapped = mapUserDomainToView(mapUserApiToDomain(response.user));
     setAuthenticatedUser(mapped);
-  };
+  }, [setAuthenticatedUser]);
 
-  const loadMe = async (): Promise<void> => {
+  const loadMe = useCallback(async (): Promise<void> => {
     const response = await authApi.me();
     const mapped = mapUserDomainToView(mapUserApiToDomain(response.user));
     setAuthenticatedUser(mapped);
-  };
+  }, [setAuthenticatedUser]);
 
-  const refresh = async (): Promise<void> => {
+  const refresh = useCallback(async (): Promise<void> => {
     await authApi.refresh();
-  };
+  }, []);
 
-  const logout = async (): Promise<void> => {
+  const logout = useCallback(async (): Promise<void> => {
     await authApi.logout();
     clearSession();
-  };
+  }, [clearSession]);
 
-  const logoutAll = async (): Promise<void> => {
+  const logoutAll = useCallback(async (): Promise<void> => {
     await authApi.logoutAll();
     clearSession();
-  };
+  }, [clearSession]);
 
-  const changeEmail = async (body: ChangeEmailRequest): Promise<void> => {
+  const changeEmail = useCallback(async (body: ChangeEmailRequest): Promise<void> => {
     await authApi.changeEmail(body);
-  };
+  }, []);
 
-  const changePassword = async (body: ChangePasswordRequest): Promise<void> => {
+  const changePassword = useCallback(async (body: ChangePasswordRequest): Promise<void> => {
     await authApi.changePassword(body);
-  };
+  }, []);
 
-  const changeUsername = async (body: ChangeUsernameRequest): Promise<void> => {
+  const changeUsername = useCallback(async (body: ChangeUsernameRequest): Promise<void> => {
     await authApi.changeUsername(body);
-  };
+  }, []);
 
-  const verify = async (body: VerifyRequest): Promise<void> => {
+  const verify = useCallback(async (body: VerifyRequest): Promise<void> => {
     await authApi.verify(body);
-  };
+  }, []);
 
-  const resendVerification = async (body: ResendVerificationRequest): Promise<void> => {
+  const resendVerification = useCallback(async (body: ResendVerificationRequest): Promise<void> => {
     await authApi.resendVerification(body);
-  };
+  }, []);
 
   return {
     user,

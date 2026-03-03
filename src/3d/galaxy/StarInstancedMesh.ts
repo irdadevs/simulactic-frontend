@@ -26,7 +26,7 @@ export class StarInstancedMesh {
 
     const matrix = new Matrix4();
     systems.forEach((system, index) => {
-      const size = Math.max(system.size ?? 1.5, 0.2);
+      const size = Math.max(system.size ?? 2.2, 1.1);
       matrix.makeScale(size, size, size);
       matrix.setPosition(system.x, system.y, system.z);
       mesh.setMatrixAt(index, matrix);
