@@ -57,6 +57,12 @@ export class SystemScene implements IRenderableScene {
     asteroids: [],
   };
   private readonly eventBridge: EventBridge;
+  private readonly navigationPoints = {
+    star: new Map<string, { x: number; y: number; z: number }>(),
+    planet: new Map<string, { x: number; y: number; z: number }>(),
+    moon: new Map<string, { x: number; y: number; z: number }>(),
+    asteroid: new Map<string, { x: number; y: number; z: number }>(),
+  };
   private mounted = false;
 
   constructor(eventBridge: EventBridge) {
@@ -102,7 +108,7 @@ export class SystemScene implements IRenderableScene {
 
   update(_deltaSeconds: number): void {}
 
-  onPointerDown(intersections: Intersection<Object3D>[]): void {
+  onPointerDown(intersections: Intersection<Object3D>[], _pointer: { x: number; y: number }): void {
     if (intersections.length === 0) {
       this.eventBridge.emit("backgroundClicked", undefined);
       return;
@@ -115,10 +121,14 @@ export class SystemScene implements IRenderableScene {
     this.eventBridge.emit("starClicked", {
       starId,
       systemId: this.data.systemId,
+      anchor: _pointer,
     });
   }
 
-  onPointerMove(intersections: Intersection<Object3D>[]): void {
+  onPointerMove(
+    intersections: Intersection<Object3D>[],
+    pointer: { x: number; y: number },
+  ): void {
     if (intersections.length === 0) {
       this.eventBridge.emit("hoverCleared", undefined);
       return;
@@ -128,27 +138,40 @@ export class SystemScene implements IRenderableScene {
     const starId = this.findStarId(object);
     if (starId) {
       this.eventBridge.emit("starHovered", {
-        starId,
         systemId: this.data.systemId,
+        starId,
+        anchor: pointer,
       });
       return;
     }
 
     const planetId = this.findTaggedId(object, PLANET_ID);
     if (planetId) {
-      this.eventBridge.emit("planetHovered", { planetId });
+      this.eventBridge.emit("planetHovered", {
+        systemId: this.data.systemId,
+        planetId,
+        anchor: pointer,
+      });
       return;
     }
 
     const moonId = this.findTaggedId(object, MOON_ID);
     if (moonId) {
-      this.eventBridge.emit("moonHovered", { moonId });
+      this.eventBridge.emit("moonHovered", {
+        systemId: this.data.systemId,
+        moonId,
+        anchor: pointer,
+      });
       return;
     }
 
     const asteroidId = this.findTaggedId(object, ASTEROID_ID);
     if (asteroidId) {
-      this.eventBridge.emit("asteroidHovered", { asteroidId });
+      this.eventBridge.emit("asteroidHovered", {
+        systemId: this.data.systemId,
+        asteroidId,
+        anchor: pointer,
+      });
       return;
     }
 
@@ -171,6 +194,16 @@ export class SystemScene implements IRenderableScene {
       }
     });
     this.group.clear();
+    this.navigationPoints.star.clear();
+    this.navigationPoints.planet.clear();
+    this.navigationPoints.moon.clear();
+    this.navigationPoints.asteroid.clear();
+  }
+
+  getNavigationPoint(
+    target: { kind: "star" | "planet" | "moon" | "asteroid"; id: string },
+  ): { x: number; y: number; z: number } | null {
+    return this.navigationPoints[target.kind].get(target.id) ?? null;
   }
 
   private buildLighting(): void {
@@ -199,6 +232,7 @@ export class SystemScene implements IRenderableScene {
       (mesh.userData as Record<symbol, string>)[STAR_ID] = star.starId;
       (mesh.userData as Record<symbol, string>)[SYSTEM_ID] = this.data.systemId;
       this.group.add(mesh);
+      this.navigationPoints.star.set(star.starId, { x, y: 0, z: 0 });
 
       if (star.orbital > 0) {
         this.group.add(OrbitHelper.create(star.orbital * 16, "#47524b"));
@@ -213,13 +247,16 @@ export class SystemScene implements IRenderableScene {
       mesh.position.set(radius, 0, 0);
       (mesh.userData as Record<symbol, string>)[PLANET_ID] = planet.planetId;
       this.group.add(mesh);
+      this.navigationPoints.planet.set(planet.planetId, { x: radius, y: 0, z: 0 });
       this.group.add(OrbitHelper.create(radius));
 
       (planet.moons ?? []).forEach((moon, index) => {
         const moonMesh = PlanetMesh.create(moon.size, moon.color ?? "#c8d0cb");
         moonMesh.position.set(radius + moon.orbital * 2.6 + index * 0.75, 0, 0);
+        const moonX = radius + moon.orbital * 2.6 + index * 0.75;
         (moonMesh.userData as Record<symbol, string>)[MOON_ID] = moon.moonId;
         this.group.add(moonMesh);
+        this.navigationPoints.moon.set(moon.moonId, { x: moonX, y: 0, z: 0 });
       });
     });
   }
@@ -227,9 +264,11 @@ export class SystemScene implements IRenderableScene {
   private buildAsteroids(): void {
     (this.data.asteroids ?? []).forEach((asteroid) => {
       const mesh = PlanetMesh.create(asteroid.size, asteroid.color ?? "#77887e");
-      mesh.position.set(asteroid.orbital * 20, 0, 0);
+      const asteroidX = asteroid.orbital * 20;
+      mesh.position.set(asteroidX, 0, 0);
       (mesh.userData as Record<symbol, string>)[ASTEROID_ID] = asteroid.asteroidId;
       this.group.add(mesh);
+      this.navigationPoints.asteroid.set(asteroid.asteroidId, { x: asteroidX, y: 0, z: 0 });
     });
   }
 

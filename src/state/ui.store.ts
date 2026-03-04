@@ -38,17 +38,35 @@ export type PopupRequest =
   | { kind: "moon"; moonId: string }
   | { kind: "asteroid"; asteroidId: string };
 
+export type PopupAnchor = {
+  x: number;
+  y: number;
+};
+
+export type SystemNavigationTarget = {
+  kind: "star" | "planet" | "moon" | "asteroid";
+  id: string;
+};
+
 type UiState = {
   isSidebarOpen: boolean;
   isInspectorOpen: boolean;
   popup: PopupPayload | null;
   popupRequest: PopupRequest | null;
+  popupAnchor: PopupAnchor | null;
+  popupPinned: boolean;
   popupLoading: boolean;
+  navigateToSystemTarget: ((target: SystemNavigationTarget) => void) | null;
   loadingMessage: string | null;
   setSidebarOpen: (open: boolean) => void;
   setInspectorOpen: (open: boolean) => void;
   setPopup: (popup: PopupPayload | null) => void;
+  setPopupAnchor: (anchor: PopupAnchor | null) => void;
+  setPopupPinned: (pinned: boolean) => void;
   setPopupLoading: (loading: boolean) => void;
+  setNavigateToSystemTarget: (
+    navigate: ((target: SystemNavigationTarget) => void) | null,
+  ) => void;
   openSystemPopup: (systemId: string) => void;
   openStarPopup: (input: { systemId: string; starId: string }) => void;
   openPlanetPopup: (planetId: string) => void;
@@ -64,22 +82,30 @@ export const useUiStore = create<UiState>((set) => ({
   isInspectorOpen: false,
   popup: null,
   popupRequest: null,
+  popupAnchor: null,
+  popupPinned: false,
   popupLoading: false,
+  navigateToSystemTarget: null,
   loadingMessage: null,
 
   setSidebarOpen: (open) => set({ isSidebarOpen: open }),
   setInspectorOpen: (open) => set({ isInspectorOpen: open }),
   setPopup: (popup) => set({ popup }),
+  setPopupAnchor: (popupAnchor) => set({ popupAnchor }),
+  setPopupPinned: (popupPinned) => set({ popupPinned }),
   setPopupLoading: (popupLoading) => set({ popupLoading }),
+  setNavigateToSystemTarget: (navigateToSystemTarget) => set({ navigateToSystemTarget }),
   openSystemPopup: (systemId) =>
     set((state) => {
       const current = state.popupRequest;
+      if (state.popup?.kind === "system" && state.popup.data.system.id === systemId) return state;
       if (current?.kind === "system" && current.systemId === systemId) return state;
       return { popupRequest: { kind: "system", systemId } };
     }),
   openStarPopup: ({ systemId, starId }) =>
     set((state) => {
       const current = state.popupRequest;
+      if (state.popup?.kind === "star" && state.popup.data.id === starId) return state;
       if (
         current?.kind === "star" &&
         current.systemId === systemId &&
@@ -92,18 +118,21 @@ export const useUiStore = create<UiState>((set) => ({
   openPlanetPopup: (planetId) =>
     set((state) => {
       const current = state.popupRequest;
+      if (state.popup?.kind === "planet" && state.popup.data.planet.id === planetId) return state;
       if (current?.kind === "planet" && current.planetId === planetId) return state;
       return { popupRequest: { kind: "planet", planetId } };
     }),
   openMoonPopup: (moonId) =>
     set((state) => {
       const current = state.popupRequest;
+      if (state.popup?.kind === "moon" && state.popup.data.id === moonId) return state;
       if (current?.kind === "moon" && current.moonId === moonId) return state;
       return { popupRequest: { kind: "moon", moonId } };
     }),
   openAsteroidPopup: (asteroidId) =>
     set((state) => {
       const current = state.popupRequest;
+      if (state.popup?.kind === "asteroid" && state.popup.data.id === asteroidId) return state;
       if (current?.kind === "asteroid" && current.asteroidId === asteroidId) return state;
       return { popupRequest: { kind: "asteroid", asteroidId } };
     }),
@@ -116,6 +145,8 @@ export const useUiStore = create<UiState>((set) => ({
       isInspectorOpen: false,
       popup: null,
       popupRequest: null,
+      popupAnchor: null,
+      popupPinned: false,
       popupLoading: false,
     }),
 }));

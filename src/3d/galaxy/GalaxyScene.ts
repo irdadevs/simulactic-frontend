@@ -64,7 +64,7 @@ export class GalaxyScene implements IRenderableScene {
 
   update(_deltaSeconds: number): void {}
 
-  onPointerDown(intersections: Intersection<Object3D>[]): void {
+  onPointerDown(intersections: Intersection<Object3D>[], _pointer: { x: number; y: number }): void {
     if (intersections.length === 0) {
       this.eventBridge.emit("backgroundClicked", undefined);
       return;
@@ -82,10 +82,14 @@ export class GalaxyScene implements IRenderableScene {
         y: intersection.point.y,
         z: intersection.point.z,
       },
+      anchor: _pointer,
     });
   }
 
-  onPointerMove(intersections: Intersection<Object3D>[]): void {
+  onPointerMove(
+    intersections: Intersection<Object3D>[],
+    pointer: { x: number; y: number },
+  ): void {
     if (intersections.length === 0) {
       this.eventBridge.emit("hoverCleared", undefined);
       return;
@@ -98,7 +102,7 @@ export class GalaxyScene implements IRenderableScene {
       return;
     }
 
-    this.eventBridge.emit("systemHovered", { systemId });
+    this.eventBridge.emit("systemHovered", { systemId, anchor: pointer });
   }
 
   dispose(): void {

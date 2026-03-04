@@ -1,66 +1,49 @@
+"use client";
+
+import { ActionButton } from "../components/buttons/ActionButton";
 import { PlanetProps } from "../../types/planet.types";
 import { StarProps } from "../../types/star.types";
 import { SystemProps } from "../../types/system.types";
 import styles from "../../styles/skeleton.module.css";
-import { ActionButton } from "../components/buttons/ActionButton";
 
 type SystemPopupProps = {
   system: SystemProps;
   stars: StarProps[];
   planets: PlanetProps[];
-  onOpenStar: (starId: string) => void;
-  onOpenPlanet: (planetId: string) => void;
+  onGoToSystem: () => void;
   onClose: () => void;
 };
 
-export function SystemPopup({
-  system,
-  stars,
-  planets,
-  onOpenStar,
-  onOpenPlanet,
-  onClose,
-}: SystemPopupProps) {
+export function SystemPopup(props: SystemPopupProps) {
+  const starClasses = Array.from(new Set(props.stars.map((star) => star.starClass))).join(", ");
+  const starTypes = Array.from(new Set(props.stars.map((star) => star.starType))).join(", ");
+
   return (
-    <section className={styles.popupCard}>
+    <section className={`${styles.popupCard} ${styles.popupCardRich}`}>
       <header className={styles.popupHeader}>
         <div>
-          <h3 className={styles.panelTitle}>{system.name}</h3>
-          <p className={styles.meta}>System</p>
+          <p className={styles.popupEyebrow}>System</p>
+          <h3 className={styles.popupTitle}>{props.system.name}</h3>
         </div>
-        <ActionButton variant="secondary" onClick={onClose}>
+        <ActionButton variant="secondary" onClick={props.onClose}>
           Close
         </ActionButton>
       </header>
 
       <div className={styles.popupBody}>
-        <p className={styles.meta}>Stars</p>
-        <div className={styles.popupList}>
-          {stars.map((star) => (
-            <button
-              key={star.id}
-              className={styles.popupItem}
-              onClick={() => onOpenStar(star.id)}
-              type="button"
-            >
-              {star.name}
-            </button>
-          ))}
-        </div>
-
-        <p className={styles.meta}>Planets</p>
-        <div className={styles.popupList}>
-          {planets.map((planet) => (
-            <button
-              key={planet.id}
-              className={styles.popupItem}
-              onClick={() => onOpenPlanet(planet.id)}
-              type="button"
-            >
-              {planet.name}
-            </button>
-          ))}
-        </div>
+        <p className={styles.meta}>
+          Stars: <strong>{props.stars.length}</strong>
+        </p>
+        <p className={styles.meta}>
+          Classes: <strong>{starClasses || "Unknown"}</strong>
+        </p>
+        <p className={styles.meta}>
+          Types: <strong>{starTypes || "Unknown"}</strong>
+        </p>
+        <p className={styles.meta}>
+          Planets: <strong>{props.planets.length}</strong>
+        </p>
+        <ActionButton onClick={props.onGoToSystem}>Go to</ActionButton>
       </div>
     </section>
   );

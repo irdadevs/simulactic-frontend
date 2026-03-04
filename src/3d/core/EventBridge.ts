@@ -1,14 +1,17 @@
+type ScreenAnchor = { x: number; y: number };
+
 type EventMap = {
-  starClicked: { starId: string; systemId: string };
-  systemClicked: { systemId: string; focusPoint: { x: number; y: number; z: number } };
-  systemHovered: { systemId: string };
-  starHovered: { starId: string; systemId: string };
-  planetHovered: { planetId: string };
-  moonHovered: { moonId: string };
-  asteroidHovered: { asteroidId: string };
+  starClicked: { starId: string; systemId: string; anchor: ScreenAnchor };
+  systemClicked: { systemId: string; focusPoint: { x: number; y: number; z: number }; anchor: ScreenAnchor };
+  systemHovered: { systemId: string; anchor: ScreenAnchor };
+  starHovered: { starId: string; systemId: string; anchor: ScreenAnchor };
+  planetHovered: { planetId: string; systemId: string; anchor: ScreenAnchor };
+  moonHovered: { moonId: string; systemId: string; anchor: ScreenAnchor };
+  asteroidHovered: { asteroidId: string; systemId: string; anchor: ScreenAnchor };
   hoverCleared: undefined;
   requestSystemView: { systemId: string };
   requestGalaxyView: { reason: "user_back_to_galaxy" | "zoom_threshold" };
+  requestSystemNavigation: { target: { kind: "star" | "planet" | "moon" | "asteroid"; id: string } };
   backgroundClicked: undefined;
 };
 

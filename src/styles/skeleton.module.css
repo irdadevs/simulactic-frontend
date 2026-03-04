@@ -37,6 +37,21 @@
   padding: 20px;
 }
 
+.landing {
+  min-height: calc(100vh - 120px);
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  max-width: 700px;
+}
+
+.landingCtas {
+  margin-top: 8px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .authPage {
   display: grid;
   min-height: calc(100vh - 120px);
@@ -211,17 +226,22 @@
 
 .popupLayer {
   position: absolute;
-  left: 14px;
-  top: 14px;
+  inset: 0;
   z-index: 5;
-  max-width: 360px;
+  pointer-events: none;
+}
+
+.popupPositioned {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 14px));
+  min-width: 320px;
+  max-width: min(460px, calc(100% - 24px));
   pointer-events: auto;
 }
 
 .popupLoader {
   position: absolute;
-  right: 10px;
-  top: 10px;
+  transform: translate(-50%, calc(-100% - 12px));
   width: 28px;
   height: 28px;
   border: 1px solid var(--carbon-black-700);
@@ -250,11 +270,29 @@
 }
 
 .popupCard {
-  border: 1px solid var(--carbon-black-700);
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 40%, var(--carbon-black-700));
   border-radius: 12px;
-  background: color-mix(in srgb, var(--carbon-black-900) 92%, transparent);
-  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--carbon-black-900) 89%, #071c23);
+  backdrop-filter: blur(10px);
   padding: 12px;
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.48),
+    0 0 0 1px color-mix(in srgb, var(--main-dark-violet) 42%, transparent) inset;
+}
+
+.popupCardRich::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--main-turquoise-surf), #91d7e8, transparent);
+  opacity: 0.9;
+}
+
+.popupCardRich {
+  position: relative;
 }
 
 .popupHeader {
@@ -268,6 +306,8 @@
   display: grid;
   gap: 8px;
   margin-top: 10px;
+  max-height: 320px;
+  overflow: auto;
 }
 
 .popupList {
@@ -283,6 +323,61 @@
   text-align: left;
   padding: 8px 10px;
   cursor: pointer;
+}
+
+.popupEyebrow {
+  color: var(--main-turquoise-surf);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 11px;
+  margin: 0 0 2px;
+}
+
+.popupTitle {
+  color: var(--main-ivory);
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.popupRow {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--carbon-black-900) 92%, #101922);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.popupItemTitle {
+  color: var(--main-ivory);
+  font-size: 14px;
+  margin: 0 0 2px;
+}
+
+.systemNavigator {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  width: min(360px, calc(100% - 28px));
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 38%, var(--carbon-black-700));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--carbon-black-900) 90%, #0a1a21);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px color-mix(in srgb, var(--main-dark-violet) 40%, transparent) inset;
+  padding: 10px;
+  z-index: 6;
+  pointer-events: auto;
+}
+
+.systemNavigatorList {
+  margin-top: 8px;
+  max-height: 340px;
+  overflow: auto;
+  display: grid;
+  gap: 6px;
 }
 
 .adminLayout {
