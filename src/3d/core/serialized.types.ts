@@ -13,6 +13,7 @@ export type SerializedGalaxyNode = {
 
 export type SerializedGalaxyViewData = {
   systems: SerializedGalaxyNode[];
+  focusSystemId?: string | null;
 };
 
 export type SerializedPlanet = {

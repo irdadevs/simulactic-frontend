@@ -19,6 +19,11 @@ const LazySystemNavigatorPanel = dynamic(
   { ssr: false },
 );
 
+const LazySystemTimeControlsPanel = dynamic(
+  () => import("../../overlays/SystemTimeControlsPanel").then((mod) => mod.SystemTimeControlsPanel),
+  { ssr: false },
+);
+
 type MockCanvasPanelProps = {
   selectedGalaxy: GalaxyProps | null;
   isLoading: boolean;
@@ -57,6 +62,7 @@ export function MockCanvasPanel({
             systemData={systemData}
             onWheelZoom={onWheelZoom}
           />
+          <LazySystemTimeControlsPanel />
           <LazySystemNavigatorPanel />
           <LazyPopupLayer />
         </div>

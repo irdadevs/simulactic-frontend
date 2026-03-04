@@ -35,6 +35,7 @@ type RenderState = {
   viewMode: ViewMode;
   activeGalaxyId: string | null;
   activeSystemId: string | null;
+  lastSystemId: string | null;
   galaxyNodes: GalaxyRenderNode[];
   systemDetail: SystemRenderDetail | null;
   zoom: number;
@@ -43,6 +44,7 @@ type RenderState = {
   setViewMode: (mode: ViewMode) => void;
   setActiveGalaxy: (galaxyId: string | null) => void;
   setActiveSystem: (systemId: string | null) => void;
+  clearLastSystemId: () => void;
   setGalaxyNodes: (nodes: GalaxyRenderNode[]) => void;
   setSystemDetail: (detail: SystemRenderDetail | null) => void;
   setZoom: (zoom: number) => void;
@@ -66,6 +68,7 @@ const initialState = {
   viewMode: "galaxy" as ViewMode,
   activeGalaxyId: null,
   activeSystemId: null,
+  lastSystemId: null,
   galaxyNodes: [],
   systemDetail: null,
   zoom: 1,
@@ -83,6 +86,7 @@ export const useRenderStore = create<RenderState>((set, get) => ({
     }),
   setActiveGalaxy: (galaxyId) => set({ activeGalaxyId: galaxyId }),
   setActiveSystem: (systemId) => set({ activeSystemId: systemId }),
+  clearLastSystemId: () => set({ lastSystemId: null }),
   setGalaxyNodes: (nodes) =>
     set((state) => ({
       galaxyNodes: nodes,
@@ -97,6 +101,7 @@ export const useRenderStore = create<RenderState>((set, get) => ({
       viewMode: "galaxy",
       activeGalaxyId: galaxyId,
       activeSystemId: null,
+      lastSystemId: null,
       galaxyNodes: nodes,
       systemDetail: null,
       transitionReason: null,
@@ -151,6 +156,7 @@ export const useRenderStore = create<RenderState>((set, get) => ({
     set((prev) => ({
       machineState: "galaxy_loading",
       transitionReason: reason,
+      lastSystemId: prev.activeSystemId,
       transitionToken: prev.transitionToken + 1,
     }));
     return true;

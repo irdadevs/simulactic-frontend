@@ -380,6 +380,58 @@
   gap: 6px;
 }
 
+.systemNavigatorActions {
+  display: flex;
+  gap: 6px;
+}
+
+.systemInfoPanel {
+  position: absolute;
+  left: min(388px, calc(100% - 460px));
+  top: 14px;
+  width: min(420px, calc(100% - 404px));
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 38%, var(--carbon-black-700));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--carbon-black-900) 90%, #0a1a21);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px color-mix(in srgb, var(--main-dark-violet) 40%, transparent) inset;
+  padding: 10px;
+  z-index: 6;
+  pointer-events: auto;
+}
+
+.systemTimePanel {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  z-index: 6;
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 34%, var(--carbon-black-700));
+  background: color-mix(in srgb, var(--carbon-black-900) 90%, #0b1e24);
+  pointer-events: auto;
+}
+
+.timeChip {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--carbon-black-100);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.timeChipActive {
+  border-color: color-mix(in srgb, var(--main-turquoise-surf) 60%, var(--carbon-black-700));
+  background: color-mix(in srgb, var(--main-turquoise-surf) 24%, transparent);
+  color: var(--main-ivory);
+}
+
 .adminLayout {
   display: grid;
   gap: 14px;
@@ -457,5 +509,12 @@
   .renderStage,
   .canvasWrap {
     min-height: 520px;
+  }
+
+  .systemInfoPanel {
+    left: 14px;
+    top: auto;
+    bottom: 14px;
+    width: min(420px, calc(100% - 28px));
   }
 }

@@ -20,6 +20,8 @@ const formatValue = (value: unknown): string => {
   return String(value);
 };
 
+const hiddenInfoKeys = new Set(["id", "systemId", "planetId", "galaxyId", "orbitalStarter"]);
+
 export function PopupLayer() {
   const { popup } = usePopupController();
   const requestSystemTransition = useRenderStore((state) => state.requestSystemTransition);
@@ -88,7 +90,9 @@ export function PopupLayer() {
               </div>
             </header>
             <div className={styles.popupBody}>
-              {Object.entries(popup.data).map(([key, value]) => (
+              {Object.entries(popup.data)
+                .filter(([key]) => !hiddenInfoKeys.has(key))
+                .map(([key, value]) => (
                 <p key={key} className={styles.meta}>
                   {formatKey(key)}: <strong>{formatValue(value)}</strong>
                 </p>
@@ -108,7 +112,9 @@ export function PopupLayer() {
               </div>
             </header>
             <div className={styles.popupBody}>
-              {Object.entries(popup.data).map(([key, value]) => (
+              {Object.entries(popup.data)
+                .filter(([key]) => !hiddenInfoKeys.has(key))
+                .map(([key, value]) => (
                 <p key={key} className={styles.meta}>
                   {formatKey(key)}: <strong>{formatValue(value)}</strong>
                 </p>

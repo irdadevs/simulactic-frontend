@@ -19,6 +19,8 @@ const formatValue = (value: unknown): string => {
   return String(value);
 };
 
+const hiddenInfoKeys = new Set(["id", "systemId", "planetId", "galaxyId", "orbitalStarter"]);
+
 export function MoonPopup({ moon, onClose }: MoonPopupProps) {
   return (
     <section className={`${styles.popupCard} ${styles.popupCardRich}`}>
@@ -34,7 +36,9 @@ export function MoonPopup({ moon, onClose }: MoonPopupProps) {
       </header>
 
       <div className={styles.popupBody}>
-        {Object.entries(moon).map(([key, value]) => (
+        {Object.entries(moon)
+          .filter(([key]) => !hiddenInfoKeys.has(key))
+          .map(([key, value]) => (
           <p key={key} className={styles.meta}>
             {formatKey(key)}: <strong>{formatValue(value)}</strong>
           </p>

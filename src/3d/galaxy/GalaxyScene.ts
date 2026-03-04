@@ -20,6 +20,7 @@ export class GalaxyScene implements IRenderableScene {
   readonly kind = "galaxy" as const;
   readonly group = new Group();
   private readonly eventBridge: EventBridge;
+  private readonly systemPositions = new Map<string, { x: number; y: number; z: number }>();
   private mounted = false;
 
   constructor(eventBridge: EventBridge) {
@@ -39,6 +40,13 @@ export class GalaxyScene implements IRenderableScene {
     this.dispose();
     this.mounted = true;
     const systems = this.normalizeSystems(input.systems);
+    systems.forEach((system) => {
+      this.systemPositions.set(system.id, {
+        x: system.x,
+        y: system.y,
+        z: system.z,
+      });
+    });
 
     if (systems.length > INSTANCING_THRESHOLD) {
       const stars = StarInstancedMesh.build(systems);
@@ -121,6 +129,11 @@ export class GalaxyScene implements IRenderableScene {
       }
     });
     this.group.clear();
+    this.systemPositions.clear();
+  }
+
+  getSystemPoint(systemId: string): { x: number; y: number; z: number } | null {
+    return this.systemPositions.get(systemId) ?? null;
   }
 
   private findSystemId(

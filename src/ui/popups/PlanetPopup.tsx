@@ -21,6 +21,8 @@ const formatValue = (value: unknown): string => {
   return String(value);
 };
 
+const hiddenInfoKeys = new Set(["id", "systemId", "planetId", "galaxyId", "orbitalStarter"]);
+
 export function PlanetPopup({ planet, moons, onClose }: PlanetPopupProps) {
   const detail = {
     ...planet,
@@ -41,7 +43,9 @@ export function PlanetPopup({ planet, moons, onClose }: PlanetPopupProps) {
       </header>
 
       <div className={styles.popupBody}>
-        {Object.entries(detail).map(([key, value]) => (
+        {Object.entries(detail)
+          .filter(([key]) => !hiddenInfoKeys.has(key))
+          .map(([key, value]) => (
           <p key={key} className={styles.meta}>
             {formatKey(key)}: <strong>{formatValue(value)}</strong>
           </p>

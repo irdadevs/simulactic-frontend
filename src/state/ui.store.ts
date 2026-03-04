@@ -48,6 +48,11 @@ export type SystemNavigationTarget = {
   id: string;
 };
 
+export type SystemTimeConfig = {
+  isPlaying: boolean;
+  speed: 0.5 | 1 | 2;
+};
+
 type UiState = {
   isSidebarOpen: boolean;
   isInspectorOpen: boolean;
@@ -57,6 +62,8 @@ type UiState = {
   popupPinned: boolean;
   popupLoading: boolean;
   navigateToSystemTarget: ((target: SystemNavigationTarget) => void) | null;
+  applySystemTimeConfig: ((config: SystemTimeConfig) => void) | null;
+  systemTimeConfig: SystemTimeConfig;
   loadingMessage: string | null;
   setSidebarOpen: (open: boolean) => void;
   setInspectorOpen: (open: boolean) => void;
@@ -67,6 +74,11 @@ type UiState = {
   setNavigateToSystemTarget: (
     navigate: ((target: SystemNavigationTarget) => void) | null,
   ) => void;
+  setApplySystemTimeConfig: (
+    apply: ((config: SystemTimeConfig) => void) | null,
+  ) => void;
+  setSystemTimePlaying: (isPlaying: boolean) => void;
+  setSystemTimeSpeed: (speed: 0.5 | 1 | 2) => void;
   openSystemPopup: (systemId: string) => void;
   openStarPopup: (input: { systemId: string; starId: string }) => void;
   openPlanetPopup: (planetId: string) => void;
@@ -86,6 +98,11 @@ export const useUiStore = create<UiState>((set) => ({
   popupPinned: false,
   popupLoading: false,
   navigateToSystemTarget: null,
+  applySystemTimeConfig: null,
+  systemTimeConfig: {
+    isPlaying: true,
+    speed: 1,
+  },
   loadingMessage: null,
 
   setSidebarOpen: (open) => set({ isSidebarOpen: open }),
@@ -95,6 +112,21 @@ export const useUiStore = create<UiState>((set) => ({
   setPopupPinned: (popupPinned) => set({ popupPinned }),
   setPopupLoading: (popupLoading) => set({ popupLoading }),
   setNavigateToSystemTarget: (navigateToSystemTarget) => set({ navigateToSystemTarget }),
+  setApplySystemTimeConfig: (applySystemTimeConfig) => set({ applySystemTimeConfig }),
+  setSystemTimePlaying: (isPlaying) =>
+    set((state) => ({
+      systemTimeConfig: {
+        ...state.systemTimeConfig,
+        isPlaying,
+      },
+    })),
+  setSystemTimeSpeed: (speed) =>
+    set((state) => ({
+      systemTimeConfig: {
+        ...state.systemTimeConfig,
+        speed,
+      },
+    })),
   openSystemPopup: (systemId) =>
     set((state) => {
       const current = state.popupRequest;
@@ -148,5 +180,9 @@ export const useUiStore = create<UiState>((set) => ({
       popupAnchor: null,
       popupPinned: false,
       popupLoading: false,
+      systemTimeConfig: {
+        isPlaying: true,
+        speed: 1,
+      },
     }),
 }));
