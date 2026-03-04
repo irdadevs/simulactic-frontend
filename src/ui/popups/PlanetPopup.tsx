@@ -6,44 +6,50 @@ import { ActionButton } from "../components/buttons/ActionButton";
 type PlanetPopupProps = {
   planet: PlanetProps;
   moons: MoonProps[];
-  onOpenMoon: (moonId: string) => void;
-  onBack: () => void;
   onClose: () => void;
 };
 
-export function PlanetPopup({ planet, moons, onOpenMoon, onBack, onClose }: PlanetPopupProps) {
+const formatKey = (key: string): string =>
+  key
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/^./, (letter) => letter.toUpperCase());
+
+const formatValue = (value: unknown): string => {
+  if (value == null) return "null";
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+};
+
+const hiddenInfoKeys = new Set(["id", "systemId", "planetId", "galaxyId", "orbitalStarter"]);
+
+export function PlanetPopup({ planet, moons, onClose }: PlanetPopupProps) {
+  const detail = {
+    ...planet,
+    moonCount: moons.length,
+  };
+
   return (
-    <section className={styles.popupCard}>
+    <section className={`${styles.popupCard} ${styles.popupCardRich}`}>
       <header className={styles.popupHeader}>
         <div>
-          <h3 className={styles.panelTitle}>{planet.name}</h3>
+          <p className={styles.popupEyebrow}>Planet</p>
+          <h3 className={styles.popupTitle}>{planet.name}</h3>
           <p className={styles.meta}>Planet</p>
         </div>
-        <div className={styles.modalActions}>
-          <ActionButton variant="secondary" onClick={onBack}>
-            Back
-          </ActionButton>
-          <ActionButton variant="secondary" onClick={onClose}>
-            Close
-          </ActionButton>
-        </div>
+        <ActionButton variant="secondary" onClick={onClose}>
+          Close
+        </ActionButton>
       </header>
 
       <div className={styles.popupBody}>
-        <p className={styles.meta}>Moons</p>
-        <div className={styles.popupList}>
-          {moons.map((moon) => (
-            <button
-              key={moon.id}
-              className={styles.popupItem}
-              onClick={() => onOpenMoon(moon.id)}
-              type="button"
-            >
-              {moon.name}
-            </button>
-          ))}
-          {moons.length === 0 && <p className={styles.meta}>No moons in this planet.</p>}
-        </div>
+        {Object.entries(detail)
+          .filter(([key]) => !hiddenInfoKeys.has(key))
+          .map(([key, value]) => (
+          <p key={key} className={styles.meta}>
+            {formatKey(key)}: <strong>{formatValue(value)}</strong>
+          </p>
+        ))}
       </div>
     </section>
   );

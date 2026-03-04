@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useMetrics } from "../../application/hooks/useMetrics";
 import styles from "../../styles/skeleton.module.css";
@@ -21,39 +21,45 @@ const RecentFailuresTable = dynamic(
 );
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const { user, isAuthenticated, loadMe } = useAuth();
   const { dashboard, loadDashboard, isLoading, error } = useMetrics();
-  const hasBootstrappedRef = useRef(false);
-
-  useEffect(() => {
-    if (hasBootstrappedRef.current) return;
-    hasBootstrappedRef.current = true;
-
-    const run = async () => {
-      if (!isAuthenticated) {
-        try {
-          await loadMe();
-        } catch {
-          return;
-        }
-      }
-      if (user?.role === "Admin") {
-        await loadDashboard({ hours: 24, topLimit: 10 });
-      }
-    };
-    void run();
-  }, [isAuthenticated, loadDashboard, loadMe, user?.role]);
-
+  const hasLoadedUserRef = useRef(false);
+  const hasLoadedDashboardRef = useRef(false);
   const isAdmin = useMemo(() => user?.role === "Admin", [user?.role]);
 
+  useEffect(() => {
+    if (user) return;
+    if (hasLoadedUserRef.current) return;
+    hasLoadedUserRef.current = true;
+
+    const bootstrapUser = async () => {
+      try {
+        await loadMe();
+      } catch {
+        router.replace("/login");
+      }
+    };
+    void bootstrapUser();
+  }, [loadMe, router, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (!isAdmin) {
+      router.replace("/dashboard");
+      return;
+    }
+    if (hasLoadedDashboardRef.current) return;
+    hasLoadedDashboardRef.current = true;
+    void loadDashboard({ hours: 24, topLimit: 10 });
+  }, [isAdmin, loadDashboard, router, user]);
+
+  if (!user) {
+    return <p className={styles.meta}>Checking permissions...</p>;
+  }
+
   if (!isAdmin) {
-    return (
-      <section className={styles.authCard}>
-        <h1 className={styles.title}>Admin Access</h1>
-        <p className={styles.subtitle}>This area is restricted to administrators.</p>
-        <Link href="/dashboard">Back to dashboard</Link>
-      </section>
-    );
+    return null;
   }
 
   if (isLoading && !dashboard) {

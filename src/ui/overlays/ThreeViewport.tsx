@@ -4,6 +4,8 @@ import { memo, useEffect, useRef, useState } from "react";
 import { bind3dEvents } from "../../application/services/bind3dEvents";
 import type { SceneManager } from "../../3d/core/SceneManager";
 import { SerializedGalaxyViewData, SerializedSystemViewData } from "../../3d/core/serialized.types";
+import { useRenderStore } from "../../state/render.store";
+import { useUiStore } from "../../state/ui.store";
 import styles from "../../styles/skeleton.module.css";
 
 type ThreeViewportProps = {
@@ -23,6 +25,10 @@ function ThreeViewportComponent({
   const managerRef = useRef<SceneManager | null>(null);
   const cleanupEventsRef = useRef<(() => void) | null>(null);
   const onWheelZoomRef = useRef(onWheelZoom);
+  const setNavigateToSystemTarget = useUiStore((state) => state.setNavigateToSystemTarget);
+  const setApplySystemTimeConfig = useUiStore((state) => state.setApplySystemTimeConfig);
+  const systemTimeConfig = useUiStore((state) => state.systemTimeConfig);
+  const clearLastSystemId = useRenderStore((state) => state.clearLastSystemId);
   const [managerReadyToken, setManagerReadyToken] = useState(0);
 
   useEffect(() => {
@@ -48,6 +54,13 @@ function ThreeViewportComponent({
       const eventBridge = new EventBridge();
       const manager = new SceneManager({ canvas, eventBridge });
       managerRef.current = manager;
+      setNavigateToSystemTarget((target) => {
+        manager.navigateToSystemTarget(target);
+      });
+      setApplySystemTimeConfig((config) => {
+        manager.setSystemTimeConfig(config);
+      });
+      manager.setSystemTimeConfig(systemTimeConfig);
       cleanupEventsRef.current = bind3dEvents(eventBridge);
       setManagerReadyToken((prev) => prev + 1);
 
@@ -72,10 +85,16 @@ function ThreeViewportComponent({
       observer?.disconnect();
       cleanupEventsRef.current?.();
       cleanupEventsRef.current = null;
+      setNavigateToSystemTarget(null);
+      setApplySystemTimeConfig(null);
       managerRef.current?.dispose();
       managerRef.current = null;
     };
-  }, []);
+  }, [setApplySystemTimeConfig, setNavigateToSystemTarget]);
+
+  useEffect(() => {
+    managerRef.current?.setSystemTimeConfig(systemTimeConfig);
+  }, [systemTimeConfig]);
 
   useEffect(() => {
     if (machineState === "system_loading" || machineState === "galaxy_loading") {
@@ -105,6 +124,13 @@ function ThreeViewportComponent({
           })),
         });
         managerRef.current.showGalaxyScene(scene);
+        if (galaxyData.focusSystemId) {
+          const focusPoint = scene.getSystemPoint(galaxyData.focusSystemId);
+          if (focusPoint) {
+            managerRef.current.animateGalaxyReturnFocus(focusPoint);
+          }
+          clearLastSystemId();
+        }
         return;
       }
 
@@ -123,7 +149,7 @@ function ThreeViewportComponent({
     return () => {
       isCancelled = true;
     };
-  }, [galaxyData, machineState, systemData, managerReadyToken]);
+  }, [clearLastSystemId, galaxyData, machineState, systemData, managerReadyToken]);
 
   return (
     <div className={styles.canvasWrap}>

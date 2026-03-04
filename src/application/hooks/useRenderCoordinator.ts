@@ -28,6 +28,7 @@ export const useRenderCoordinator = () => {
   const machineState = useRenderStore((state) => state.machineState);
   const viewMode = useRenderStore((state) => state.viewMode);
   const activeSystemId = useRenderStore((state) => state.activeSystemId);
+  const lastSystemId = useRenderStore((state) => state.lastSystemId);
   const galaxyNodes = useRenderStore((state) => state.galaxyNodes);
   const systemDetail = useRenderStore((state) => state.systemDetail);
   const transitionToken = useRenderStore((state) => state.transitionToken);
@@ -95,8 +96,9 @@ export const useRenderCoordinator = () => {
         color: node.mainStar?.color,
         size: Math.max(1.2, Math.min(8, (node.mainStar?.relativeRadius ?? 1.2) * 3)),
       })),
+      focusSystemId: lastSystemId,
     }),
-    [galaxyNodes],
+    [galaxyNodes, lastSystemId],
   );
 
   const serializedSystemData = useMemo<SerializedSystemViewData | null>(() => {

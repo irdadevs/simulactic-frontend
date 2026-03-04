@@ -16,8 +16,18 @@ export interface IRenderableScene {
   readonly kind: "galaxy" | "system";
   readonly group: Group;
   update(deltaSeconds: number): void;
-  onPointerDown?(intersections: Intersection<Object3D>[]): void;
-  onPointerMove?(intersections: Intersection<Object3D>[]): void;
+  onPointerDown?(
+    intersections: Intersection<Object3D>[],
+    pointer: { x: number; y: number },
+  ): void;
+  onPointerMove?(
+    intersections: Intersection<Object3D>[],
+    pointer: { x: number; y: number },
+  ): void;
+  getNavigationPoint?(
+    target: { kind: "star" | "planet" | "moon" | "asteroid"; id: string },
+  ): { x: number; y: number; z: number } | null;
+  getSystemPoint?(systemId: string): { x: number; y: number; z: number } | null;
   dispose(): void;
 }
 
@@ -41,8 +51,23 @@ export class SceneManager {
   private focusedPoint: Vector3 = new Vector3(0, 0, 0);
   private hasRequestedSystemView = false;
   private unsubscribeSystemClick: (() => void) | null = null;
+  private unsubscribeSystemNavigation: (() => void) | null = null;
   private pointerHandler: ((event: PointerEvent) => void) | null = null;
   private pointerMoveHandler: ((event: PointerEvent) => void) | null = null;
+  private pointerLeaveHandler: (() => void) | null = null;
+  private pointerInsideCanvas = false;
+  private pointerCanvasX = 0;
+  private pointerCanvasY = 0;
+  private navigationStartTime = 0;
+  private readonly navigationDurationMs = 650;
+  private readonly edgePanMarginPx = 48;
+  private readonly edgePanBaseSpeed = 80;
+  private simulationPlaying = true;
+  private simulationSpeed: 0.5 | 1 | 2 = 1;
+  private navigationFromCamera: Vector3 | null = null;
+  private navigationToCamera: Vector3 | null = null;
+  private navigationFromTarget: Vector3 | null = null;
+  private navigationToTarget: Vector3 | null = null;
   private disposed = false;
 
   constructor(input: ManagerInput) {
@@ -77,6 +102,9 @@ export class SceneManager {
       this.hasRequestedSystemView = false;
       this.controls.update();
     });
+    this.unsubscribeSystemNavigation = this.eventBridge.on("requestSystemNavigation", ({ target }) => {
+      this.navigateToSystemTarget(target);
+    });
     this.renderer.start((delta) => this.update(delta));
   }
 
@@ -95,6 +123,51 @@ export class SceneManager {
       this.controls.target.set(0, 0, 0);
     }
     this.controls.update();
+  }
+
+  navigateToSystemTarget(target: { kind: "star" | "planet" | "moon" | "asteroid"; id: string }): void {
+    if (this.activeScene?.kind !== "system") return;
+    if (!this.activeScene.getNavigationPoint) return;
+
+    const point = this.activeScene.getNavigationPoint(target);
+    if (!point) return;
+
+    const destinationTarget = new Vector3(point.x, point.y, point.z);
+    const currentTarget = this.controls.target.clone();
+    const currentCamera = this.cameraController.camera.position.clone();
+    const offset = currentCamera.clone().sub(currentTarget);
+
+    this.navigationFromTarget = currentTarget;
+    this.navigationToTarget = destinationTarget;
+    this.navigationFromCamera = currentCamera;
+    this.navigationToCamera = destinationTarget.clone().add(offset);
+    this.navigationStartTime = performance.now();
+  }
+
+  animateGalaxyReturnFocus(point: { x: number; y: number; z: number }): void {
+    const destinationTarget = new Vector3(point.x, point.y, point.z);
+    const currentTarget = this.controls.target.clone();
+    const currentCamera = this.cameraController.camera.position.clone();
+    const direction = currentCamera.clone().sub(currentTarget);
+    if (direction.lengthSq() < 0.001) {
+      direction.set(0, 0.2, 1);
+    }
+    direction.normalize();
+
+    const distance = Math.max(currentCamera.distanceTo(currentTarget) * 1.8, 240);
+    const destinationCamera = destinationTarget.clone().addScaledVector(direction, distance);
+    destinationCamera.y = Math.max(destinationCamera.y, 90);
+
+    this.navigationFromTarget = currentTarget;
+    this.navigationToTarget = destinationTarget;
+    this.navigationFromCamera = currentCamera;
+    this.navigationToCamera = destinationCamera;
+    this.navigationStartTime = performance.now();
+  }
+
+  setSystemTimeConfig(config: { isPlaying: boolean; speed: 0.5 | 1 | 2 }): void {
+    this.simulationPlaying = config.isPlaying;
+    this.simulationSpeed = config.speed;
   }
 
   showGalaxyScene(nextScene: IRenderableScene): void {
@@ -141,7 +214,9 @@ export class SceneManager {
 
   private update(deltaSeconds: number): void {
     if (this.disposed) return;
+    this.applyEdgePan(deltaSeconds);
     this.controls.update();
+    this.stepNavigation();
 
     if (this.activeScene?.kind === "galaxy" && this.focusedSystemId && !this.hasRequestedSystemView) {
       const distance = this.cameraController.camera.position.distanceTo(this.focusedPoint);
@@ -151,41 +226,134 @@ export class SceneManager {
       }
     }
 
-    this.activeScene?.update(deltaSeconds);
+    const sceneDelta = this.simulationPlaying ? deltaSeconds * this.simulationSpeed : 0;
+    this.activeScene?.update(sceneDelta);
     this.renderer.render(this.scene, this.cameraController.camera);
   }
 
   private bindPointer(canvas: HTMLCanvasElement): void {
-    const getIntersections = (event: PointerEvent): Intersection<Object3D>[] => {
+    const getRaycastResult = (
+      event: PointerEvent,
+    ): { intersections: Intersection<Object3D>[]; pointer: { x: number; y: number } } => {
       const bounds = canvas.getBoundingClientRect();
-      this.pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
-      this.pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+      const x = event.clientX - bounds.left;
+      const y = event.clientY - bounds.top;
+      this.pointer.x = (x / bounds.width) * 2 - 1;
+      this.pointer.y = -(y / bounds.height) * 2 + 1;
       this.raycaster.setFromCamera(this.pointer, this.cameraController.camera);
-      return this.raycaster.intersectObjects(this.activeScene?.group.children ?? [], true);
+      return {
+        intersections: this.raycaster.intersectObjects(this.activeScene?.group.children ?? [], true),
+        pointer: { x, y },
+      };
     };
 
     this.pointerHandler = (event: PointerEvent) => {
       if (this.disposed) return;
       if (!this.activeScene || !this.activeScene.onPointerDown) return;
-      const intersections = getIntersections(event);
-      this.activeScene.onPointerDown(intersections);
+      const raycast = getRaycastResult(event);
+      this.activeScene.onPointerDown(raycast.intersections, raycast.pointer);
     };
 
     this.pointerMoveHandler = (event: PointerEvent) => {
       if (this.disposed) return;
+      const bounds = canvas.getBoundingClientRect();
+      this.pointerInsideCanvas = true;
+      this.pointerCanvasX = event.clientX - bounds.left;
+      this.pointerCanvasY = event.clientY - bounds.top;
       if (!this.activeScene || !this.activeScene.onPointerMove) return;
-      const intersections = getIntersections(event);
-      this.activeScene.onPointerMove(intersections);
+      const raycast = getRaycastResult(event);
+      this.activeScene.onPointerMove(raycast.intersections, raycast.pointer);
+    };
+
+    this.pointerLeaveHandler = () => {
+      this.pointerInsideCanvas = false;
     };
 
     canvas.addEventListener("pointerdown", this.pointerHandler);
     canvas.addEventListener("pointermove", this.pointerMoveHandler);
+    canvas.addEventListener("pointerleave", this.pointerLeaveHandler);
   }
 
   private getAspect(canvas: HTMLCanvasElement): number {
     const width = Math.max(canvas.clientWidth, 1);
     const height = Math.max(canvas.clientHeight, 1);
     return width / height;
+  }
+
+  private stepNavigation(): void {
+    if (
+      !this.navigationFromCamera ||
+      !this.navigationToCamera ||
+      !this.navigationFromTarget ||
+      !this.navigationToTarget
+    ) {
+      return;
+    }
+
+    const elapsed = performance.now() - this.navigationStartTime;
+    const t = Math.min(1, elapsed / this.navigationDurationMs);
+    const eased = 1 - Math.pow(1 - t, 3);
+
+    this.cameraController.camera.position.lerpVectors(
+      this.navigationFromCamera,
+      this.navigationToCamera,
+      eased,
+    );
+    this.controls.target.lerpVectors(this.navigationFromTarget, this.navigationToTarget, eased);
+
+    if (t >= 1) {
+      this.navigationFromCamera = null;
+      this.navigationToCamera = null;
+      this.navigationFromTarget = null;
+      this.navigationToTarget = null;
+    }
+  }
+
+  private applyEdgePan(deltaSeconds: number): void {
+    if (!this.pointerInsideCanvas) return;
+    if (this.navigationFromCamera || this.navigationToCamera) return;
+
+    const width = Math.max(this.canvas.clientWidth, 1);
+    const height = Math.max(this.canvas.clientHeight, 1);
+
+    let horizontal = 0;
+    if (this.pointerCanvasX <= this.edgePanMarginPx) {
+      horizontal = -(1 - this.pointerCanvasX / this.edgePanMarginPx);
+    } else if (this.pointerCanvasX >= width - this.edgePanMarginPx) {
+      horizontal = (this.pointerCanvasX - (width - this.edgePanMarginPx)) / this.edgePanMarginPx;
+    }
+
+    let vertical = 0;
+    if (this.pointerCanvasY <= this.edgePanMarginPx) {
+      vertical = 1 - this.pointerCanvasY / this.edgePanMarginPx;
+    } else if (this.pointerCanvasY >= height - this.edgePanMarginPx) {
+      vertical = -((this.pointerCanvasY - (height - this.edgePanMarginPx)) / this.edgePanMarginPx);
+    }
+
+    if (horizontal === 0 && vertical === 0) return;
+
+    const camera = this.cameraController.camera;
+    const forward = this.controls.target.clone().sub(camera.position);
+    forward.y = 0;
+    if (forward.lengthSq() < 0.0001) {
+      forward.set(0, 0, -1);
+    } else {
+      forward.normalize();
+    }
+
+    const right = new Vector3().crossVectors(forward, new Vector3(0, 1, 0)).normalize();
+    const move = new Vector3();
+    move.addScaledVector(right, horizontal);
+    move.addScaledVector(forward, vertical);
+    if (move.lengthSq() < 0.0001) return;
+    move.normalize();
+
+    const distanceScale = Math.max(18, camera.position.distanceTo(this.controls.target) * 0.26);
+    const speed = this.edgePanBaseSpeed * distanceScale;
+    move.multiplyScalar(speed * deltaSeconds * 0.01);
+
+    camera.position.add(move);
+    this.controls.target.add(move);
   }
 
   dispose(): void {
@@ -199,8 +367,14 @@ export class SceneManager {
       this.canvas.removeEventListener("pointermove", this.pointerMoveHandler);
       this.pointerMoveHandler = null;
     }
+    if (this.pointerLeaveHandler) {
+      this.canvas.removeEventListener("pointerleave", this.pointerLeaveHandler);
+      this.pointerLeaveHandler = null;
+    }
     this.unsubscribeSystemClick?.();
     this.unsubscribeSystemClick = null;
+    this.unsubscribeSystemNavigation?.();
+    this.unsubscribeSystemNavigation = null;
     this.controls.dispose();
     this.unmountScene();
     this.renderer.dispose();

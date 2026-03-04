@@ -1,7 +1,21 @@
-import { BufferGeometry, Color, Float32BufferAttribute, Line, LineBasicMaterial } from "three";
+import {
+  BufferGeometry,
+  Color,
+  Float32BufferAttribute,
+  Line,
+  LineBasicMaterial,
+  LineDashedMaterial,
+} from "three";
+
+type OrbitLineStyle = "continuous" | "dashed" | "dotted";
 
 export class OrbitHelper {
-  static create(radius: number, color = "#5f6d65", segments = 96): Line {
+  static create(
+    radius: number,
+    color = "#5f6d65",
+    segments = 96,
+    style: OrbitLineStyle = "continuous",
+  ): Line {
     const positions: number[] = [];
     for (let i = 0; i <= segments; i += 1) {
       const t = (i / segments) * Math.PI * 2;
@@ -10,11 +24,26 @@ export class OrbitHelper {
 
     const geometry = new BufferGeometry();
     geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
-    const material = new LineBasicMaterial({
+
+    if (style === "continuous") {
+      const material = new LineBasicMaterial({
+        color: new Color(color),
+        transparent: true,
+        opacity: 0.35,
+      });
+      return new Line(geometry, material);
+    }
+
+    const material = new LineDashedMaterial({
       color: new Color(color),
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.45,
+      dashSize: style === "dashed" ? 2.2 : 0.6,
+      gapSize: style === "dashed" ? 1.4 : 1.2,
     });
-    return new Line(geometry, material);
+
+    const line = new Line(geometry, material);
+    line.computeLineDistances();
+    return line;
   }
 }

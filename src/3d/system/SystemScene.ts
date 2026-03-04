@@ -8,6 +8,7 @@ import {
   Object3D,
   PointLight,
   SphereGeometry,
+  Vector3,
 } from "three";
 import { EventBridge } from "../core/EventBridge";
 import { IRenderableScene } from "../core/SceneManager";
@@ -57,6 +58,17 @@ export class SystemScene implements IRenderableScene {
     asteroids: [],
   };
   private readonly eventBridge: EventBridge;
+  private readonly navigationPoints = {
+    star: new Map<string, Object3D>(),
+    planet: new Map<string, Object3D>(),
+    moon: new Map<string, Object3D>(),
+    asteroid: new Map<string, Object3D>(),
+  };
+  private readonly orbitAnimations: Array<{
+    pivot: Group;
+    speed: number;
+  }> = [];
+  private readonly starCenters: Group[] = [];
   private mounted = false;
 
   constructor(eventBridge: EventBridge) {
@@ -100,9 +112,13 @@ export class SystemScene implements IRenderableScene {
     this.buildAsteroids();
   }
 
-  update(_deltaSeconds: number): void {}
+  update(deltaSeconds: number): void {
+    this.orbitAnimations.forEach((animation) => {
+      animation.pivot.rotateY(animation.speed * deltaSeconds);
+    });
+  }
 
-  onPointerDown(intersections: Intersection<Object3D>[]): void {
+  onPointerDown(intersections: Intersection<Object3D>[], _pointer: { x: number; y: number }): void {
     if (intersections.length === 0) {
       this.eventBridge.emit("backgroundClicked", undefined);
       return;
@@ -115,10 +131,14 @@ export class SystemScene implements IRenderableScene {
     this.eventBridge.emit("starClicked", {
       starId,
       systemId: this.data.systemId,
+      anchor: _pointer,
     });
   }
 
-  onPointerMove(intersections: Intersection<Object3D>[]): void {
+  onPointerMove(
+    intersections: Intersection<Object3D>[],
+    pointer: { x: number; y: number },
+  ): void {
     if (intersections.length === 0) {
       this.eventBridge.emit("hoverCleared", undefined);
       return;
@@ -128,27 +148,40 @@ export class SystemScene implements IRenderableScene {
     const starId = this.findStarId(object);
     if (starId) {
       this.eventBridge.emit("starHovered", {
-        starId,
         systemId: this.data.systemId,
+        starId,
+        anchor: pointer,
       });
       return;
     }
 
     const planetId = this.findTaggedId(object, PLANET_ID);
     if (planetId) {
-      this.eventBridge.emit("planetHovered", { planetId });
+      this.eventBridge.emit("planetHovered", {
+        systemId: this.data.systemId,
+        planetId,
+        anchor: pointer,
+      });
       return;
     }
 
     const moonId = this.findTaggedId(object, MOON_ID);
     if (moonId) {
-      this.eventBridge.emit("moonHovered", { moonId });
+      this.eventBridge.emit("moonHovered", {
+        systemId: this.data.systemId,
+        moonId,
+        anchor: pointer,
+      });
       return;
     }
 
     const asteroidId = this.findTaggedId(object, ASTEROID_ID);
     if (asteroidId) {
-      this.eventBridge.emit("asteroidHovered", { asteroidId });
+      this.eventBridge.emit("asteroidHovered", {
+        systemId: this.data.systemId,
+        asteroidId,
+        anchor: pointer,
+      });
       return;
     }
 
@@ -171,6 +204,21 @@ export class SystemScene implements IRenderableScene {
       }
     });
     this.group.clear();
+    this.navigationPoints.star.clear();
+    this.navigationPoints.planet.clear();
+    this.navigationPoints.moon.clear();
+    this.navigationPoints.asteroid.clear();
+    this.orbitAnimations.length = 0;
+    this.starCenters.length = 0;
+  }
+
+  getNavigationPoint(
+    target: { kind: "star" | "planet" | "moon" | "asteroid"; id: string },
+  ): { x: number; y: number; z: number } | null {
+    const targetObject = this.navigationPoints[target.kind].get(target.id);
+    if (!targetObject) return null;
+    const world = targetObject.getWorldPosition(new Vector3());
+    return { x: world.x, y: world.y, z: world.z };
   }
 
   private buildLighting(): void {
@@ -183,7 +231,36 @@ export class SystemScene implements IRenderableScene {
   }
 
   private buildStars(): void {
-    this.data.stars.forEach((star) => {
+    const mainStar = this.data.stars.find((star) => star.isMain) ?? this.data.stars[0];
+    if (!mainStar) return;
+
+    const mainStarAnchor = new Group();
+    mainStarAnchor.position.set(0, 0, 0);
+    this.group.add(mainStarAnchor);
+    this.starCenters.push(mainStarAnchor);
+
+    this.data.stars.forEach((star, index) => {
+      const isMainStar = star.starId === mainStar.starId;
+      const starAnchor = isMainStar ? mainStarAnchor : new Group();
+
+      if (!isMainStar) {
+        const orbitPivot = new Group();
+        orbitPivot.position.set(0, 0, 0);
+        this.group.add(orbitPivot);
+
+        const orbitRadius = Math.max(16, star.orbital * 16);
+        starAnchor.position.set(orbitRadius, 0, 0);
+        orbitPivot.add(starAnchor);
+        this.starCenters.push(starAnchor);
+
+        orbitPivot.rotation.y = index * 0.65;
+        this.orbitAnimations.push({
+          pivot: orbitPivot,
+          speed: 0.08 + (index % 5) * 0.025,
+        });
+        this.group.add(OrbitHelper.create(orbitRadius, "#47524b", 128, "dashed"));
+      }
+
       const mesh = new Mesh(
         new SphereGeometry(Math.max(star.size, 0.8), 20, 20),
         new MeshStandardMaterial({
@@ -194,43 +271,99 @@ export class SystemScene implements IRenderableScene {
         }),
       );
 
-      const x = star.orbital * 16;
-      mesh.position.set(x, 0, 0);
+      mesh.position.set(0, 0, 0);
       (mesh.userData as Record<symbol, string>)[STAR_ID] = star.starId;
       (mesh.userData as Record<symbol, string>)[SYSTEM_ID] = this.data.systemId;
-      this.group.add(mesh);
-
-      if (star.orbital > 0) {
-        this.group.add(OrbitHelper.create(star.orbital * 16, "#47524b"));
-      }
+      starAnchor.add(mesh);
+      this.navigationPoints.star.set(star.starId, mesh);
     });
   }
 
   private buildPlanets(): void {
+    if (this.starCenters.length === 0) return;
+
     this.data.planets.forEach((planet) => {
-      const radius = planet.orbital * 20;
+      const center = this.starCenters[this.getCenterIndex(planet.planetId)];
+      const radius = this.toPlanetRadius(planet.orbital);
+      const orbitPivot = new Group();
+      orbitPivot.position.set(0, 0, 0);
+      center.add(orbitPivot);
+
+      this.orbitAnimations.push({
+        pivot: orbitPivot,
+        speed: 0.2 + (this.getCenterIndex(planet.planetId) % 7) * 0.04,
+      });
+
       const mesh = PlanetMesh.create(planet.size, planet.color ?? "#0da1bf");
       mesh.position.set(radius, 0, 0);
       (mesh.userData as Record<symbol, string>)[PLANET_ID] = planet.planetId;
-      this.group.add(mesh);
-      this.group.add(OrbitHelper.create(radius));
+      orbitPivot.add(mesh);
+      this.navigationPoints.planet.set(planet.planetId, mesh);
+      center.add(OrbitHelper.create(radius, "#5f6d65", 128, "continuous"));
 
       (planet.moons ?? []).forEach((moon, index) => {
+        const moonPivot = new Group();
+        moonPivot.position.set(0, 0, 0);
+        mesh.add(moonPivot);
+
+        const moonRadius = moon.orbital * 2.2 + index * 0.65 + 1.8;
+        moonPivot.rotation.y = index * 0.85;
+        this.orbitAnimations.push({
+          pivot: moonPivot,
+          speed: 0.45 + (index % 5) * 0.09,
+        });
+
         const moonMesh = PlanetMesh.create(moon.size, moon.color ?? "#c8d0cb");
-        moonMesh.position.set(radius + moon.orbital * 2.6 + index * 0.75, 0, 0);
+        moonMesh.position.set(moonRadius, 0, 0);
         (moonMesh.userData as Record<symbol, string>)[MOON_ID] = moon.moonId;
-        this.group.add(moonMesh);
+        moonPivot.add(moonMesh);
+        this.navigationPoints.moon.set(moon.moonId, moonMesh);
+
+        const moonOrbit = OrbitHelper.create(moonRadius, "#9ea8c2", 96, "dotted");
+        moonOrbit.position.set(0, 0.5 + index * 0.05, 0);
+        moonPivot.add(moonOrbit);
       });
     });
   }
 
   private buildAsteroids(): void {
+    if (this.starCenters.length === 0) return;
+
     (this.data.asteroids ?? []).forEach((asteroid) => {
+      const center = this.starCenters[this.getCenterIndex(asteroid.asteroidId)];
+      const orbitPivot = new Group();
+      orbitPivot.position.set(0, 0, 0);
+      center.add(orbitPivot);
+      this.orbitAnimations.push({
+        pivot: orbitPivot,
+        speed: 0.16 + (this.getCenterIndex(asteroid.asteroidId) % 9) * 0.03,
+      });
+
       const mesh = PlanetMesh.create(asteroid.size, asteroid.color ?? "#77887e");
-      mesh.position.set(asteroid.orbital * 20, 0, 0);
+      const asteroidX = this.toAsteroidRadius(asteroid.orbital);
+      mesh.position.set(asteroidX, 0, 0);
       (mesh.userData as Record<symbol, string>)[ASTEROID_ID] = asteroid.asteroidId;
-      this.group.add(mesh);
+      orbitPivot.add(mesh);
+      this.navigationPoints.asteroid.set(asteroid.asteroidId, mesh);
+      center.add(OrbitHelper.create(asteroidX, "#7d8e89", 128, "dotted"));
     });
+  }
+
+  private toPlanetRadius(orbital: number): number {
+    return Math.max(1, Math.round(orbital)) * 20;
+  }
+
+  private toAsteroidRadius(orbital: number): number {
+    const stepped = Math.max(0.5, Math.round(orbital * 2) / 2);
+    return stepped * 20;
+  }
+
+  private getCenterIndex(id: string): number {
+    let hash = 0;
+    for (let i = 0; i < id.length; i += 1) {
+      hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+    }
+    return hash % Math.max(this.starCenters.length, 1);
   }
 
   private findStarId(object: Object3D): string | null {
