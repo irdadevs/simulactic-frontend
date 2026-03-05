@@ -2,6 +2,9 @@ type ScreenAnchor = { x: number; y: number };
 
 type EventMap = {
   starClicked: { starId: string; systemId: string; anchor: ScreenAnchor };
+  planetClicked: { planetId: string; systemId: string; anchor: ScreenAnchor };
+  moonClicked: { moonId: string; systemId: string; anchor: ScreenAnchor };
+  asteroidClicked: { asteroidId: string; systemId: string; anchor: ScreenAnchor };
   systemClicked: { systemId: string; focusPoint: { x: number; y: number; z: number }; anchor: ScreenAnchor };
   systemHovered: { systemId: string; anchor: ScreenAnchor };
   starHovered: { starId: string; systemId: string; anchor: ScreenAnchor };

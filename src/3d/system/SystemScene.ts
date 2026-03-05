@@ -126,10 +126,40 @@ export class SystemScene implements IRenderableScene {
 
     const hit = intersections[0].object;
     const starId = this.findStarId(hit);
-    if (!starId) return;
+    if (starId) {
+      this.eventBridge.emit("starClicked", {
+        starId,
+        systemId: this.data.systemId,
+        anchor: _pointer,
+      });
+      return;
+    }
 
-    this.eventBridge.emit("starClicked", {
-      starId,
+    const planetId = this.findTaggedId(hit, PLANET_ID);
+    if (planetId) {
+      this.eventBridge.emit("planetClicked", {
+        planetId,
+        systemId: this.data.systemId,
+        anchor: _pointer,
+      });
+      return;
+    }
+
+    const moonId = this.findTaggedId(hit, MOON_ID);
+    if (moonId) {
+      this.eventBridge.emit("moonClicked", {
+        moonId,
+        systemId: this.data.systemId,
+        anchor: _pointer,
+      });
+      return;
+    }
+
+    const asteroidId = this.findTaggedId(hit, ASTEROID_ID);
+    if (!asteroidId) return;
+
+    this.eventBridge.emit("asteroidClicked", {
+      asteroidId,
       systemId: this.data.systemId,
       anchor: _pointer,
     });

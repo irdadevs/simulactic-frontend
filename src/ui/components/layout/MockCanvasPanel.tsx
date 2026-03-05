@@ -1,7 +1,8 @@
 import dynamic from "next/dynamic";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SerializedGalaxyViewData, SerializedSystemViewData } from "../../../3d/core/serialized.types";
 import { GalaxyProps } from "../../../types/galaxy.types";
+import { ActionButton } from "../buttons/ActionButton";
 import styles from "../../../styles/skeleton.module.css";
 
 const LazyThreeViewport = dynamic(
@@ -43,10 +44,32 @@ export function MockCanvasPanel({
   systemData,
   onWheelZoom,
 }: MockCanvasPanelProps) {
+  const renderStageRef = useRef<HTMLDivElement | null>(null);
   const showCanvas = useMemo(
     () => isRenderReady && machineState !== "idle",
     [isRenderReady, machineState],
   );
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+    };
+  }, []);
+
+  const onToggleFullscreen = async () => {
+    if (!document.fullscreenElement && renderStageRef.current) {
+      await renderStageRef.current.requestFullscreen();
+      return;
+    }
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+    }
+  };
 
   return (
     <section className={styles.panel}>
@@ -55,7 +78,7 @@ export function MockCanvasPanel({
       </header>
 
       {showCanvas ? (
-        <div className={styles.renderStage}>
+        <div ref={renderStageRef} className={styles.renderStage}>
           <LazyThreeViewport
             machineState={machineState}
             galaxyData={galaxyData}
@@ -65,6 +88,11 @@ export function MockCanvasPanel({
           <LazySystemTimeControlsPanel />
           <LazySystemNavigatorPanel />
           <LazyPopupLayer />
+          <div className={styles.fullViewButtonWrap}>
+            <ActionButton variant="secondary" onClick={() => void onToggleFullscreen()}>
+              {isFullscreen ? "Exit full mode" : "Full mode view"}
+            </ActionButton>
+          </div>
         </div>
       ) : (
         <div className={styles.placeholder}>
