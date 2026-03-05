@@ -209,6 +209,14 @@
   min-height: 700px;
 }
 
+.fullViewButtonWrap {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 7;
+  pointer-events: auto;
+}
+
 .canvasWrap {
   height: 100%;
   min-height: 700px;
@@ -383,6 +391,12 @@
 .systemNavigatorActions {
   display: flex;
   gap: 6px;
+}
+
+.systemNavigatorHeaderActions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
 }
 
 .systemInfoPanel {

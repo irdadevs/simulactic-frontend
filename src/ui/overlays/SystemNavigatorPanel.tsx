@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRenderStore } from "../../state/render.store";
 import { useUiStore } from "../../state/ui.store";
 import { ActionButton } from "../components/buttons/ActionButton";
@@ -40,46 +40,56 @@ export function SystemNavigatorPanel() {
   const requestGalaxyTransition = useRenderStore((state) => state.requestGalaxyTransition);
   const navigateToSystemTarget = useUiStore((state) => state.navigateToSystemTarget);
   const [selectedInfo, setSelectedInfo] = useState<NavigatorRow | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!isExpanded) {
+      setSelectedInfo(null);
+    }
+  }, [isExpanded]);
+
+  const rows: NavigatorRow[] = useMemo(() => {
+    if (!systemDetail) return [];
+    return [
+      ...systemDetail.stars.map((star) => ({
+        key: `star:${star.id}`,
+        name: star.name,
+        type: "Star" as const,
+        target: { kind: "star" as const, id: star.id },
+        details: star as Record<string, unknown>,
+      })),
+      ...systemDetail.planets.map((entry) => ({
+        key: `planet:${entry.planet.id}`,
+        name: entry.planet.name,
+        type: "Planet" as const,
+        target: { kind: "planet" as const, id: entry.planet.id },
+        details: {
+          ...entry.planet,
+          moonCount: entry.moons.length,
+        } as Record<string, unknown>,
+      })),
+      ...systemDetail.planets.flatMap((entry) =>
+        entry.moons.map((moon) => ({
+          key: `moon:${moon.id}`,
+          name: moon.name,
+          type: "Moon" as const,
+          target: { kind: "moon" as const, id: moon.id },
+          details: moon as Record<string, unknown>,
+        })),
+      ),
+      ...systemDetail.asteroids.map((asteroid) => ({
+        key: `asteroid:${asteroid.id}`,
+        name: asteroid.name,
+        type: "Asteroid" as const,
+        target: { kind: "asteroid" as const, id: asteroid.id },
+        details: asteroid as Record<string, unknown>,
+      })),
+    ];
+  }, [systemDetail]);
 
   if (viewMode !== "system" || !systemDetail) {
     return null;
   }
-
-  const rows: NavigatorRow[] = useMemo(() => [
-    ...systemDetail.stars.map((star) => ({
-      key: `star:${star.id}`,
-      name: star.name,
-      type: "Star" as const,
-      target: { kind: "star" as const, id: star.id },
-      details: star as Record<string, unknown>,
-    })),
-    ...systemDetail.planets.map((entry) => ({
-      key: `planet:${entry.planet.id}`,
-      name: entry.planet.name,
-      type: "Planet" as const,
-      target: { kind: "planet" as const, id: entry.planet.id },
-      details: {
-        ...entry.planet,
-        moonCount: entry.moons.length,
-      } as Record<string, unknown>,
-    })),
-    ...systemDetail.planets.flatMap((entry) =>
-      entry.moons.map((moon) => ({
-        key: `moon:${moon.id}`,
-        name: moon.name,
-        type: "Moon" as const,
-        target: { kind: "moon" as const, id: moon.id },
-        details: moon as Record<string, unknown>,
-      })),
-    ),
-    ...systemDetail.asteroids.map((asteroid) => ({
-      key: `asteroid:${asteroid.id}`,
-      name: asteroid.name,
-      type: "Asteroid" as const,
-      target: { kind: "asteroid" as const, id: asteroid.id },
-      details: asteroid as Record<string, unknown>,
-    })),
-  ], [systemDetail]);
 
   return (
     <>
@@ -89,43 +99,53 @@ export function SystemNavigatorPanel() {
             <p className={styles.popupEyebrow}>Navigator</p>
             <h3 className={styles.popupTitle}>{systemDetail.system.name} Elements</h3>
           </div>
-          <ActionButton
-            variant="secondary"
-            onClick={() => {
-              setSelectedInfo(null);
-              requestGalaxyTransition("user_back_to_galaxy");
-            }}
-          >
-            Go back
-          </ActionButton>
+          <div className={styles.systemNavigatorHeaderActions}>
+            <ActionButton
+              variant="secondary"
+              onClick={() => {
+                setSelectedInfo(null);
+                requestGalaxyTransition("user_back_to_galaxy");
+              }}
+            >
+              Go back
+            </ActionButton>
+            <ActionButton
+              variant="secondary"
+              onClick={() => setIsExpanded((prev) => !prev)}
+            >
+              {isExpanded ? "Close details" : "View more"}
+            </ActionButton>
+          </div>
         </header>
-        <div className={styles.systemNavigatorList}>
-          {rows.map((row) => (
-            <div key={row.key} className={styles.popupRow}>
-              <div>
-                <p className={styles.popupItemTitle}>{row.name}</p>
-                <p className={styles.meta}>{row.type}</p>
+        {isExpanded && (
+          <div className={styles.systemNavigatorList}>
+            {rows.map((row) => (
+              <div key={row.key} className={styles.popupRow}>
+                <div>
+                  <p className={styles.popupItemTitle}>{row.name}</p>
+                  <p className={styles.meta}>{row.type}</p>
+                </div>
+                <div className={styles.systemNavigatorActions}>
+                  <ActionButton
+                    variant="secondary"
+                    onClick={() => setSelectedInfo(row)}
+                  >
+                    +info
+                  </ActionButton>
+                  <ActionButton
+                    variant="secondary"
+                    onClick={() => navigateToSystemTarget?.(row.target)}
+                  >
+                    Go to
+                  </ActionButton>
+                </div>
               </div>
-              <div className={styles.systemNavigatorActions}>
-                <ActionButton
-                  variant="secondary"
-                  onClick={() => setSelectedInfo(row)}
-                >
-                  +info
-                </ActionButton>
-                <ActionButton
-                  variant="secondary"
-                  onClick={() => navigateToSystemTarget?.(row.target)}
-                >
-                  Go to
-                </ActionButton>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </aside>
 
-      {selectedInfo && (
+      {isExpanded && selectedInfo && (
         <aside className={styles.systemInfoPanel}>
           <header className={styles.popupHeader}>
             <div>
