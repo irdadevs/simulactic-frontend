@@ -63,8 +63,47 @@ export const bind3dEvents = (eventBridge: EventBridge): (() => void) => {
       const uiStore = useUiStore.getState();
       uiStore.setPopupLoading(false);
       uiStore.setPopupAnchor(anchor);
-      uiStore.setPopupPinned(false);
+      uiStore.setPopupPinned(useRenderStore.getState().viewMode === "system");
       uiStore.openStarPopup({ systemId, starId });
+    }),
+  );
+
+  unsubscribers.push(
+    eventBridge.on("planetClicked", ({ planetId, anchor }) => {
+      clearHoverTimer();
+      pendingHoverKey = null;
+      activeHoverKey = null;
+      const uiStore = useUiStore.getState();
+      uiStore.setPopupLoading(false);
+      uiStore.setPopupAnchor(anchor);
+      uiStore.setPopupPinned(useRenderStore.getState().viewMode === "system");
+      uiStore.openPlanetPopup(planetId);
+    }),
+  );
+
+  unsubscribers.push(
+    eventBridge.on("moonClicked", ({ moonId, anchor }) => {
+      clearHoverTimer();
+      pendingHoverKey = null;
+      activeHoverKey = null;
+      const uiStore = useUiStore.getState();
+      uiStore.setPopupLoading(false);
+      uiStore.setPopupAnchor(anchor);
+      uiStore.setPopupPinned(useRenderStore.getState().viewMode === "system");
+      uiStore.openMoonPopup(moonId);
+    }),
+  );
+
+  unsubscribers.push(
+    eventBridge.on("asteroidClicked", ({ asteroidId, anchor }) => {
+      clearHoverTimer();
+      pendingHoverKey = null;
+      activeHoverKey = null;
+      const uiStore = useUiStore.getState();
+      uiStore.setPopupLoading(false);
+      uiStore.setPopupAnchor(anchor);
+      uiStore.setPopupPinned(useRenderStore.getState().viewMode === "system");
+      uiStore.openAsteroidPopup(asteroidId);
     }),
   );
 
@@ -113,7 +152,7 @@ export const bind3dEvents = (eventBridge: EventBridge): (() => void) => {
       activeHoverKey = null;
       const uiStore = useUiStore.getState();
       const { viewMode } = useRenderStore.getState();
-      if (viewMode === "galaxy" && uiStore.popupPinned) {
+      if ((viewMode === "galaxy" || viewMode === "system") && uiStore.popupPinned) {
         uiStore.setPopupLoading(false);
         return;
       }
