@@ -1,0 +1,222 @@
+.popupLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.popupPositioned {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 14px));
+  min-width: 320px;
+  max-width: min(460px, calc(100% - 24px));
+  pointer-events: auto;
+}
+
+.popupLoader {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 12px));
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--carbon-black-900) 92%, transparent);
+  display: grid;
+  place-items: center;
+}
+
+.popupLoaderSpinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid color-mix(in srgb, var(--carbon-black-300) 65%, transparent);
+  border-top-color: var(--main-turquoise-surf);
+  border-radius: 999px;
+  animation: popupSpin 0.85s linear infinite;
+}
+
+@keyframes popupSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.popupCard {
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 40%, var(--carbon-black-700));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--carbon-black-900) 89%, #071c23);
+  backdrop-filter: blur(10px);
+  padding: 12px;
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.48),
+    0 0 0 1px color-mix(in srgb, var(--main-dark-violet) 42%, transparent) inset;
+}
+
+.popupCardRich::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--main-turquoise-surf), #91d7e8, transparent);
+  opacity: 0.9;
+}
+
+.popupCardRich {
+  position: relative;
+}
+
+.popupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.popupBody {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.popupList {
+  display: grid;
+  gap: 6px;
+}
+
+.popupItem {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--main-ivory);
+  text-align: left;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.popupEyebrow {
+  color: var(--main-turquoise-surf);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 11px;
+  margin: 0 0 2px;
+}
+
+.popupTitle {
+  color: var(--main-ivory);
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.popupRow {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--carbon-black-900) 92%, #101922);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.popupItemTitle {
+  color: var(--main-ivory);
+  font-size: 14px;
+  margin: 0 0 2px;
+}
+
+.systemNavigator {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  width: min(360px, calc(100% - 28px));
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 38%, var(--carbon-black-700));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--carbon-black-900) 90%, #0a1a21);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px color-mix(in srgb, var(--main-dark-violet) 40%, transparent) inset;
+  padding: 10px;
+  z-index: 6;
+  pointer-events: auto;
+}
+
+.systemNavigatorList {
+  margin-top: 8px;
+  max-height: 340px;
+  overflow: auto;
+  display: grid;
+  gap: 6px;
+}
+
+.systemNavigatorActions {
+  display: flex;
+  gap: 6px;
+}
+
+.systemNavigatorHeaderActions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.systemInfoPanel {
+  position: absolute;
+  left: min(388px, calc(100% - 460px));
+  top: 14px;
+  width: min(420px, calc(100% - 404px));
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 38%, var(--carbon-black-700));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--carbon-black-900) 90%, #0a1a21);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px color-mix(in srgb, var(--main-dark-violet) 40%, transparent) inset;
+  padding: 10px;
+  z-index: 6;
+  pointer-events: auto;
+}
+
+.systemTimePanel {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  z-index: 6;
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 34%, var(--carbon-black-700));
+  background: color-mix(in srgb, var(--carbon-black-900) 90%, #0b1e24);
+  pointer-events: auto;
+}
+
+.timeChip {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--carbon-black-100);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.timeChipActive {
+  border-color: color-mix(in srgb, var(--main-turquoise-surf) 60%, var(--carbon-black-700));
+  background: color-mix(in srgb, var(--main-turquoise-surf) 24%, transparent);
+  color: var(--main-ivory);
+}
+
+@media (max-width: 900px) {
+  .systemInfoPanel {
+    left: 14px;
+    top: auto;
+    bottom: 14px;
+    width: min(420px, calc(100% - 28px));
+  }
+}

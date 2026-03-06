@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import styles from "../../../../styles/skeleton.module.css";
+import layoutStyles from "../../../../styles/layout.module.css";
+import commonStyles from "../../../../styles/skeleton.module.css";
 
 type AuthCardProps = {
   title: string;
@@ -11,12 +12,12 @@ type AuthCardProps = {
 
 export function AuthCard({ title, subtitle, error, children, footer }: AuthCardProps) {
   return (
-    <section className={styles.authPage}>
-      <article className={styles.authCard}>
-        <h1 className={styles.title}>{title}</h1>
-        <p className={styles.subtitle}>{subtitle}</p>
+    <section className={layoutStyles.authPage}>
+      <article className={layoutStyles.authCard}>
+        <h1 className={commonStyles.title}>{title}</h1>
+        <p className={commonStyles.subtitle}>{subtitle}</p>
 
-        {error && <p className={styles.error}>{error}</p>}
+        {error && <p className={commonStyles.error}>{error}</p>}
 
         {children}
 

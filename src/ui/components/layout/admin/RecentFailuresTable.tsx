@@ -1,4 +1,5 @@
-import styles from "../../../../styles/skeleton.module.css";
+import adminStyles from "../../../../styles/admin.module.css";
+import commonStyles from "../../../../styles/skeleton.module.css";
 import { MetricsDashboardResponse } from "../../../../infra/api/metric.api";
 
 type RecentFailuresTableProps = {
@@ -7,10 +8,10 @@ type RecentFailuresTableProps = {
 
 export function RecentFailuresTable({ rows }: RecentFailuresTableProps) {
   return (
-    <section className={styles.adminCard}>
-      <h2 className={styles.panelTitle}>Recent Failures</h2>
-      <div className={styles.adminTableWrap}>
-        <table className={styles.adminTable}>
+    <section className={adminStyles.adminCard}>
+      <h2 className={commonStyles.panelTitle}>Recent Failures</h2>
+      <div className={adminStyles.adminTableWrap}>
+        <table className={adminStyles.adminTable}>
           <thead>
             <tr>
               <th>Name</th>
@@ -32,7 +33,7 @@ export function RecentFailuresTable({ rows }: RecentFailuresTableProps) {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={5} className={styles.meta}>
+                <td colSpan={5} className={commonStyles.meta}>
                   No failures in selected window.
                 </td>
               </tr>

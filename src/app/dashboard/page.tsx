@@ -7,7 +7,7 @@ import { useAuth } from "../../application/hooks/useAuth";
 import { useGalaxy } from "../../application/hooks/useGalaxy";
 import { useRenderCoordinator } from "../../application/hooks/useRenderCoordinator";
 import { GalaxyListPanel } from "../../ui/components/layout/galaxy/GalaxyListPanel";
-import styles from "../../styles/skeleton.module.css";
+import styles from "../../styles/layout.module.css";
 
 const MockCanvasPanel = dynamic(
   () => import("../../ui/components/layout/MockCanvasPanel").then((mod) => mod.MockCanvasPanel),

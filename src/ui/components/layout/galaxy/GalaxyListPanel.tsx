@@ -1,5 +1,6 @@
 import { GalaxyProps } from "../../../../types/galaxy.types";
-import styles from "../../../../styles/skeleton.module.css";
+import layoutStyles from "../../../../styles/layout.module.css";
+import commonStyles from "../../../../styles/skeleton.module.css";
 import { ActionButton } from "../../buttons/ActionButton";
 
 type GalaxyListPanelProps = {
@@ -24,14 +25,14 @@ export function GalaxyListPanel({
   error,
 }: GalaxyListPanelProps) {
   return (
-    <aside className={styles.panel}>
-      <header className={styles.panelHeader}>
+    <aside className={layoutStyles.panel}>
+      <header className={layoutStyles.panelHeader}>
         <div>
-          <p className={styles.meta} style={{ marginBottom: 6 }}>
+          <p className={commonStyles.meta} style={{ marginBottom: 6 }}>
             {currentUsername ? `Logged as ${currentUsername}` : "Logged user"}
           </p>
-          <h2 className={styles.panelTitle}>Your Galaxies</h2>
-          <p className={styles.meta}>{`${galaxies.length} galaxies`}</p>
+          <h2 className={commonStyles.panelTitle}>Your Galaxies</h2>
+          <p className={commonStyles.meta}>{`${galaxies.length} galaxies`}</p>
         </div>
         <ActionButton variant="secondary" onClick={onCreateClick} disabled={!canCreateGalaxy}>
           Create
@@ -39,33 +40,33 @@ export function GalaxyListPanel({
       </header>
 
       {!canCreateGalaxy && !isSupporter && (
-        <p className={styles.error} style={{ margin: 14 }}>
+        <p className={commonStyles.error} style={{ margin: 14 }}>
           Non-supporters can create up to 3 galaxies.
         </p>
       )}
       {error && (
-        <p className={styles.error} style={{ margin: 14 }}>
+        <p className={commonStyles.error} style={{ margin: 14 }}>
           {error}
         </p>
       )}
 
-      <div className={styles.list}>
+      <div className={layoutStyles.list}>
         {galaxies.map((galaxy) => (
           <button
             key={galaxy.id}
-            className={`${styles.listItem} ${
-              selectedGalaxyId === galaxy.id ? styles.listItemActive : ""
+            className={`${layoutStyles.listItem} ${
+              selectedGalaxyId === galaxy.id ? layoutStyles.listItemActive : ""
             }`}
             onClick={() => onSelectGalaxy(galaxy.id)}
           >
             <strong>{galaxy.name}</strong>
-            <p className={styles.meta}>
+            <p className={commonStyles.meta}>
               {galaxy.shape} | {galaxy.systemCount} systems
             </p>
           </button>
         ))}
         {galaxies.length === 0 && (
-          <p className={styles.meta} style={{ padding: 14 }}>
+          <p className={commonStyles.meta} style={{ padding: 14 }}>
             No galaxies yet. Create your first one.
           </p>
         )}

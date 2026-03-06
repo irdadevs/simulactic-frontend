@@ -5,7 +5,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useMetrics } from "../../application/hooks/useMetrics";
-import styles from "../../styles/skeleton.module.css";
+import commonStyles from "../../styles/skeleton.module.css";
+import adminStyles from "../../styles/admin.module.css";
 
 const MetricsSummary = dynamic(
   () => import("../../ui/components/layout/admin/MetricsSummary").then((mod) => mod.MetricsSummary),
@@ -55,7 +56,7 @@ export default function AdminDashboard() {
   }, [isAdmin, loadDashboard, router, user]);
 
   if (!user) {
-    return <p className={styles.meta}>Checking permissions...</p>;
+    return <p className={commonStyles.meta}>Checking permissions...</p>;
   }
 
   if (!isAdmin) {
@@ -63,20 +64,20 @@ export default function AdminDashboard() {
   }
 
   if (isLoading && !dashboard) {
-    return <p className={styles.meta}>Loading metrics dashboard...</p>;
+    return <p className={commonStyles.meta}>Loading metrics dashboard...</p>;
   }
 
   if (error) {
-    return <p className={styles.error}>{error}</p>;
+    return <p className={commonStyles.error}>{error}</p>;
   }
 
   if (!dashboard) {
-    return <p className={styles.meta}>No dashboard data available.</p>;
+    return <p className={commonStyles.meta}>No dashboard data available.</p>;
   }
 
   return (
-    <section className={styles.adminLayout}>
-      <h1 className={styles.title}>Admin Dashboard</h1>
+    <section className={adminStyles.adminLayout}>
+      <h1 className={commonStyles.title}>Admin Dashboard</h1>
       <MetricsSummary summary={dashboard.summary} />
       <MetricsByTypeChart byType={dashboard.byType} />
       <RecentFailuresTable rows={dashboard.recentFailures} />

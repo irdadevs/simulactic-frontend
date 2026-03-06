@@ -1,4 +1,5 @@
-import styles from "../../../../styles/skeleton.module.css";
+import adminStyles from "../../../../styles/admin.module.css";
+import commonStyles from "../../../../styles/skeleton.module.css";
 import { MetricsDashboardResponse } from "../../../../infra/api/metric.api";
 
 type MetricsSummaryProps = {
@@ -7,15 +8,15 @@ type MetricsSummaryProps = {
 
 export function MetricsSummary({ summary }: MetricsSummaryProps) {
   return (
-    <section className={styles.adminCard}>
-      <h2 className={styles.panelTitle}>Performance Summary</h2>
-      <div className={styles.adminGrid}>
-        <p className={styles.meta}>Total: {summary.total}</p>
-        <p className={styles.meta}>Avg: {summary.avgDurationMs.toFixed(2)}ms</p>
-        <p className={styles.meta}>P95: {summary.p95DurationMs.toFixed(2)}ms</p>
-        <p className={styles.meta}>P99: {summary.p99DurationMs.toFixed(2)}ms</p>
-        <p className={styles.meta}>Max: {summary.maxDurationMs.toFixed(2)}ms</p>
-        <p className={styles.meta}>Error Rate: {(summary.errorRate * 100).toFixed(2)}%</p>
+    <section className={adminStyles.adminCard}>
+      <h2 className={commonStyles.panelTitle}>Performance Summary</h2>
+      <div className={adminStyles.adminGrid}>
+        <p className={commonStyles.meta}>Total: {summary.total}</p>
+        <p className={commonStyles.meta}>Avg: {summary.avgDurationMs.toFixed(2)}ms</p>
+        <p className={commonStyles.meta}>P95: {summary.p95DurationMs.toFixed(2)}ms</p>
+        <p className={commonStyles.meta}>P99: {summary.p99DurationMs.toFixed(2)}ms</p>
+        <p className={commonStyles.meta}>Max: {summary.maxDurationMs.toFixed(2)}ms</p>
+        <p className={commonStyles.meta}>Error Rate: {(summary.errorRate * 100).toFixed(2)}%</p>
       </div>
     </section>
   );

@@ -1,5 +1,7 @@
 import { MoonProps } from "../../types/moon.types";
-import styles from "../../styles/skeleton.module.css";
+import { moonDetailItems } from "../../lib/format/celestialDetails";
+import popupStyles from "../../styles/popup.module.css";
+import commonStyles from "../../styles/skeleton.module.css";
 import { ActionButton } from "../components/buttons/ActionButton";
 
 type MoonPopupProps = {
@@ -7,40 +9,26 @@ type MoonPopupProps = {
   onClose: () => void;
 };
 
-const formatKey = (key: string): string =>
-  key
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/^./, (letter) => letter.toUpperCase());
-
-const formatValue = (value: unknown): string => {
-  if (value == null) return "null";
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
-};
-
-const hiddenInfoKeys = new Set(["id", "systemId", "planetId", "galaxyId", "orbitalStarter"]);
-
 export function MoonPopup({ moon, onClose }: MoonPopupProps) {
+  const detail = moonDetailItems(moon);
+
   return (
-    <section className={`${styles.popupCard} ${styles.popupCardRich}`}>
-      <header className={styles.popupHeader}>
+    <section className={`${popupStyles.popupCard} ${popupStyles.popupCardRich}`}>
+      <header className={popupStyles.popupHeader}>
         <div>
-          <p className={styles.popupEyebrow}>Moon</p>
-          <h3 className={styles.popupTitle}>{moon.name}</h3>
-          <p className={styles.meta}>Moon</p>
+          <p className={popupStyles.popupEyebrow}>Moon</p>
+          <h3 className={popupStyles.popupTitle}>{moon.name}</h3>
+          <p className={commonStyles.meta}>Moon</p>
         </div>
         <ActionButton variant="secondary" onClick={onClose}>
           Close
         </ActionButton>
       </header>
 
-      <div className={styles.popupBody}>
-        {Object.entries(moon)
-          .filter(([key]) => !hiddenInfoKeys.has(key))
-          .map(([key, value]) => (
-          <p key={key} className={styles.meta}>
-            {formatKey(key)}: <strong>{formatValue(value)}</strong>
+      <div className={popupStyles.popupBody}>
+        {detail.map((item) => (
+          <p key={item.label} className={commonStyles.meta}>
+            {item.label}: <strong>{item.value}</strong>
           </p>
         ))}
       </div>

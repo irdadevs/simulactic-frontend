@@ -1,26 +1,17 @@
 "use client";
 
 import { usePopupController } from "../../application/hooks/usePopupController";
+import {
+  asteroidDetailItems,
+  starDetailItems,
+} from "../../lib/format/celestialDetails";
 import { useRenderStore } from "../../state/render.store";
 import { useUiStore } from "../../state/ui.store";
-import styles from "../../styles/skeleton.module.css";
+import popupStyles from "../../styles/popup.module.css";
+import commonStyles from "../../styles/skeleton.module.css";
 import { MoonPopup } from "./MoonPopup";
 import { PlanetPopup } from "./PlanetPopup";
 import { SystemPopup } from "./SystemPopup";
-
-const formatKey = (key: string): string =>
-  key
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/^./, (letter) => letter.toUpperCase());
-
-const formatValue = (value: unknown): string => {
-  if (value == null) return "null";
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
-};
-
-const hiddenInfoKeys = new Set(["id", "systemId", "planetId", "galaxyId", "orbitalStarter"]);
 
 export function PopupLayer() {
   const { popup } = usePopupController();
@@ -39,15 +30,15 @@ export function PopupLayer() {
     : undefined;
 
   return (
-    <div className={styles.popupLayer}>
+    <div className={popupStyles.popupLayer}>
       {popupLoading && (
-        <div className={styles.popupLoader} style={popupStyle} aria-label="Preparing popup">
-          <span className={styles.popupLoaderSpinner} />
+        <div className={popupStyles.popupLoader} style={popupStyle} aria-label="Preparing popup">
+          <span className={popupStyles.popupLoaderSpinner} />
         </div>
       )}
 
       {popup?.kind === "system" && (
-        <div className={styles.popupPositioned} style={popupStyle}>
+        <div className={popupStyles.popupPositioned} style={popupStyle}>
           <SystemPopup
             system={popup.data.system}
             stars={popup.data.stars}
@@ -65,7 +56,7 @@ export function PopupLayer() {
       )}
 
       {popup?.kind === "planet" && (
-        <div className={styles.popupPositioned} style={popupStyle}>
+        <div className={popupStyles.popupPositioned} style={popupStyle}>
           <PlanetPopup
             planet={popup.data.planet}
             moons={popup.data.moons}
@@ -75,26 +66,24 @@ export function PopupLayer() {
       )}
 
       {popup?.kind === "moon" && (
-        <div className={styles.popupPositioned} style={popupStyle}>
+        <div className={popupStyles.popupPositioned} style={popupStyle}>
           <MoonPopup moon={popup.data} onClose={() => setPopup(null)} />
         </div>
       )}
 
       {popup?.kind === "star" && (
-        <div className={styles.popupPositioned} style={popupStyle}>
-          <section className={`${styles.popupCard} ${styles.popupCardRich}`}>
-            <header className={styles.popupHeader}>
+        <div className={popupStyles.popupPositioned} style={popupStyle}>
+          <section className={`${popupStyles.popupCard} ${popupStyles.popupCardRich}`}>
+            <header className={popupStyles.popupHeader}>
               <div>
-                <p className={styles.popupEyebrow}>Star</p>
-                <h3 className={styles.popupTitle}>{popup.data.name}</h3>
+                <p className={popupStyles.popupEyebrow}>Star</p>
+                <h3 className={popupStyles.popupTitle}>{popup.data.name}</h3>
               </div>
             </header>
-            <div className={styles.popupBody}>
-              {Object.entries(popup.data)
-                .filter(([key]) => !hiddenInfoKeys.has(key))
-                .map(([key, value]) => (
-                <p key={key} className={styles.meta}>
-                  {formatKey(key)}: <strong>{formatValue(value)}</strong>
+            <div className={popupStyles.popupBody}>
+              {starDetailItems(popup.data).map((item) => (
+                <p key={item.label} className={commonStyles.meta}>
+                  {item.label}: <strong>{item.value}</strong>
                 </p>
               ))}
             </div>
@@ -103,20 +92,18 @@ export function PopupLayer() {
       )}
 
       {popup?.kind === "asteroid" && (
-        <div className={styles.popupPositioned} style={popupStyle}>
-          <section className={`${styles.popupCard} ${styles.popupCardRich}`}>
-            <header className={styles.popupHeader}>
+        <div className={popupStyles.popupPositioned} style={popupStyle}>
+          <section className={`${popupStyles.popupCard} ${popupStyles.popupCardRich}`}>
+            <header className={popupStyles.popupHeader}>
               <div>
-                <p className={styles.popupEyebrow}>Asteroid</p>
-                <h3 className={styles.popupTitle}>{popup.data.name}</h3>
+                <p className={popupStyles.popupEyebrow}>Asteroid</p>
+                <h3 className={popupStyles.popupTitle}>{popup.data.name}</h3>
               </div>
             </header>
-            <div className={styles.popupBody}>
-              {Object.entries(popup.data)
-                .filter(([key]) => !hiddenInfoKeys.has(key))
-                .map(([key, value]) => (
-                <p key={key} className={styles.meta}>
-                  {formatKey(key)}: <strong>{formatValue(value)}</strong>
+            <div className={popupStyles.popupBody}>
+              {asteroidDetailItems(popup.data).map((item) => (
+                <p key={item.label} className={commonStyles.meta}>
+                  {item.label}: <strong>{item.value}</strong>
                 </p>
               ))}
             </div>

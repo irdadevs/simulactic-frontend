@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { useRenderStore } from "../../state/render.store";
 import { useUiStore } from "../../state/ui.store";
-import styles from "../../styles/skeleton.module.css";
+import styles from "../../styles/popup.module.css";
 
 export function SystemTimeControlsPanel() {
   const viewMode = useRenderStore((state) => state.viewMode);
