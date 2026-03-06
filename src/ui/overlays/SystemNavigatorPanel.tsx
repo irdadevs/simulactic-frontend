@@ -9,8 +9,9 @@ import {
 } from "../../lib/format/celestialDetails";
 import { useRenderStore } from "../../state/render.store";
 import { useUiStore } from "../../state/ui.store";
+import commonStyles from "../../styles/skeleton.module.css";
 import { ActionButton } from "../components/buttons/ActionButton";
-import styles from "../../styles/skeleton.module.css";
+import styles from "../../styles/popup.module.css";
 
 type NavigatorRow = {
   key: string;
@@ -106,7 +107,7 @@ export function SystemNavigatorPanel() {
               <div key={row.key} className={styles.popupRow}>
                 <div>
                   <p className={styles.popupItemTitle}>{row.name}</p>
-                  <p className={styles.meta}>{row.type}</p>
+                  <p className={commonStyles.meta}>{row.type}</p>
                 </div>
                 <div className={styles.systemNavigatorActions}>
                   <ActionButton
@@ -141,7 +142,7 @@ export function SystemNavigatorPanel() {
           </header>
           <div className={styles.popupBody}>
             {selectedInfo.details.map((item) => (
-              <p key={item.label} className={styles.meta}>
+              <p key={item.label} className={commonStyles.meta}>
                 {item.label}: <strong>{item.value}</strong>
               </p>
             ))}

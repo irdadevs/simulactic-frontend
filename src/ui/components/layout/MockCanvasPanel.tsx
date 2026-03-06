@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { SerializedGalaxyViewData, SerializedSystemViewData } from "../../../3d/core/serialized.types";
 import { GalaxyProps } from "../../../types/galaxy.types";
 import { ActionButton } from "../buttons/ActionButton";
-import styles from "../../../styles/skeleton.module.css";
+import layoutStyles from "../../../styles/layout.module.css";
+import commonStyles from "../../../styles/skeleton.module.css";
 
 const LazyThreeViewport = dynamic(
   () => import("../../overlays/ThreeViewport").then((mod) => mod.ThreeViewport),
@@ -72,13 +73,13 @@ export function MockCanvasPanel({
   };
 
   return (
-    <section className={styles.panel}>
-      <header className={styles.panelHeader}>
-        <h2 className={styles.panelTitle}>Galaxy Viewport</h2>
+    <section className={layoutStyles.panel}>
+      <header className={layoutStyles.panelHeader}>
+        <h2 className={commonStyles.panelTitle}>Galaxy Viewport</h2>
       </header>
 
       {showCanvas ? (
-        <div ref={renderStageRef} className={styles.renderStage}>
+        <div ref={renderStageRef} className={layoutStyles.renderStage}>
           <LazyThreeViewport
             machineState={machineState}
             galaxyData={galaxyData}
@@ -88,14 +89,14 @@ export function MockCanvasPanel({
           <LazySystemTimeControlsPanel />
           <LazySystemNavigatorPanel />
           <LazyPopupLayer />
-          <div className={styles.fullViewFloating}>
+          <div className={layoutStyles.fullViewFloating}>
             <ActionButton variant="secondary" onClick={() => void onToggleFullscreen()}>
               {isFullscreen ? "Exit full screen mode" : "Full screen mode"}
             </ActionButton>
           </div>
         </div>
       ) : (
-        <div className={styles.placeholder}>
+        <div className={layoutStyles.placeholder}>
           <div>
             <h3 style={{ color: "var(--main-ivory)", marginBottom: 8 }}>Mock Canvas Placeholder</h3>
             <p>
@@ -103,11 +104,11 @@ export function MockCanvasPanel({
                 ? `Selected galaxy: ${selectedGalaxy.name} (${selectedGalaxy.shape})`
                 : "Select a galaxy from the list."}
             </p>
-            <p className={styles.meta} style={{ marginTop: 8 }}>
+            <p className={commonStyles.meta} style={{ marginTop: 8 }}>
               Scene starts after backend data sync.
             </p>
             {isLoading && (
-              <p className={styles.meta} style={{ marginTop: 8 }}>
+              <p className={commonStyles.meta} style={{ marginTop: 8 }}>
                 Syncing data...
               </p>
             )}

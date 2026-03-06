@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { ActionButton } from "../ui/components/buttons/ActionButton";
-import styles from "../styles/skeleton.module.css";
+import layoutStyles from "../styles/layout.module.css";
+import commonStyles from "../styles/skeleton.module.css";
 
 export default function Home() {
   return (
-    <section className={styles.landing}>
-      <p className={styles.meta}>Galactic simulation platform</p>
-      <h1 className={styles.title}>Simulactic</h1>
-      <p className={styles.subtitle}>
+    <section className={layoutStyles.landing}>
+      <p className={commonStyles.meta}>Galactic simulation platform</p>
+      <h1 className={commonStyles.title}>Simulactic</h1>
+      <p className={commonStyles.subtitle}>
         Explore your galaxies, manage systems, and monitor platform health from a single place.
       </p>
-      <div className={styles.landingCtas}>
+      <div className={layoutStyles.landingCtas}>
         <Link href="/login">
           <ActionButton>Login</ActionButton>
         </Link>

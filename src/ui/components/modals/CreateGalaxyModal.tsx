@@ -2,7 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { GalaxyShapeValue } from "../../../types/galaxy.types";
-import styles from "../../../styles/skeleton.module.css";
+import layoutStyles from "../../../styles/layout.module.css";
+import commonStyles from "../../../styles/skeleton.module.css";
 import { ActionButton } from "../buttons/ActionButton";
 
 const SHAPES: GalaxyShapeValue[] = ["spherical", "3-arm spiral", "5-arm spiral", "irregular"];
@@ -55,15 +56,15 @@ export function CreateGalaxyModal({
   };
 
   return (
-    <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
-      <article className={styles.modalCard}>
-        <h2 className={styles.panelTitle}>Create Galaxy</h2>
-        <p className={styles.subtitle}>This will call backend and update your list.</p>
+    <div className={layoutStyles.modalBackdrop} role="dialog" aria-modal="true">
+      <article className={layoutStyles.modalCard}>
+        <h2 className={commonStyles.panelTitle}>Create Galaxy</h2>
+        <p className={commonStyles.subtitle}>This will call backend and update your list.</p>
 
-        {error && <p className={styles.error}>{error}</p>}
+        {error && <p className={commonStyles.error}>{error}</p>}
 
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.field}>
+        <form className={commonStyles.form} onSubmit={handleSubmit}>
+          <div className={commonStyles.field}>
             <label htmlFor="galaxy-name">Name</label>
             <input
               id="galaxy-name"
@@ -76,7 +77,7 @@ export function CreateGalaxyModal({
             />
           </div>
 
-          <div className={styles.field}>
+          <div className={commonStyles.field}>
             <label htmlFor="galaxy-shape">Shape</label>
             <select
               id="galaxy-shape"
@@ -91,7 +92,7 @@ export function CreateGalaxyModal({
             </select>
           </div>
 
-          <div className={styles.field}>
+          <div className={commonStyles.field}>
             <label htmlFor="galaxy-systems">System count</label>
             <input
               id="galaxy-systems"
@@ -104,7 +105,7 @@ export function CreateGalaxyModal({
             />
           </div>
 
-          <div className={styles.modalActions}>
+          <div className={commonStyles.modalActions}>
             <ActionButton type="submit" disabled={isSubmitting || disabled}>
               {isSubmitting ? "Creating..." : "Create Galaxy"}
             </ActionButton>

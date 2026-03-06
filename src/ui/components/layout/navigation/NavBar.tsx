@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "../../../../application/hooks/useAuth";
-import styles from "../../../../styles/skeleton.module.css";
+import styles from "../../../../styles/layout.module.css";
 import { ActionButton } from "../../buttons/ActionButton";
 
 export function NavBar() {

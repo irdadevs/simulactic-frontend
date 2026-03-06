@@ -6,7 +6,7 @@ import type { SceneManager } from "../../3d/core/SceneManager";
 import { SerializedGalaxyViewData, SerializedSystemViewData } from "../../3d/core/serialized.types";
 import { useRenderStore } from "../../state/render.store";
 import { useUiStore } from "../../state/ui.store";
-import styles from "../../styles/skeleton.module.css";
+import styles from "../../styles/layout.module.css";
 
 type ThreeViewportProps = {
   machineState: "idle" | "galaxy_ready" | "system_loading" | "system_ready" | "galaxy_loading";

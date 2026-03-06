@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, Roboto_Condensed } from "next/font/google";
 import "../styles/globals.css";
-import styles from "../styles/skeleton.module.css";
+import layoutStyles from "../styles/layout.module.css";
 import { NavBar } from "../ui/components/layout/navigation/NavBar";
 
 const robotoCondensed = Roboto_Condensed({
@@ -30,7 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${robotoCondensed.variable} ${montserrat.variable}`}>
         <NavBar />
-        <main className={styles.appShell}>{children}</main>
+        <main className={layoutStyles.appShell}>{children}</main>
       </body>
     </html>
   );
