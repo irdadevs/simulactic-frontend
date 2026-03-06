@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  asteroidDetailItems,
+  moonDetailItems,
+  planetDetailItems,
+  starDetailItems,
+} from "../../lib/format/celestialDetails";
 import { useRenderStore } from "../../state/render.store";
 import { useUiStore } from "../../state/ui.store";
 import { ActionButton } from "../components/buttons/ActionButton";
@@ -11,27 +17,7 @@ type NavigatorRow = {
   name: string;
   type: "Star" | "Planet" | "Moon" | "Asteroid";
   target: { kind: "star" | "planet" | "moon" | "asteroid"; id: string };
-  details: Record<string, unknown>;
-};
-
-const hiddenInfoKeys = new Set([
-  "id",
-  "systemId",
-  "planetId",
-  "galaxyId",
-  "orbitalStarter",
-]);
-
-const formatKey = (key: string): string =>
-  key
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/^./, (letter) => letter.toUpperCase());
-
-const formatValue = (value: unknown): string => {
-  if (value == null) return "null";
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
+  details: Array<{ label: string; value: string }>;
 };
 
 export function SystemNavigatorPanel() {
@@ -56,17 +42,14 @@ export function SystemNavigatorPanel() {
         name: star.name,
         type: "Star" as const,
         target: { kind: "star" as const, id: star.id },
-        details: star as Record<string, unknown>,
+        details: starDetailItems(star),
       })),
       ...systemDetail.planets.map((entry) => ({
         key: `planet:${entry.planet.id}`,
         name: entry.planet.name,
         type: "Planet" as const,
         target: { kind: "planet" as const, id: entry.planet.id },
-        details: {
-          ...entry.planet,
-          moonCount: entry.moons.length,
-        } as Record<string, unknown>,
+        details: planetDetailItems(entry.planet, entry.moons.length),
       })),
       ...systemDetail.planets.flatMap((entry) =>
         entry.moons.map((moon) => ({
@@ -74,7 +57,7 @@ export function SystemNavigatorPanel() {
           name: moon.name,
           type: "Moon" as const,
           target: { kind: "moon" as const, id: moon.id },
-          details: moon as Record<string, unknown>,
+          details: moonDetailItems(moon),
         })),
       ),
       ...systemDetail.asteroids.map((asteroid) => ({
@@ -82,7 +65,7 @@ export function SystemNavigatorPanel() {
         name: asteroid.name,
         type: "Asteroid" as const,
         target: { kind: "asteroid" as const, id: asteroid.id },
-        details: asteroid as Record<string, unknown>,
+        details: asteroidDetailItems(asteroid),
       })),
     ];
   }, [systemDetail]);
@@ -157,13 +140,11 @@ export function SystemNavigatorPanel() {
             </ActionButton>
           </header>
           <div className={styles.popupBody}>
-            {Object.entries(selectedInfo.details)
-              .filter(([key]) => !hiddenInfoKeys.has(key))
-              .map(([key, value]) => (
-                <p key={key} className={styles.meta}>
-                  {formatKey(key)}: <strong>{formatValue(value)}</strong>
-                </p>
-              ))}
+            {selectedInfo.details.map((item) => (
+              <p key={item.label} className={styles.meta}>
+                {item.label}: <strong>{item.value}</strong>
+              </p>
+            ))}
           </div>
         </aside>
       )}

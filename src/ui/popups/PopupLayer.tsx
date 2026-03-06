@@ -1,26 +1,16 @@
 "use client";
 
 import { usePopupController } from "../../application/hooks/usePopupController";
+import {
+  asteroidDetailItems,
+  starDetailItems,
+} from "../../lib/format/celestialDetails";
 import { useRenderStore } from "../../state/render.store";
 import { useUiStore } from "../../state/ui.store";
 import styles from "../../styles/skeleton.module.css";
 import { MoonPopup } from "./MoonPopup";
 import { PlanetPopup } from "./PlanetPopup";
 import { SystemPopup } from "./SystemPopup";
-
-const formatKey = (key: string): string =>
-  key
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/^./, (letter) => letter.toUpperCase());
-
-const formatValue = (value: unknown): string => {
-  if (value == null) return "null";
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
-};
-
-const hiddenInfoKeys = new Set(["id", "systemId", "planetId", "galaxyId", "orbitalStarter"]);
 
 export function PopupLayer() {
   const { popup } = usePopupController();
@@ -90,11 +80,9 @@ export function PopupLayer() {
               </div>
             </header>
             <div className={styles.popupBody}>
-              {Object.entries(popup.data)
-                .filter(([key]) => !hiddenInfoKeys.has(key))
-                .map(([key, value]) => (
-                <p key={key} className={styles.meta}>
-                  {formatKey(key)}: <strong>{formatValue(value)}</strong>
+              {starDetailItems(popup.data).map((item) => (
+                <p key={item.label} className={styles.meta}>
+                  {item.label}: <strong>{item.value}</strong>
                 </p>
               ))}
             </div>
@@ -112,11 +100,9 @@ export function PopupLayer() {
               </div>
             </header>
             <div className={styles.popupBody}>
-              {Object.entries(popup.data)
-                .filter(([key]) => !hiddenInfoKeys.has(key))
-                .map(([key, value]) => (
-                <p key={key} className={styles.meta}>
-                  {formatKey(key)}: <strong>{formatValue(value)}</strong>
+              {asteroidDetailItems(popup.data).map((item) => (
+                <p key={item.label} className={styles.meta}>
+                  {item.label}: <strong>{item.value}</strong>
                 </p>
               ))}
             </div>

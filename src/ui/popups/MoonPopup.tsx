@@ -1,4 +1,5 @@
 import { MoonProps } from "../../types/moon.types";
+import { moonDetailItems } from "../../lib/format/celestialDetails";
 import styles from "../../styles/skeleton.module.css";
 import { ActionButton } from "../components/buttons/ActionButton";
 
@@ -7,21 +8,9 @@ type MoonPopupProps = {
   onClose: () => void;
 };
 
-const formatKey = (key: string): string =>
-  key
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/^./, (letter) => letter.toUpperCase());
-
-const formatValue = (value: unknown): string => {
-  if (value == null) return "null";
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
-};
-
-const hiddenInfoKeys = new Set(["id", "systemId", "planetId", "galaxyId", "orbitalStarter"]);
-
 export function MoonPopup({ moon, onClose }: MoonPopupProps) {
+  const detail = moonDetailItems(moon);
+
   return (
     <section className={`${styles.popupCard} ${styles.popupCardRich}`}>
       <header className={styles.popupHeader}>
@@ -36,11 +25,9 @@ export function MoonPopup({ moon, onClose }: MoonPopupProps) {
       </header>
 
       <div className={styles.popupBody}>
-        {Object.entries(moon)
-          .filter(([key]) => !hiddenInfoKeys.has(key))
-          .map(([key, value]) => (
-          <p key={key} className={styles.meta}>
-            {formatKey(key)}: <strong>{formatValue(value)}</strong>
+        {detail.map((item) => (
+          <p key={item.label} className={styles.meta}>
+            {item.label}: <strong>{item.value}</strong>
           </p>
         ))}
       </div>
