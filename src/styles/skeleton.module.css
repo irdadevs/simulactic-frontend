@@ -145,6 +145,8 @@
   background: var(--carbon-black-900);
   border-radius: 14px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .panelHeader {
@@ -207,21 +209,32 @@
 .renderStage {
   position: relative;
   min-height: 700px;
+  flex: 1;
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 12px;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 20%, #1b2520, #0a0d0c 60%);
 }
 
-.fullViewButtonWrap {
+.fullViewFloating {
   position: absolute;
   right: 14px;
   bottom: 14px;
   z-index: 7;
   pointer-events: auto;
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 34%, var(--carbon-black-700));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--carbon-black-900) 90%, #0b1e24);
+  padding: 8px;
 }
 
 .canvasWrap {
+  position: absolute;
+  inset: 0;
   height: 100%;
-  min-height: 700px;
-  border: 1px solid var(--carbon-black-700);
-  border-radius: 12px;
+  min-height: 0;
+  border: none;
+  border-radius: inherit;
   overflow: hidden;
 }
 

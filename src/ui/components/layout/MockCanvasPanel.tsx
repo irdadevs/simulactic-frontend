@@ -88,9 +88,9 @@ export function MockCanvasPanel({
           <LazySystemTimeControlsPanel />
           <LazySystemNavigatorPanel />
           <LazyPopupLayer />
-          <div className={styles.fullViewButtonWrap}>
+          <div className={styles.fullViewFloating}>
             <ActionButton variant="secondary" onClick={() => void onToggleFullscreen()}>
-              {isFullscreen ? "Exit full mode" : "Full mode view"}
+              {isFullscreen ? "Exit full screen mode" : "Full screen mode"}
             </ActionButton>
           </div>
         </div>
