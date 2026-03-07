@@ -64,6 +64,21 @@ export type BanResponse = {
   ipAddress?: string;
 };
 
+export type SupporterBadgeBranchProgress = {
+  level: number;
+  maxLevel: number;
+  nextLevel: number | null;
+  nextThreshold: number | null;
+};
+
+export type SupporterProgressResponse = {
+  totalDonatedEurMinor: number;
+  monthlySupportingMonths: number;
+  unlockedBadges: string[];
+  amountBranch: SupporterBadgeBranchProgress;
+  monthlyBranch: SupporterBadgeBranchProgress;
+};
+
 export type ActiveBansResponse = {
   users: Array<{
     id: string;
@@ -127,4 +142,7 @@ export const userApi = {
   banIp: (body: BanIpRequest): Promise<BanResponse> => apiPost(`${BASE}/bans/ip`, { body }),
 
   unbanIp: (body: UnbanIpRequest): Promise<void> => apiPost(`${BASE}/bans/ip/unban`, { body }),
+
+  mySupporterProgress: (): Promise<SupporterProgressResponse> =>
+    apiGet(`${BASE}/me/supporter-progress`),
 };

@@ -32,6 +32,7 @@ export function NavBar() {
           Simulactic
         </Link>
         <nav className={styles.nav}>
+          {isAuthenticated && <Link href="/me">Me</Link>}
           <Link href="/dashboard">Dashboard</Link>
           {isAdmin && <Link href="/admin">Admin</Link>}
           {isAuthenticated && (
