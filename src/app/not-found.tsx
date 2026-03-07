@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActionButton } from "../ui/components/buttons/ActionButton";
 import styles from "../styles/not-found.module.css";
@@ -223,9 +222,7 @@ export default function NotFound() {
           <ActionButton variant="secondary" onClick={() => setRunId((prev) => prev + 1)}>
             Retry Minigame
           </ActionButton>
-          <Link href="/">
-            <ActionButton>Go Home</ActionButton>
-          </Link>
+          <ActionButton onClick={() => window.location.assign("/")}>Go Home</ActionButton>
         </div>
       </article>
     </section>
