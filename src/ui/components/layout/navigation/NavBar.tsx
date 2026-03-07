@@ -11,7 +11,7 @@ export function NavBar() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const isAdmin = user?.role === "Admin";
-  const hideOnAuthPages = pathname === "/" || pathname === "/login" || pathname === "/signup";
+  const hideOnAuthPages = pathname === "/login" || pathname === "/signup";
 
   const onLogout = async () => {
     try {

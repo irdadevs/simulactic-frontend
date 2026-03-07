@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { sileo } from "sileo";
 import { useAuth } from "../../application/hooks/useAuth";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
@@ -12,12 +12,32 @@ import styles from "../../styles/skeleton.module.css";
 
 export default function SignupPage() {
   const router = useRouter();
-  const { signup } = useAuth();
+  const { isAuthenticated, loadMe, signup } = useAuth();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [rawPassword, setRawPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasCheckedAuthRef = useRef(false);
+
+  useEffect(() => {
+    if (hasCheckedAuthRef.current) return;
+    hasCheckedAuthRef.current = true;
+
+    const guard = async () => {
+      if (isAuthenticated) {
+        router.replace("/");
+        return;
+      }
+
+      try {
+        await loadMe();
+        router.replace("/");
+      } catch {}
+    };
+
+    void guard();
+  }, [isAuthenticated, loadMe, router]);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
