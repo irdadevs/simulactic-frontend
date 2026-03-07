@@ -95,6 +95,15 @@
   gap: 10px;
 }
 
+.summarySubtitle {
+  margin-top: 14px;
+  color: var(--carbon-black-200);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .summaryCard {
   border: 1px solid var(--carbon-black-700);
   border-radius: 12px;
@@ -231,10 +240,28 @@
 }
 
 .lineChartLabels {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
+  position: relative;
+  height: 14px;
   margin-top: 6px;
+  overflow: hidden;
+}
+
+.lineChartTick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  color: var(--carbon-black-300);
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.lineChartTickStart {
+  transform: none;
+}
+
+.lineChartTickEnd {
+  transform: translateX(-100%);
 }
 
 .lineChartCurrent {

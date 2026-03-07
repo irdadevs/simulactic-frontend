@@ -37,9 +37,15 @@ const MAX_FETCH = 1000;
 const sections: Section[] = ["overview", "users", "donations", "logs", "metrics", "entities"];
 
 const toDateInput = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const parseDateInput = (value: string) => {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
 const start = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
 const end = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
 const addDays = (d: Date, days: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
+const totalDaysInRange = (fromDate: Date, toDate: Date) =>
+  Math.max(1, Math.floor((start(toDate).getTime() - start(fromDate).getTime()) / (24 * 60 * 60 * 1000)) + 1);
 const euro = (minor: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR" }).format(minor / 100);
 const dateText = (d: Date) => new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(d);
 const pct = (n: number, t: number) => (t ? (n / t) * 100 : 0);
@@ -53,6 +59,16 @@ const renderLine = (points: Point[]) => {
   const h = 180;
   const pad = 20;
   const stepX = points.length > 1 ? (w - pad * 2) / (points.length - 1) : 0;
+  const maxTicks = 8;
+  const tickIndexes = (() => {
+    if (points.length <= maxTicks) {
+      return points.map((_, i) => i);
+    }
+    const indexes = Array.from({ length: maxTicks }, (_, i) =>
+      Math.round((i * (points.length - 1)) / (maxTicks - 1)),
+    );
+    return Array.from(new Set(indexes));
+  })();
   const toY = (v: number) => h - pad - ((v / max) * (h - pad * 2));
   const polyline = points
     .map((p, i) => `${pad + i * stepX},${toY(p.value)}`)
@@ -73,11 +89,24 @@ const renderLine = (points: Point[]) => {
         })}
       </svg>
       <div className={styles.lineChartLabels}>
-        {points.map((p) => (
-          <span key={p.label} className={styles.chartLabel}>
-            {p.label}
-          </span>
-        ))}
+        {tickIndexes.map((pointIndex, tickIndex) => {
+          const point = points[pointIndex];
+          const x = pad + pointIndex * stepX;
+          const leftPercent = (x / w) * 100;
+          const isFirst = tickIndex === 0;
+          const isLast = tickIndex === tickIndexes.length - 1;
+          const tickClassName = isFirst
+            ? `${styles.lineChartTick} ${styles.lineChartTickStart}`
+            : isLast
+              ? `${styles.lineChartTick} ${styles.lineChartTickEnd}`
+              : styles.lineChartTick;
+
+          return (
+            <span key={`${point.label}-${pointIndex}`} className={tickClassName} style={{ left: `${leftPercent}%` }}>
+              {point.label}
+            </span>
+          );
+        })}
       </div>
       <div className={styles.lineChartCurrent}>
         Current: {points.length ? points[points.length - 1].value.toFixed(0) : "0"}
@@ -116,6 +145,7 @@ export default function AdminPage() {
   const [shape, setShape] = useState<"all" | GalaxyShapeValue>("all");
   const [entitySearch, setEntitySearch] = useState("");
   const [logState, setLogState] = useState<"all" | "open" | "resolved">("all");
+  const [logLevelFilter, setLogLevelFilter] = useState<"all" | "debug" | "info" | "warn" | "error" | "critical">("all");
   const [logCategoryFilter, setLogCategoryFilter] = useState<"all" | "application" | "security" | "audit" | "infrastructure">("all");
   const [selectedLog, setSelectedLog] = useState<any | null>(null);
 
@@ -128,8 +158,8 @@ export default function AdminPage() {
   const [focusGalaxyId, setFocusGalaxyId] = useState<string | null>(null);
   const [totals, setTotals] = useState({ users: 0, donations: 0, logs: 0, metrics: 0, galaxies: 0 });
 
-  const rangeFrom = useMemo(() => start(new Date(from)), [from]);
-  const rangeTo = useMemo(() => end(new Date(to)), [to]);
+  const rangeFrom = useMemo(() => start(parseDateInput(from)), [from]);
+  const rangeTo = useMemo(() => end(parseDateInput(to)), [to]);
   const debouncedUserSearch = useDebouncedValue(userSearch, 300);
   const debouncedEntitySearch = useDebouncedValue(entitySearch, 300);
 
@@ -210,17 +240,18 @@ export default function AdminPage() {
   const logsFiltered = useMemo(
     () =>
       logs.filter((log) => {
+        if (logLevelFilter !== "all" && log.level !== logLevelFilter) return false;
         if (logCategoryFilter !== "all" && log.category !== logCategoryFilter) return false;
         if (logState === "open") return !log.resolvedAt;
         if (logState === "resolved") return Boolean(log.resolvedAt);
         return true;
       }),
-    [logCategoryFilter, logState, logs],
+    [logCategoryFilter, logLevelFilter, logState, logs],
   );
 
   const usersHistoricByDay = useMemo(() => {
     const points: Point[] = [];
-    const totalDays = Math.max(1, Math.ceil((rangeTo.getTime() - rangeFrom.getTime()) / (24 * 60 * 60 * 1000)) + 1);
+    const totalDays = totalDaysInRange(rangeFrom, rangeTo);
     for (let i = 0; i < totalDays; i += 1) {
       const day = addDays(rangeFrom, i);
       const dayEnd = end(day);
@@ -230,11 +261,11 @@ export default function AdminPage() {
       });
     }
     return points;
-  }, [rangeFrom, to, usersFiltered]);
+  }, [rangeFrom, rangeTo, usersFiltered]);
 
   const donationsHistoricByDay = useMemo(() => {
     const points: Point[] = [];
-    const totalDays = Math.max(1, Math.ceil((rangeTo.getTime() - rangeFrom.getTime()) / (24 * 60 * 60 * 1000)) + 1);
+    const totalDays = totalDaysInRange(rangeFrom, rangeTo);
     const successful = donations.filter((d) => d.status === "completed" || d.status === "active");
     for (let i = 0; i < totalDays; i += 1) {
       const day = addDays(rangeFrom, i);
@@ -247,11 +278,11 @@ export default function AdminPage() {
       });
     }
     return points;
-  }, [donations, rangeFrom, to]);
+  }, [donations, rangeFrom, rangeTo]);
 
   const galaxyCreationsHistoricByDay = useMemo(() => {
     const points: Point[] = [];
-    const totalDays = Math.max(1, Math.ceil((rangeTo.getTime() - rangeFrom.getTime()) / (24 * 60 * 60 * 1000)) + 1);
+    const totalDays = totalDaysInRange(rangeFrom, rangeTo);
     for (let i = 0; i < totalDays; i += 1) {
       const day = addDays(rangeFrom, i);
       const dayEnd = end(day);
@@ -261,7 +292,7 @@ export default function AdminPage() {
       });
     }
     return points;
-  }, [galaxies, rangeFrom, to]);
+  }, [galaxies, rangeFrom, rangeTo]);
 
   const userGlobalCards = useMemo(() => {
     const now = new Date();
@@ -505,11 +536,28 @@ export default function AdminPage() {
                     <option value="infrastructure">Infrastructure</option>
                   </select>
                 </div>
+                <div className={styles.filterField}>
+                  <label>Level</label>
+                  <select value={logLevelFilter} onChange={(e) => setLogLevelFilter(e.target.value as "all" | "debug" | "info" | "warn" | "error" | "critical")}>
+                    <option value="all">All</option>
+                    <option value="debug">Debug</option>
+                    <option value="info">Info</option>
+                    <option value="warn">Warn</option>
+                    <option value="error">Error</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </div>
               </div>
               <div className={styles.summaryGrid}>
                 <div className={styles.summaryCard}><span>Open logs</span><strong>{openLogs}</strong></div>
                 <div className={styles.summaryCard}><span>Closed logs</span><strong>{closedLogs}</strong></div>
+              </div>
+              <p className={styles.summarySubtitle}>By level totals</p>
+              <div className={styles.summaryGrid}>
                 {logByLevel.map((item) => <div key={item.level} className={styles.summaryCard}><span>{item.level}</span><strong>{item.count}</strong></div>)}
+              </div>
+              <p className={styles.summarySubtitle}>By category totals</p>
+              <div className={styles.summaryGrid}>
                 {logByCategory.map((item) => <div key={item.category} className={styles.summaryCard}><span>{item.category}</span><strong>{item.count}</strong></div>)}
               </div>
               <div className={styles.tableWrap}>
