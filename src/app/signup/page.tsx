@@ -17,6 +17,7 @@ export default function SignupPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [rawPassword, setRawPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const hasCheckedAuthRef = useRef(false);
 
@@ -99,14 +100,24 @@ export default function SignupPage() {
 
         <div className={styles.field}>
           <label htmlFor="signup-password">Password</label>
-          <input
-            id="signup-password"
-            type="password"
-            value={rawPassword}
-            onChange={(event) => setRawPassword(event.target.value)}
-            minLength={6}
-            required
-          />
+          <div className={styles.passwordField}>
+            <input
+              id="signup-password"
+              type={showPassword ? "text" : "password"}
+              value={rawPassword}
+              onChange={(event) => setRawPassword(event.target.value)}
+              minLength={6}
+              required
+            />
+            <button
+              type="button"
+              className={styles.passwordToggle}
+              onClick={() => setShowPassword((current) => !current)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              <img src={showPassword ? "/icons/hide.svg" : "/icons/view.svg"} alt="" aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         <ActionButton type="submit" disabled={isSubmitting}>

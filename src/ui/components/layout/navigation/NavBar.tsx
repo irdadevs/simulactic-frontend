@@ -38,7 +38,10 @@ export function NavBar() {
   const shouldShowNav = authResolved && !isPublicAuthPage && isAuthenticated;
 
   useEffect(() => {
-    document.documentElement.style.setProperty("--app-topbar-offset", shouldShowNav ? "72px" : "0px");
+    document.documentElement.style.setProperty(
+      "--app-topbar-offset",
+      shouldShowNav ? "72px" : "0px",
+    );
     return () => {
       document.documentElement.style.setProperty("--app-topbar-offset", "0px");
     };
@@ -59,7 +62,7 @@ export function NavBar() {
   return (
     <header className={styles.topbar}>
       <div className={styles.topbarContent}>
-        <Link href="/dashboard" className={styles.brand}>
+        <Link href="/" className={styles.brand}>
           Simulactic
         </Link>
         <nav className={styles.nav}>
@@ -72,7 +75,11 @@ export function NavBar() {
         </nav>
         <div className={styles.navActions}>
           {isAuthenticated && (
-            <ActionButton variant="secondary" onClick={() => void onLogout()}>
+            <ActionButton
+              variant="secondary"
+              className={styles.logoutLikeDonate}
+              onClick={() => void onLogout()}
+            >
               Logout
             </ActionButton>
           )}

@@ -80,17 +80,6 @@ export default function Home() {
           </article>
         </div>
       </section>
-
-      <footer className={styles.footer}>
-        <div className={styles.footerInner}>
-          <p>Copyright 2026 Simulactic. All rights reserved.</p>
-          <nav className={styles.footerLinks}>
-            <Link href="/privacy-policy">Privacy Policy</Link>
-            <Link href="/terms">Terms of Service</Link>
-            <Link href="/contact">Contact</Link>
-          </nav>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -35,6 +35,34 @@
   padding: 10px 12px;
 }
 
+.passwordField {
+  position: relative;
+}
+
+.passwordField input {
+  padding-right: 42px;
+}
+
+.passwordToggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.passwordToggle img {
+  width: 18px;
+  height: 18px;
+}
+
 .button {
   border: none;
   border-radius: 10px;

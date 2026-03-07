@@ -11,8 +11,7 @@
 
 .zoneHero,
 .zoneSupport,
-.zoneFaq,
-.footer {
+.zoneFaq {
   padding: 34px 20px;
 }
 
@@ -117,7 +116,7 @@
 }
 
 .faqItem {
-  border: 1px solid var(--carbon-black-700);
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 30%, var(--carbon-black-700));
   border-radius: 12px;
   padding: 11px 12px;
   background: color-mix(in srgb, var(--carbon-black-950) 88%, #0e1a14);
@@ -132,34 +131,6 @@
 .faqItem p {
   margin-top: 8px;
   color: var(--carbon-black-200);
-}
-
-.footer {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 30;
-  border-top: 1px solid var(--carbon-black-800);
-  background: #0a0e0b;
-}
-
-.footerInner {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  color: var(--carbon-black-300);
-  font-size: 13px;
-}
-
-.footerLinks {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 @media (max-width: 900px) {

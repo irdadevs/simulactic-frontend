@@ -104,6 +104,8 @@ export default function MePage() {
   const [newEmail, setNewEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const [savingUsername, setSavingUsername] = useState(false);
   const [savingEmail, setSavingEmail] = useState(false);
@@ -388,24 +390,48 @@ export default function MePage() {
               <form className={commonStyles.form} onSubmit={onPasswordSubmit}>
                 <div className={commonStyles.field}>
                   <label htmlFor="current-password">Current password</label>
-                  <input
-                    id="current-password"
-                    type="password"
-                    value={currentPassword}
-                    onChange={(event) => setCurrentPassword(event.target.value)}
-                    required
-                  />
+                  <div className={commonStyles.passwordField}>
+                    <input
+                      id="current-password"
+                      type={showCurrentPassword ? "text" : "password"}
+                      value={currentPassword}
+                      onChange={(event) => setCurrentPassword(event.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className={commonStyles.passwordToggle}
+                      onClick={() => setShowCurrentPassword((current) => !current)}
+                      aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
+                    >
+                      <img
+                        src={showCurrentPassword ? "/icons/hide.svg" : "/icons/view.svg"}
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </div>
                 </div>
                 <div className={commonStyles.field}>
                   <label htmlFor="new-password">New password</label>
-                  <input
-                    id="new-password"
-                    type="password"
-                    value={newPassword}
-                    onChange={(event) => setNewPassword(event.target.value)}
-                    minLength={6}
-                    required
-                  />
+                  <div className={commonStyles.passwordField}>
+                    <input
+                      id="new-password"
+                      type={showNewPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      minLength={6}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className={commonStyles.passwordToggle}
+                      onClick={() => setShowNewPassword((current) => !current)}
+                      aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+                    >
+                      <img src={showNewPassword ? "/icons/hide.svg" : "/icons/view.svg"} alt="" aria-hidden="true" />
+                    </button>
+                  </div>
                 </div>
                 <ActionButton type="submit" disabled={savingPassword}>
                   {savingPassword ? "Saving..." : "Save password"}

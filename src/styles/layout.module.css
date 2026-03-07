@@ -46,11 +46,46 @@
   justify-self: end;
 }
 
+.logoutLikeDonate {
+  border-color: color-mix(in srgb, var(--main-turquoise-surf) 30%, var(--carbon-black-700)) !important;
+  background: color-mix(in srgb, var(--main-turquoise-surf) 10%, transparent) !important;
+  color: var(--carbon-black-100) !important;
+}
+
 .appShell {
   margin: 0 auto;
   width: 100%;
   max-width: 1200px;
-  padding: calc(var(--app-topbar-offset, 0px) + 20px) 20px 20px;
+  padding: calc(var(--app-topbar-offset, 0px) + 20px) 20px 94px;
+}
+
+.globalFooter {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  border-top: 1px solid var(--carbon-black-800);
+  background: #0a0e0b;
+  padding: 12px 20px;
+}
+
+.globalFooterInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: var(--carbon-black-300);
+  font-size: 13px;
+}
+
+.globalFooterLinks {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .landing {
