@@ -26,7 +26,6 @@ type GalaxyReport = { stars: number; planets: number; moons: number; asteroids: 
 const PAGE_SIZE = 100;
 const MAX_FETCH = 1000;
 const sections: Section[] = ["overview", "users", "donations", "logs", "metrics", "entities"];
-const dateKey = (d: Date) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 
 const toDateInput = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const start = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
@@ -76,8 +75,8 @@ export default function AdminPage() {
   const [reports, setReports] = useState<Record<string, GalaxyReport>>({});
   const [totals, setTotals] = useState({ users: 0, donations: 0, logs: 0, metrics: 0, galaxies: 0 });
 
-  const rangeFrom = start(new Date(from));
-  const rangeTo = end(new Date(to));
+  const rangeFrom = useMemo(() => start(new Date(from)), [from]);
+  const rangeTo = useMemo(() => end(new Date(to)), [to]);
 
   useEffect(() => {
     if (checkedRef.current) return;
@@ -137,22 +136,33 @@ export default function AdminPage() {
   const usersFiltered = useMemo(() => users.filter((u) => (role === "all" ? true : u.role === role)), [role, users]);
   const galaxiesFiltered = useMemo(() => galaxies.filter((g) => (shape === "all" ? true : g.shape === shape)), [galaxies, shape]);
 
-  const usersByDay = useMemo(() => {
+  const usersHistoricByDay = useMemo(() => {
     const points: Point[] = [];
+    const endDate = new Date(to);
     for (let i = 13; i >= 0; i -= 1) {
-      const day = addDays(new Date(to), -i);
-      const key = dateKey(day);
-      points.push({ label: `${day.getMonth() + 1}/${day.getDate()}`, value: usersFiltered.filter((u) => dateKey(u.createdAt) === key).length });
+      const day = addDays(endDate, -i);
+      const dayEnd = end(day);
+      points.push({
+        label: `${day.getMonth() + 1}/${day.getDate()}`,
+        value: usersFiltered.filter((u) => u.createdAt <= dayEnd).length,
+      });
     }
     return points;
   }, [to, usersFiltered]);
 
-  const donationsByDay = useMemo(() => {
+  const donationsHistoricByDay = useMemo(() => {
     const points: Point[] = [];
+    const endDate = new Date(to);
+    const successful = donations.filter((d) => d.status === "completed" || d.status === "active");
     for (let i = 13; i >= 0; i -= 1) {
-      const day = addDays(new Date(to), -i);
-      const key = dateKey(day);
-      points.push({ label: `${day.getMonth() + 1}/${day.getDate()}`, value: donations.filter((d) => dateKey(d.createdAt) === key).reduce((acc, d) => acc + d.amountMinor / 100, 0) });
+      const day = addDays(endDate, -i);
+      const dayEnd = end(day);
+      points.push({
+        label: `${day.getMonth() + 1}/${day.getDate()}`,
+        value: successful
+          .filter((d) => d.createdAt <= dayEnd)
+          .reduce((acc, d) => acc + d.amountMinor / 100, 0),
+      });
     }
     return points;
   }, [donations, to]);
@@ -241,8 +251,8 @@ export default function AdminPage() {
             <article className={styles.card}>
               <h2 className={commonStyles.panelTitle}>Charts</h2>
               <div className={styles.chartGrid}>
-                <div className={styles.chartCard}><h3 className={styles.chartTitle}>Users/day</h3>{renderBars(usersByDay)}</div>
-                <div className={styles.chartCard}><h3 className={styles.chartTitle}>Donations EUR/day</h3>{renderBars(donationsByDay)}</div>
+                <div className={styles.chartCard}><h3 className={styles.chartTitle}>Users historic counter (day by day)</h3>{renderBars(usersHistoricByDay)}</div>
+                <div className={styles.chartCard}><h3 className={styles.chartTitle}>Donations historic counter EUR (day by day)</h3>{renderBars(donationsHistoricByDay)}</div>
               </div>
             </article>
           </section>
@@ -287,4 +297,3 @@ export default function AdminPage() {
     </section>
   );
 }
-
