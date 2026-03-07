@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useGalaxy } from "../../application/hooks/useGalaxy";
 import { useRenderCoordinator } from "../../application/hooks/useRenderCoordinator";
@@ -21,6 +21,7 @@ const CreateGalaxyModal = dynamic(
 
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated, loadMe } = useAuth();
   const {
     machineState,
@@ -56,7 +57,11 @@ export default function DashboardPage() {
         }
         const result = await loadGalaxies();
         if (result.rows.length > 0) {
-          const initialGalaxyId = result.rows[0].id;
+          const requestedGalaxyId = searchParams.get("galaxyId");
+          const initialGalaxyId =
+            requestedGalaxyId && result.rows.some((item) => item.id === requestedGalaxyId)
+              ? requestedGalaxyId
+              : result.rows[0].id;
           await loadGalaxyById(initialGalaxyId);
           await loadGalaxyForRender(initialGalaxyId);
         }
@@ -65,7 +70,7 @@ export default function DashboardPage() {
       }
     };
     void bootstrap();
-  }, [isAuthenticated, loadGalaxies, loadGalaxyById, loadGalaxyForRender, loadMe, router]);
+  }, [isAuthenticated, loadGalaxies, loadGalaxyById, loadGalaxyForRender, loadMe, router, searchParams]);
 
   const onCreateGalaxy = async (payload: {
     name: string;
