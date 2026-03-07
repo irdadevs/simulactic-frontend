@@ -9,10 +9,11 @@ export function Footer() {
         <nav className={styles.globalFooterLinks}>
           <Link href="/privacy-policy">Privacy Policy</Link>
           <Link href="/terms">Terms of Service</Link>
-          <a href="mailto:contact@simulactic.com">Contact</a>
+          <a href="mailto:contact@simulactic.com" target="_blank" rel="noreferrer">
+            Contact
+          </a>
         </nav>
       </div>
     </footer>
   );
 }
-

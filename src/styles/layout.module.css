@@ -56,7 +56,7 @@
   margin: 0 auto;
   width: 100%;
   max-width: 1200px;
-  padding: calc(var(--app-topbar-offset, 0px) + 20px) 20px 94px;
+  padding: calc(var(--app-topbar-offset, 0px) + 20px) 20px 114px;
 }
 
 .globalFooter {
@@ -67,7 +67,7 @@
   z-index: 30;
   border-top: 1px solid var(--carbon-black-800);
   background: #0a0e0b;
-  padding: 12px 20px;
+  padding: 18px 24px;
 }
 
 .globalFooterInner {
@@ -76,10 +76,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
   color: var(--carbon-black-300);
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .globalFooterLinks {
