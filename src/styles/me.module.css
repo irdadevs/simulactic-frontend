@@ -1,0 +1,204 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.loading {
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  color: var(--carbon-black-200);
+}
+
+.sidebar,
+.card {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--carbon-black-900) 90%, #111f24);
+}
+
+.sidebar {
+  position: sticky;
+  top: 84px;
+  padding: 14px;
+}
+
+.sidebarActions {
+  display: grid;
+  gap: 8px;
+}
+
+.sidebarButton,
+.sidebarButtonActive {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: left;
+  color: var(--carbon-black-100);
+  background: transparent;
+  cursor: pointer;
+}
+
+.sidebarButtonActive {
+  border-color: color-mix(in srgb, var(--main-turquoise-surf) 48%, var(--carbon-black-700));
+  background: color-mix(in srgb, var(--main-turquoise-surf) 18%, transparent);
+}
+
+.content {
+  min-width: 0;
+}
+
+.sectionGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  padding: 14px;
+}
+
+.kvList {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.kvList strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--main-ivory);
+}
+
+.kvLabel {
+  color: var(--carbon-black-300);
+  font-size: 12px;
+}
+
+.rowBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.inlineField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--carbon-black-200);
+}
+
+.inlineField select {
+  border: 1px solid var(--carbon-black-700);
+  background: var(--carbon-black-950);
+  color: var(--main-ivory);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.summaryGrid,
+.badgeGrid,
+.listGrid,
+.detailGrid {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.summaryGrid {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.badgeGrid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.listGrid {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.summaryCard,
+.listCard,
+.badgeCard {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 12px;
+  padding: 10px;
+  background: color-mix(in srgb, var(--carbon-black-950) 86%, #12222a);
+}
+
+.summaryCard span {
+  color: var(--carbon-black-300);
+  font-size: 12px;
+}
+
+.summaryCard strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--main-ivory);
+  font-size: 22px;
+}
+
+.cardTitle {
+  font-size: 16px;
+  color: var(--main-ivory);
+}
+
+.badge {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--carbon-black-200);
+  text-transform: capitalize;
+}
+
+.detailGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.detailGrid p,
+.metaText {
+  color: var(--carbon-black-200);
+  font-size: 13px;
+}
+
+.badgeArtPlaceholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  border: 1px dashed var(--carbon-black-600);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  margin-bottom: 8px;
+  background: color-mix(in srgb, var(--carbon-black-800) 80%, #0e1a20);
+}
+
+.badgeUnlocked {
+  border-color: #d4af37;
+  box-shadow: 0 0 16px color-mix(in srgb, #d4af37 40%, transparent);
+}
+
+.badgeLocked {
+  filter: grayscale(1);
+  opacity: 0.78;
+}
+
+.empty {
+  color: var(--carbon-black-300);
+  font-size: 13px;
+}
+
+@media (max-width: 980px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+}

@@ -32,14 +32,20 @@ export function NavBar() {
           Simulactic
         </Link>
         <nav className={styles.nav}>
+          {isAuthenticated && <Link href="/me">Me</Link>}
           <Link href="/dashboard">Dashboard</Link>
           {isAdmin && <Link href="/admin">Admin</Link>}
+          <Link href="/donations" className={styles.donateLink}>
+            Donate
+          </Link>
+        </nav>
+        <div className={styles.navActions}>
           {isAuthenticated && (
             <ActionButton variant="secondary" onClick={() => void onLogout()}>
               Logout
             </ActionButton>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );

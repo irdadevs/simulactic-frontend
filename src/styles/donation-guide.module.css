@@ -1,0 +1,106 @@
+.page {
+  display: grid;
+  gap: 14px;
+}
+
+.header,
+.checkoutCard,
+.placeholderCard {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--carbon-black-900) 92%, #0f2028);
+}
+
+.header,
+.checkoutCard,
+.placeholderCard {
+  padding: 14px;
+}
+
+.helperText {
+  margin-top: 6px;
+  color: var(--carbon-black-300);
+  font-size: 13px;
+}
+
+.typeSwitch {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.typeButton,
+.typeButtonActive,
+.preset,
+.presetActive {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 10px;
+  color: var(--carbon-black-100);
+  background: transparent;
+  cursor: pointer;
+}
+
+.typeButton,
+.typeButtonActive {
+  padding: 9px;
+  font-size: 13px;
+}
+
+.typeButtonActive,
+.presetActive {
+  border-color: color-mix(in srgb, var(--main-turquoise-surf) 48%, var(--carbon-black-700));
+  background: color-mix(in srgb, var(--main-turquoise-surf) 18%, transparent);
+}
+
+.presetGrid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.preset,
+.presetActive {
+  padding: 8px;
+  font-size: 12px;
+}
+
+.manualAmount {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.manualAmount label {
+  color: var(--carbon-black-200);
+  font-size: 12px;
+}
+
+.manualAmount input {
+  width: 100%;
+  border: 1px solid var(--carbon-black-700);
+  background: var(--carbon-black-950);
+  color: var(--main-ivory);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.summary {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  display: grid;
+  gap: 4px;
+  color: var(--carbon-black-200);
+  font-size: 13px;
+}
+
+.summary strong {
+  color: var(--main-ivory);
+}
+
+.placeholderGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
