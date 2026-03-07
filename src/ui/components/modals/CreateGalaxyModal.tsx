@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { sileo } from "sileo";
+import { describeApiError } from "../../../lib/errors/apiErrorMessage";
 import { GalaxyShapeValue } from "../../../types/galaxy.types";
 import layoutStyles from "../../../styles/layout.module.css";
 import commonStyles from "../../../styles/skeleton.module.css";
@@ -29,7 +31,6 @@ export function CreateGalaxyModal({
   const [shape, setShape] = useState<GalaxyShapeValue>("spherical");
   const [systemCount, setSystemCount] = useState(12);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
 
@@ -37,7 +38,6 @@ export function CreateGalaxyModal({
     event.preventDefault();
     if (disabled) return;
     setIsSubmitting(true);
-    setError(null);
     try {
       await onSubmit({
         name,
@@ -47,9 +47,19 @@ export function CreateGalaxyModal({
       setName("");
       setShape("spherical");
       setSystemCount(12);
+      sileo.success({
+        title: "Galaxy created",
+        description: `Galaxy "${name}" is ready and has been loaded.`,
+      });
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Could not create galaxy");
+      sileo.error({
+        title: "Could not create galaxy",
+        description: describeApiError(
+          err,
+          "Galaxy creation failed. Check name, shape and system count, then try again.",
+        ),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -60,8 +70,6 @@ export function CreateGalaxyModal({
       <article className={layoutStyles.modalCard}>
         <h2 className={commonStyles.panelTitle}>Create Galaxy</h2>
         <p className={commonStyles.subtitle}>This will call backend and update your list.</p>
-
-        {error && <p className={commonStyles.error}>{error}</p>}
 
         <form className={commonStyles.form} onSubmit={handleSubmit}>
           <div className={commonStyles.field}>

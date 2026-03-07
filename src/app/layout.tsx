@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Montserrat, Roboto_Condensed } from "next/font/google";
+import "sileo/styles.css";
 import "../styles/globals.css";
 import layoutStyles from "../styles/layout.module.css";
 import { NavBar } from "../ui/components/layout/navigation/NavBar";
+import { ToastViewport } from "../ui/components/layout/ToastViewport";
 
 const robotoCondensed = Roboto_Condensed({
   variable: "--font-body",
@@ -30,6 +32,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${robotoCondensed.variable} ${montserrat.variable}`}>
         <NavBar />
+        <ToastViewport />
         <main className={layoutStyles.appShell}>{children}</main>
       </body>
     </html>

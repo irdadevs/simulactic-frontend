@@ -77,15 +77,6 @@
   font-size: 12px;
 }
 
-.success {
-  border: 1px solid #1f8d5f;
-  color: #b9f3db;
-  background: #11382b;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 13px;
-}
-
 .rowBetween {
   display: flex;
   align-items: center;

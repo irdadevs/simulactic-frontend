@@ -73,11 +73,9 @@ export default function DashboardPage() {
     systemCount: number;
   }) => {
     if (!canCreateGalaxy) return;
-    try {
-      const created = await createGalaxy(payload);
-      await loadGalaxyById(created.id);
-      await loadGalaxyForRender(created.id);
-    } catch {}
+    const created = await createGalaxy(payload);
+    await loadGalaxyById(created.id);
+    await loadGalaxyForRender(created.id);
   };
 
   return (

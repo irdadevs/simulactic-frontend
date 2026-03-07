@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { sileo } from "sileo";
 import { useAuth } from "../../application/hooks/useAuth";
+import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import { ActionButton } from "../../ui/components/buttons/ActionButton";
 import { AuthCard } from "../../ui/components/layout/auth/AuthCard";
 import styles from "../../styles/skeleton.module.css";
@@ -15,18 +17,25 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [rawPassword, setRawPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
-    setError(null);
     try {
       await login({ email, rawPassword });
+      sileo.success({
+        title: "Welcome back",
+        description: "Login successful. Redirecting to your dashboard.",
+      });
       router.push("/dashboard");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Login failed";
-      setError(message);
+      sileo.error({
+        title: "Login failed",
+        description: describeApiError(
+          err,
+          "We could not sign you in. Please check your credentials and try again.",
+        ),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -36,7 +45,6 @@ export default function LoginPage() {
     <AuthCard
       title="Login"
       subtitle="Enter your credentials to continue."
-      error={error}
       footer={
         <p className={styles.subtitle}>
           No account? <Link href="/signup">Create one</Link>

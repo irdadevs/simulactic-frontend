@@ -2,11 +2,13 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { sileo } from "sileo";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useDonations } from "../../application/hooks/useDonations";
 import { useGalaxy } from "../../application/hooks/useGalaxy";
 import { galaxyApi } from "../../infra/api/galaxy.api";
 import { SupporterProgressResponse, userApi } from "../../infra/api/user.api";
+import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import { ActionButton } from "../../ui/components/buttons/ActionButton";
 import commonStyles from "../../styles/skeleton.module.css";
 import styles from "../../styles/me.module.css";
@@ -107,9 +109,6 @@ export default function MePage() {
   const [savingEmail, setSavingEmail] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
-  const [feedbackError, setFeedbackError] = useState<string | null>(null);
-  const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
-
   const [supporterProgress, setSupporterProgress] = useState<SupporterProgressResponse | null>(null);
   const [galaxyStats, setGalaxyStats] = useState<Record<string, GalaxyStats>>({});
 
@@ -156,6 +155,10 @@ export default function MePage() {
           setGalaxyStats(Object.fromEntries(entries));
         }
       } catch {
+        sileo.error({
+          title: "Session required",
+          description: "Please sign in to access your profile page.",
+        });
         router.push("/login");
       } finally {
         setBootstrapping(false);
@@ -199,22 +202,24 @@ export default function MePage() {
     });
   }, [creationOrder, galaxies, galaxyStats]);
 
-  const resetFeedback = () => {
-    setFeedbackError(null);
-    setFeedbackSuccess(null);
-  };
-
   const onUsernameSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    resetFeedback();
     setSavingUsername(true);
     try {
       await changeUsername({ newUsername });
       await loadMe();
-      setFeedbackSuccess("Username updated.");
+      sileo.success({
+        title: "Username updated",
+        description: "Your new username has been saved successfully.",
+      });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Could not update username.";
-      setFeedbackError(message);
+      sileo.error({
+        title: "Could not update username",
+        description: describeApiError(
+          error,
+          "We could not update your username. Check that the value is valid and unique.",
+        ),
+      });
     } finally {
       setSavingUsername(false);
     }
@@ -222,15 +227,22 @@ export default function MePage() {
 
   const onEmailSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    resetFeedback();
     setSavingEmail(true);
     try {
       await changeEmail({ newEmail });
       await loadMe();
-      setFeedbackSuccess("Email updated.");
+      sileo.success({
+        title: "Email updated",
+        description: "Your account email has been updated successfully.",
+      });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Could not update email.";
-      setFeedbackError(message);
+      sileo.error({
+        title: "Could not update email",
+        description: describeApiError(
+          error,
+          "We could not update your email. Verify the address format and try again.",
+        ),
+      });
     } finally {
       setSavingEmail(false);
     }
@@ -238,16 +250,23 @@ export default function MePage() {
 
   const onPasswordSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    resetFeedback();
     setSavingPassword(true);
     try {
       await changePassword({ currentPassword, newPassword });
       setCurrentPassword("");
       setNewPassword("");
-      setFeedbackSuccess("Password updated.");
+      sileo.success({
+        title: "Password updated",
+        description: "Your password has been changed successfully.",
+      });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Could not update password.";
-      setFeedbackError(message);
+      sileo.error({
+        title: "Could not update password",
+        description: describeApiError(
+          error,
+          "We could not update your password. Ensure your current password is correct.",
+        ),
+      });
     } finally {
       setSavingPassword(false);
     }
@@ -394,12 +413,6 @@ export default function MePage() {
               </form>
             </section>
 
-            {(feedbackError || feedbackSuccess) && (
-              <section className={styles.card}>
-                {feedbackError ? <p className={commonStyles.error}>{feedbackError}</p> : null}
-                {feedbackSuccess ? <p className={styles.success}>{feedbackSuccess}</p> : null}
-              </section>
-            )}
           </div>
         )}
 
