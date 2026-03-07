@@ -25,8 +25,11 @@ export default function DonationGuidePage() {
   const [donationType, setDonationType] = useState<DonationType>("one_time");
   const [amountMinor, setAmountMinor] = useState<number>(1000);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isCheckoutPopupOpen, setIsCheckoutPopupOpen] = useState(false);
 
   const hasHandledReturnRef = useRef(false);
+  const checkoutPopupRef = useRef<Window | null>(null);
+  const popupWatcherRef = useRef<number | null>(null);
 
   const selectedPresets = useMemo(
     () => (donationType === "monthly" ? monthlyPresets : oneTimePresets),
@@ -126,11 +129,46 @@ export default function DonationGuidePage() {
       });
 
       sileo.success({
-        title: "Redirecting to Stripe",
+        title: "Opening Stripe checkout",
         description: `Preparing ${donationType === "monthly" ? "monthly" : "one-time"} donation for EUR ${toEuroText(amountMinor)}.`,
       });
 
-      window.location.href = checkout.checkoutUrl;
+      const width = 520;
+      const height = 760;
+      const left = Math.max(0, Math.floor(window.screenX + (window.outerWidth - width) / 2));
+      const top = Math.max(0, Math.floor(window.screenY + (window.outerHeight - height) / 2));
+      const features =
+        `popup=yes,width=${width},height=${height},left=${left},top=${top},` +
+        "resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=yes";
+
+      const popup = window.open(checkout.checkoutUrl, "simulactic_stripe_checkout", features);
+      if (!popup) {
+        setIsRedirecting(false);
+        sileo.error({
+          title: "Popup blocked",
+          description: "Please allow popups for this site to continue with Stripe checkout.",
+        });
+        return;
+      }
+
+      checkoutPopupRef.current = popup;
+      setIsCheckoutPopupOpen(true);
+      setIsRedirecting(false);
+      popup.focus();
+
+      if (popupWatcherRef.current) {
+        window.clearInterval(popupWatcherRef.current);
+      }
+
+      popupWatcherRef.current = window.setInterval(() => {
+        if (!checkoutPopupRef.current || checkoutPopupRef.current.closed) {
+          setIsCheckoutPopupOpen(false);
+          if (popupWatcherRef.current) {
+            window.clearInterval(popupWatcherRef.current);
+            popupWatcherRef.current = null;
+          }
+        }
+      }, 400);
     } catch (error: unknown) {
       setIsRedirecting(false);
       sileo.error({
@@ -143,8 +181,18 @@ export default function DonationGuidePage() {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (popupWatcherRef.current) {
+        window.clearInterval(popupWatcherRef.current);
+        popupWatcherRef.current = null;
+      }
+    };
+  }, []);
+
   return (
     <section className={styles.page}>
+      {isCheckoutPopupOpen ? <div className={styles.checkoutBackdrop} aria-hidden="true" /> : null}
       <header className={styles.header}>
         <p className={commonStyles.meta}>Support Simulactic</p>
         <h1 className={commonStyles.title}>Donation Guide</h1>
@@ -218,8 +266,11 @@ export default function DonationGuidePage() {
           </p>
         </div>
 
-        <ActionButton onClick={() => void onStartDonation()} disabled={isRedirecting || amountMinor < 100}>
-          {isRedirecting ? "Redirecting..." : "Donate with Stripe"}
+        <ActionButton
+          onClick={() => void onStartDonation()}
+          disabled={isRedirecting || amountMinor < 100 || isCheckoutPopupOpen}
+        >
+          {isRedirecting ? "Opening..." : "Donate with Stripe"}
         </ActionButton>
       </section>
 

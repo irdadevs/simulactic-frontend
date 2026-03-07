@@ -3,6 +3,7 @@ import { Montserrat, Roboto_Condensed } from "next/font/google";
 import "sileo/styles.css";
 import "../styles/globals.css";
 import layoutStyles from "../styles/layout.module.css";
+import { Footer } from "../ui/components/layout/navigation/Footer";
 import { NavBar } from "../ui/components/layout/navigation/NavBar";
 import { ToastViewport } from "../ui/components/layout/ToastViewport";
 
@@ -34,6 +35,7 @@ export default function RootLayout({
         <NavBar />
         <ToastViewport />
         <main className={layoutStyles.appShell}>{children}</main>
+        <Footer />
       </body>
     </html>
   );

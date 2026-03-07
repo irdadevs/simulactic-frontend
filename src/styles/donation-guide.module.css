@@ -1,6 +1,15 @@
 .page {
+  position: relative;
   display: grid;
   gap: 14px;
+}
+
+.checkoutBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(4, 8, 14, 0.58);
+  pointer-events: none;
 }
 
 .header,
