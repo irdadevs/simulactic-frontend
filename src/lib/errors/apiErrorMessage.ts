@@ -28,6 +28,28 @@ const parseApiErrorBody = (error: unknown): { status?: number; code?: string; me
   };
 };
 
+const isTechnicalMessage = (message: string): boolean => {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("api request failed with status") ||
+    normalized.includes("network request failed") ||
+    normalized.includes("request timeout") ||
+    normalized.includes("failed: get ") ||
+    normalized.includes("failed: post ") ||
+    normalized.includes("failed: patch ") ||
+    normalized.includes("failed: put ") ||
+    normalized.includes("failed: delete ")
+  );
+};
+
+const cleanMessage = (message?: string): string | null => {
+  if (!message) return null;
+  const trimmed = message.trim();
+  if (!trimmed) return null;
+  if (isTechnicalMessage(trimmed)) return null;
+  return trimmed;
+};
+
 const knownCodeMessages: Record<string, string> = {
   "AUTH.INVALID_CREDENTIALS": "Invalid credentials. Check your email and password and try again.",
   "USERS.EMAIL_NOT_VERIFIED": "Your account email is not verified. Check your inbox and verify first.",
@@ -45,21 +67,30 @@ const knownCodeMessages: Record<string, string> = {
 
 export const describeApiError = (error: unknown, fallback: string): string => {
   const parsed = parseApiErrorBody(error);
+  const safeMessage = cleanMessage(parsed.message);
 
   if (parsed.code && knownCodeMessages[parsed.code]) {
     return knownCodeMessages[parsed.code];
   }
 
-  if (parsed.status === 400) return parsed.message ?? "Invalid request data. Please review your input.";
+  if (error instanceof Error && error.message.toLowerCase().includes("timeout")) {
+    return "The request took too long and timed out. Please try again.";
+  }
+
+  if (error instanceof Error && error.message.toLowerCase().includes("network request failed")) {
+    return "Network connection failed. Check your internet connection and try again.";
+  }
+
+  if (parsed.status === 400) return safeMessage ?? "Some input values are invalid. Please review and try again.";
   if (parsed.status === 401) return "Authentication required. Please log in and try again.";
   if (parsed.status === 403) return "You are not allowed to do this action.";
   if (parsed.status === 404) return "Requested data was not found.";
-  if (parsed.status === 409) return parsed.message ?? "Conflict detected with existing data.";
-  if (parsed.status === 422) return parsed.message ?? "Some fields are invalid. Please review the form.";
+  if (parsed.status === 409) return safeMessage ?? "Conflict detected with existing data.";
+  if (parsed.status === 422) return safeMessage ?? "Some fields are invalid. Please review the form.";
   if (parsed.status === 429) return "Too many attempts. Please wait a moment and retry.";
   if (parsed.status && parsed.status >= 500) {
-    return "Server error while processing your request. Please try again shortly.";
+    return "Internal Server Error";
   }
 
-  return parsed.message ?? fallback;
+  return safeMessage ?? fallback;
 };
