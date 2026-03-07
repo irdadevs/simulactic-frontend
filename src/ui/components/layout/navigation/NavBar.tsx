@@ -35,12 +35,14 @@ export function NavBar() {
           {isAuthenticated && <Link href="/me">Me</Link>}
           <Link href="/dashboard">Dashboard</Link>
           {isAdmin && <Link href="/admin">Admin</Link>}
+        </nav>
+        <div className={styles.navActions}>
           {isAuthenticated && (
             <ActionButton variant="secondary" onClick={() => void onLogout()}>
               Logout
             </ActionButton>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
