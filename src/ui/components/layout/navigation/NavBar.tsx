@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../../../application/hooks/useAuth";
 import styles from "../../../../styles/layout.module.css";
 import { ActionButton } from "../../buttons/ActionButton";
@@ -9,9 +10,30 @@ import { ActionButton } from "../../buttons/ActionButton";
 export function NavBar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, loadMe, logout } = useAuth();
   const isAdmin = user?.role === "Admin";
-  const hideOnAuthPages = pathname === "/login" || pathname === "/signup";
+  const isPublicAuthPage = pathname === "/login" || pathname === "/signup";
+  const [authResolved, setAuthResolved] = useState(false);
+  const hasResolvedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasResolvedRef.current) return;
+    hasResolvedRef.current = true;
+
+    const resolveAuth = async () => {
+      if (isAuthenticated) {
+        setAuthResolved(true);
+        return;
+      }
+
+      try {
+        await loadMe();
+      } catch {}
+      setAuthResolved(true);
+    };
+
+    void resolveAuth();
+  }, [isAuthenticated, loadMe]);
 
   const onLogout = async () => {
     try {
@@ -21,7 +43,15 @@ export function NavBar() {
     }
   };
 
-  if (hideOnAuthPages) {
+  if (!authResolved) {
+    return null;
+  }
+
+  if (isPublicAuthPage) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
     return null;
   }
 
