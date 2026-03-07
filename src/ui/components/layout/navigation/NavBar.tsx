@@ -11,7 +11,7 @@ export function NavBar() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const isAdmin = user?.role === "Admin";
-  const hideOnAuthPages = pathname === "/login" || pathname === "/signup";
+  const hideOnAuthPages = pathname === "/" || pathname === "/login" || pathname === "/signup";
 
   const onLogout = async () => {
     try {
@@ -35,6 +35,9 @@ export function NavBar() {
           {isAuthenticated && <Link href="/me">Me</Link>}
           <Link href="/dashboard">Dashboard</Link>
           {isAdmin && <Link href="/admin">Admin</Link>}
+          <Link href="/donations" className={styles.donateLink}>
+            Donate
+          </Link>
         </nav>
         <div className={styles.navActions}>
           {isAuthenticated && (
