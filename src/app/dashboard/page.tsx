@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useGalaxy } from "../../application/hooks/useGalaxy";
 import { useRenderCoordinator } from "../../application/hooks/useRenderCoordinator";
@@ -21,6 +21,7 @@ const CreateGalaxyModal = dynamic(
 
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated, loadMe } = useAuth();
   const {
     machineState,
@@ -42,8 +43,23 @@ export default function DashboardPage() {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const hasBootstrappedRef = useRef(false);
+  const isEmbedded = searchParams.get("embed") === "1";
   const isSupporter = Boolean(user?.isSupporter);
   const canCreateGalaxy = isSupporter || galaxies.length < 3;
+
+  useEffect(() => {
+    if (!isEmbedded) return;
+    document.documentElement.style.setProperty("--app-shell-max-width", "100vw");
+    document.documentElement.style.setProperty("--app-shell-side-pad", "0px");
+    document.documentElement.style.setProperty("--app-shell-top-pad", "0px");
+    document.documentElement.style.setProperty("--app-footer-offset", "0px");
+    return () => {
+      document.documentElement.style.setProperty("--app-shell-max-width", "1200px");
+      document.documentElement.style.setProperty("--app-shell-side-pad", "20px");
+      document.documentElement.style.setProperty("--app-shell-top-pad", "20px");
+      document.documentElement.style.setProperty("--app-footer-offset", "114px");
+    };
+  }, [isEmbedded]);
 
   useEffect(() => {
     if (hasBootstrappedRef.current) return;
@@ -56,7 +72,11 @@ export default function DashboardPage() {
         }
         const result = await loadGalaxies();
         if (result.rows.length > 0) {
-          const initialGalaxyId = result.rows[0].id;
+          const requestedGalaxyId = searchParams.get("galaxyId");
+          const initialGalaxyId =
+            requestedGalaxyId && result.rows.some((item) => item.id === requestedGalaxyId)
+              ? requestedGalaxyId
+              : result.rows[0].id;
           await loadGalaxyById(initialGalaxyId);
           await loadGalaxyForRender(initialGalaxyId);
         }
@@ -65,7 +85,7 @@ export default function DashboardPage() {
       }
     };
     void bootstrap();
-  }, [isAuthenticated, loadGalaxies, loadGalaxyById, loadGalaxyForRender, loadMe, router]);
+  }, [isAuthenticated, loadGalaxies, loadGalaxyById, loadGalaxyForRender, loadMe, router, searchParams]);
 
   const onCreateGalaxy = async (payload: {
     name: string;
@@ -77,6 +97,35 @@ export default function DashboardPage() {
     await loadGalaxyById(created.id);
     await loadGalaxyForRender(created.id);
   };
+
+  if (isEmbedded) {
+    return (
+      <section className={styles.renderStage} style={{ minHeight: "calc(100vh - 40px)" }}>
+        <button
+          type="button"
+          className={styles.fullViewFloating}
+          onClick={() => {
+            if (window.top && window.top !== window) {
+              window.top.postMessage({ type: "simulactic:close-embedded-view" }, "*");
+            } else {
+              router.push("/admin");
+            }
+          }}
+        >
+          Close
+        </button>
+        <MockCanvasPanel
+          selectedGalaxy={selectedGalaxy}
+          isLoading={isLoading}
+          isRenderReady={Boolean(selectedGalaxy)}
+          machineState={machineState}
+          galaxyData={serializedGalaxyData}
+          systemData={serializedSystemData}
+          onWheelZoom={onWheelZoom}
+        />
+      </section>
+    );
+  }
 
   return (
     <>

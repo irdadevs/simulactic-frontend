@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../../../application/hooks/useAuth";
 import styles from "../../../../styles/layout.module.css";
@@ -9,10 +9,12 @@ import { ActionButton } from "../../buttons/ActionButton";
 
 export function NavBar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { user, isAuthenticated, loadMe, logout } = useAuth();
   const isAdmin = user?.role === "Admin";
   const isPublicAuthPage = pathname === "/login" || pathname === "/signup";
+  const isEmbeddedDashboard = pathname === "/dashboard" && searchParams.get("embed") === "1";
   const [authResolved, setAuthResolved] = useState(false);
   const hasResolvedRef = useRef(false);
 
@@ -35,7 +37,7 @@ export function NavBar() {
     void resolveAuth();
   }, [isAuthenticated, loadMe]);
 
-  const shouldShowNav = authResolved && !isPublicAuthPage && isAuthenticated;
+  const shouldShowNav = authResolved && !isPublicAuthPage && !isEmbeddedDashboard && isAuthenticated;
 
   useEffect(() => {
     document.documentElement.style.setProperty(

@@ -1,7 +1,26 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import styles from "../../../../styles/layout.module.css";
 
 export function Footer() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isEmbeddedDashboard = pathname === "/dashboard" && searchParams.get("embed") === "1";
+
+  useEffect(() => {
+    document.documentElement.style.setProperty("--app-footer-offset", isEmbeddedDashboard ? "0px" : "114px");
+    return () => {
+      document.documentElement.style.setProperty("--app-footer-offset", "114px");
+    };
+  }, [isEmbeddedDashboard]);
+
+  if (isEmbeddedDashboard) {
+    return null;
+  }
+
   return (
     <footer className={styles.globalFooter}>
       <div className={styles.globalFooterInner}>

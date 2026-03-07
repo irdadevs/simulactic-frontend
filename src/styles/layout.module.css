@@ -55,8 +55,10 @@
 .appShell {
   margin: 0 auto;
   width: 100%;
-  max-width: 1200px;
-  padding: calc(var(--app-topbar-offset, 0px) + 20px) 20px 114px;
+  max-width: var(--app-shell-max-width, 1200px);
+  padding: calc(var(--app-topbar-offset, 0px) + var(--app-shell-top-pad, 20px))
+    var(--app-shell-side-pad, 20px)
+    calc(var(--app-footer-offset, 114px));
 }
 
 .globalFooter {
