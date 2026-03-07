@@ -35,6 +35,15 @@ export function NavBar() {
     void resolveAuth();
   }, [isAuthenticated, loadMe]);
 
+  const shouldShowNav = authResolved && !isPublicAuthPage && isAuthenticated;
+
+  useEffect(() => {
+    document.documentElement.style.setProperty("--app-topbar-offset", shouldShowNav ? "72px" : "0px");
+    return () => {
+      document.documentElement.style.setProperty("--app-topbar-offset", "0px");
+    };
+  }, [shouldShowNav]);
+
   const onLogout = async () => {
     try {
       await logout();
@@ -43,15 +52,7 @@ export function NavBar() {
     }
   };
 
-  if (!authResolved) {
-    return null;
-  }
-
-  if (isPublicAuthPage) {
-    return null;
-  }
-
-  if (!isAuthenticated) {
+  if (!shouldShowNav) {
     return null;
   }
 
