@@ -23,6 +23,15 @@ type Section = "overview" | "users" | "donations" | "logs" | "metrics" | "entiti
 type Point = { label: string; value: number };
 type GalaxyReport = { stars: number; planets: number; moons: number; asteroids: number };
 
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebounced(value), delayMs);
+    return () => window.clearTimeout(timer);
+  }, [delayMs, value]);
+  return debounced;
+}
+
 const PAGE_SIZE = 100;
 const MAX_FETCH = 1000;
 const sections: Section[] = ["overview", "users", "donations", "logs", "metrics", "entities"];
@@ -53,6 +62,15 @@ const renderLine = (points: Point[]) => {
     <div className={styles.lineChartWrap}>
       <svg viewBox={`0 0 ${w} ${h}`} className={styles.lineChartSvg} aria-hidden="true">
         <polyline points={polyline} className={styles.lineChartPath} />
+        {points.map((p, i) => {
+          const cx = pad + i * stepX;
+          const cy = toY(p.value);
+          return (
+            <circle key={`${p.label}-${i}`} cx={cx} cy={cy} r={3} className={styles.lineChartPoint}>
+              <title>{`${p.label}: ${p.value.toFixed(2)}`}</title>
+            </circle>
+          );
+        })}
       </svg>
       <div className={styles.lineChartLabels}>
         {points.map((p) => (
@@ -74,7 +92,7 @@ const renderBars = (points: Point[]) => {
     <div className={styles.chartBars}>
       {points.map((p) => (
         <div key={p.label} className={styles.chartBarItem}>
-          <div className={styles.chartBarTrack}><div className={styles.chartBarFill} style={{ height: `${(p.value / max) * 100}%` }} /></div>
+          <div className={styles.chartBarTrack} title={`${p.label}: ${p.value.toFixed(2)}`}><div className={styles.chartBarFill} style={{ height: `${(p.value / max) * 100}%` }} /></div>
           <span className={styles.chartLabel}>{p.label}</span>
         </div>
       ))}
@@ -98,6 +116,8 @@ export default function AdminPage() {
   const [shape, setShape] = useState<"all" | GalaxyShapeValue>("all");
   const [entitySearch, setEntitySearch] = useState("");
   const [logState, setLogState] = useState<"all" | "open" | "resolved">("all");
+  const [logCategoryFilter, setLogCategoryFilter] = useState<"all" | "application" | "security" | "audit" | "infrastructure">("all");
+  const [selectedLog, setSelectedLog] = useState<any | null>(null);
 
   const [users, setUsers] = useState<any[]>([]);
   const [donations, setDonations] = useState<any[]>([]);
@@ -110,6 +130,8 @@ export default function AdminPage() {
 
   const rangeFrom = useMemo(() => start(new Date(from)), [from]);
   const rangeTo = useMemo(() => end(new Date(to)), [to]);
+  const debouncedUserSearch = useDebouncedValue(userSearch, 300);
+  const debouncedEntitySearch = useDebouncedValue(entitySearch, 300);
 
   useEffect(() => {
     if (checkedRef.current) return;
@@ -170,10 +192,10 @@ export default function AdminPage() {
     () =>
       users
         .filter((u) => u.createdAt >= rangeFrom && u.createdAt <= rangeTo)
-        .filter((u) => `${u.username} ${u.email}`.toLowerCase().includes(userSearch.toLowerCase()))
+        .filter((u) => `${u.username} ${u.email}`.toLowerCase().includes(debouncedUserSearch.toLowerCase()))
         .filter((u) => (role === "all" ? true : u.role === role))
         .filter((u) => (supporter === "all" ? true : supporter === "yes" ? u.isSupporter : !u.isSupporter)),
-    [rangeFrom, rangeTo, role, supporter, users],
+    [debouncedUserSearch, rangeFrom, rangeTo, role, supporter, users],
   );
 
   const galaxiesFiltered = useMemo(
@@ -181,64 +203,65 @@ export default function AdminPage() {
       galaxies
         .filter((g) => g.createdAt >= rangeFrom && g.createdAt <= rangeTo)
         .filter((g) => (shape === "all" ? true : g.shape === shape))
-        .filter((g) => g.name.toLowerCase().includes(entitySearch.toLowerCase())),
-    [entitySearch, galaxies, rangeFrom, rangeTo, shape],
+        .filter((g) => g.name.toLowerCase().includes(debouncedEntitySearch.toLowerCase())),
+    [debouncedEntitySearch, galaxies, rangeFrom, rangeTo, shape],
   );
 
   const logsFiltered = useMemo(
     () =>
       logs.filter((log) => {
+        if (logCategoryFilter !== "all" && log.category !== logCategoryFilter) return false;
         if (logState === "open") return !log.resolvedAt;
         if (logState === "resolved") return Boolean(log.resolvedAt);
         return true;
       }),
-    [logState, logs],
+    [logCategoryFilter, logState, logs],
   );
 
   const usersHistoricByDay = useMemo(() => {
     const points: Point[] = [];
-    const endDate = new Date(to);
-    for (let i = 13; i >= 0; i -= 1) {
-      const day = addDays(endDate, -i);
+    const totalDays = Math.max(1, Math.ceil((rangeTo.getTime() - rangeFrom.getTime()) / (24 * 60 * 60 * 1000)) + 1);
+    for (let i = 0; i < totalDays; i += 1) {
+      const day = addDays(rangeFrom, i);
       const dayEnd = end(day);
       points.push({
         label: `${day.getMonth() + 1}/${day.getDate()}`,
-        value: usersFiltered.filter((u) => u.createdAt <= dayEnd).length,
+        value: usersFiltered.filter((u) => u.createdAt >= rangeFrom && u.createdAt <= dayEnd).length,
       });
     }
     return points;
-  }, [to, usersFiltered]);
+  }, [rangeFrom, to, usersFiltered]);
 
   const donationsHistoricByDay = useMemo(() => {
     const points: Point[] = [];
-    const endDate = new Date(to);
+    const totalDays = Math.max(1, Math.ceil((rangeTo.getTime() - rangeFrom.getTime()) / (24 * 60 * 60 * 1000)) + 1);
     const successful = donations.filter((d) => d.status === "completed" || d.status === "active");
-    for (let i = 13; i >= 0; i -= 1) {
-      const day = addDays(endDate, -i);
+    for (let i = 0; i < totalDays; i += 1) {
+      const day = addDays(rangeFrom, i);
       const dayEnd = end(day);
       points.push({
         label: `${day.getMonth() + 1}/${day.getDate()}`,
         value: successful
-          .filter((d) => d.createdAt <= dayEnd)
+          .filter((d) => d.createdAt >= rangeFrom && d.createdAt <= dayEnd)
           .reduce((acc, d) => acc + d.amountMinor / 100, 0),
       });
     }
     return points;
-  }, [donations, to]);
+  }, [donations, rangeFrom, to]);
 
   const galaxyCreationsHistoricByDay = useMemo(() => {
     const points: Point[] = [];
-    const endDate = new Date(to);
-    for (let i = 13; i >= 0; i -= 1) {
-      const day = addDays(endDate, -i);
+    const totalDays = Math.max(1, Math.ceil((rangeTo.getTime() - rangeFrom.getTime()) / (24 * 60 * 60 * 1000)) + 1);
+    for (let i = 0; i < totalDays; i += 1) {
+      const day = addDays(rangeFrom, i);
       const dayEnd = end(day);
       points.push({
         label: `${day.getMonth() + 1}/${day.getDate()}`,
-        value: galaxies.filter((g) => g.createdAt <= dayEnd).length,
+        value: galaxies.filter((g) => g.createdAt >= rangeFrom && g.createdAt <= dayEnd).length,
       });
     }
     return points;
-  }, [galaxies, to]);
+  }, [galaxies, rangeFrom, to]);
 
   const userGlobalCards = useMemo(() => {
     const now = new Date();
@@ -343,12 +366,22 @@ export default function AdminPage() {
     };
   }, [galaxies, reports]);
 
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type === "simulactic:close-embedded-view") {
+        setFocusGalaxyId(null);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
   if (!user) return <p className={commonStyles.meta}>Checking permissions...</p>;
   if (user.role !== "Admin") return null;
 
   const unresolvedLogs = logs.filter((l) => !l.resolvedAt).length;
   const metricFailures = metrics.filter((m) => !m.success).length;
-  const metricByType = useMemo(() => {
+  const metricByType = (() => {
     const map = new Map<string, { count: number; avg: number; errors: number }>();
     for (const m of metrics) {
       const current = map.get(m.metricType) ?? { count: 0, avg: 0, errors: 0 };
@@ -363,13 +396,20 @@ export default function AdminPage() {
       avg: v.count ? v.avg / v.count : 0,
       errors: v.errors,
     }));
-  }, [metrics]);
+  })();
 
-  const metricErrors = useMemo(() => metrics.filter((m) => !m.success), [metrics]);
-  const metricErrorsByType = useMemo(
-    () => metricByType.map((item) => ({ label: item.type, value: item.errors })),
-    [metricByType],
-  );
+  const metricErrors = metrics.filter((m) => !m.success);
+  const metricErrorsByType = metricByType.map((item) => ({ label: item.type, value: item.errors }));
+  const logByLevel = (() => {
+    const levels = ["debug", "info", "warn", "error", "critical"] as const;
+    return levels.map((level) => ({ level, count: logs.filter((l) => l.level === level).length }));
+  })();
+  const logByCategory = (() => {
+    const categories = ["application", "security", "audit", "infrastructure"] as const;
+    return categories.map((category) => ({ category, count: logs.filter((l) => l.category === category).length }));
+  })();
+  const openLogs = logs.filter((l) => !l.resolvedAt).length;
+  const closedLogs = logs.filter((l) => Boolean(l.resolvedAt)).length;
 
   return (
     <section className={styles.page}>
@@ -408,22 +448,6 @@ export default function AdminPage() {
               </div>
             </article>
             <article className={styles.card}>
-              <h2 className={commonStyles.panelTitle}>Global User Cards (whole DB)</h2>
-              <div className={styles.summaryGrid}>
-                <div className={styles.summaryCard}><span>Total users</span><strong>{userGlobalCards.total}</strong></div>
-                <div className={styles.summaryCard}><span>This week</span><strong>{userGlobalCards.week}</strong></div>
-                <div className={styles.summaryCard}><span>This month</span><strong>{userGlobalCards.month}</strong></div>
-                <div className={styles.summaryCard}><span>This year</span><strong>{userGlobalCards.year}</strong></div>
-              </div>
-            </article>
-            <article className={styles.card}>
-              <h2 className={commonStyles.panelTitle}>Global Donation Cards (whole DB)</h2>
-              <div className={styles.summaryGrid}>
-                <div className={styles.summaryCard}><span>Total amount</span><strong>{euro(donationGlobalCards.totalAmountMinor)}</strong></div>
-                <div className={styles.summaryCard}><span>Active monthly supporters</span><strong>{donationGlobalCards.activeMonthlySupporters}</strong></div>
-              </div>
-            </article>
-            <article className={styles.card}>
               <h2 className={commonStyles.panelTitle}>Charts</h2>
               <div className={styles.chartGrid}>
                 <div className={styles.chartCard}><h3 className={styles.chartTitle}>Users historic counter (day by day)</h3>{renderLine(usersHistoricByDay)}</div>
@@ -446,12 +470,18 @@ export default function AdminPage() {
                 <div className={styles.filterField}><label>Role</label><select value={role} onChange={(e) => setRole(e.target.value as "all" | UserRole)}><option value="all">All</option><option value="Admin">Admin</option><option value="User">User</option></select></div>
                 <div className={styles.filterField}><label>Supporter</label><select value={supporter} onChange={(e) => setSupporter(e.target.value as "all" | "yes" | "no")}><option value="all">All</option><option value="yes">True</option><option value="no">False</option></select></div>
               </div>
+              <div className={styles.summaryGrid}>
+                <div className={styles.summaryCard}><span>Total users</span><strong>{userGlobalCards.total}</strong></div>
+                <div className={styles.summaryCard}><span>This week</span><strong>{userGlobalCards.week}</strong></div>
+                <div className={styles.summaryCard}><span>This month</span><strong>{userGlobalCards.month}</strong></div>
+                <div className={styles.summaryCard}><span>This year</span><strong>{userGlobalCards.year}</strong></div>
+              </div>
               <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>User</th><th>Email</th><th>Role</th><th>Supporter</th><th>Created</th></tr></thead><tbody>{usersFiltered.map((u) => <tr key={u.id}><td>{u.username}</td><td>{u.email}</td><td>{u.role}</td><td>{u.isSupporter ? "Yes" : "No"}</td><td>{dateText(u.createdAt)}</td></tr>)}</tbody></table></div>
             </article>
           </section>
         )}
 
-        {section === "donations" && <section className={styles.sectionGrid}><article className={styles.card}><h2 className={commonStyles.panelTitle}>Donations ({donations.length} / {totals.donations})</h2><div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>User</th><th>Type</th><th>Status</th><th>Amount</th><th>Created</th></tr></thead><tbody>{donations.map((d) => <tr key={d.id}><td>{d.userId}</td><td>{d.donationType}</td><td>{d.status}</td><td>{euro(d.amountMinor)}</td><td>{dateText(d.createdAt)}</td></tr>)}</tbody></table></div></article></section>}
+        {section === "donations" && <section className={styles.sectionGrid}><article className={styles.card}><h2 className={commonStyles.panelTitle}>Donations ({donations.length} / {totals.donations})</h2><div className={styles.summaryGrid}><div className={styles.summaryCard}><span>Total amount</span><strong>{euro(donationGlobalCards.totalAmountMinor)}</strong></div><div className={styles.summaryCard}><span>Active monthly supporters</span><strong>{donationGlobalCards.activeMonthlySupporters}</strong></div></div><div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>User</th><th>Type</th><th>Status</th><th>Amount</th><th>Created</th></tr></thead><tbody>{donations.map((d) => <tr key={d.id}><td>{d.userId}</td><td>{d.donationType}</td><td>{d.status}</td><td>{euro(d.amountMinor)}</td><td>{dateText(d.createdAt)}</td></tr>)}</tbody></table></div></article></section>}
         {section === "logs" && (
           <section className={styles.sectionGrid}>
             <article className={styles.card}>
@@ -465,10 +495,26 @@ export default function AdminPage() {
                     <option value="resolved">Resolved</option>
                   </select>
                 </div>
+                <div className={styles.filterField}>
+                  <label>Category</label>
+                  <select value={logCategoryFilter} onChange={(e) => setLogCategoryFilter(e.target.value as "all" | "application" | "security" | "audit" | "infrastructure")}>
+                    <option value="all">All</option>
+                    <option value="application">Application</option>
+                    <option value="security">Security</option>
+                    <option value="audit">Audit</option>
+                    <option value="infrastructure">Infrastructure</option>
+                  </select>
+                </div>
+              </div>
+              <div className={styles.summaryGrid}>
+                <div className={styles.summaryCard}><span>Open logs</span><strong>{openLogs}</strong></div>
+                <div className={styles.summaryCard}><span>Closed logs</span><strong>{closedLogs}</strong></div>
+                {logByLevel.map((item) => <div key={item.level} className={styles.summaryCard}><span>{item.level}</span><strong>{item.count}</strong></div>)}
+                {logByCategory.map((item) => <div key={item.category} className={styles.summaryCard}><span>{item.category}</span><strong>{item.count}</strong></div>)}
               </div>
               <div className={styles.tableWrap}>
                 <table className={styles.table}>
-                  <thead><tr><th>When</th><th>Level</th><th>Category</th><th>Source</th><th>Message</th><th>State</th><th>Action</th></tr></thead>
+                  <thead><tr><th>When</th><th>Level</th><th>Category</th><th>Source</th><th>Message</th><th>State</th><th>Action</th><th>Details</th></tr></thead>
                   <tbody>
                     {logsFiltered.map((l) => (
                       <tr key={l.id}>
@@ -496,6 +542,11 @@ export default function AdminPage() {
                             "No action"
                           )}
                         </td>
+                        <td>
+                          <button className={styles.exportButton} onClick={() => setSelectedLog(l)}>
+                            Details
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -506,6 +557,15 @@ export default function AdminPage() {
         )}
         {section === "metrics" && (
           <section className={styles.sectionGrid}>
+            <article className={styles.card}>
+              <h2 className={commonStyles.panelTitle}>Global metric cards</h2>
+              <div className={styles.summaryGrid}>
+                <div className={styles.summaryCard}><span>Total metrics</span><strong>{metrics.length}</strong></div>
+                <div className={styles.summaryCard}><span>Total errors</span><strong>{metricErrors.length}</strong></div>
+                <div className={styles.summaryCard}><span>Error rate</span><strong>{pct(metricErrors.length, metrics.length).toFixed(2)}%</strong></div>
+                <div className={styles.summaryCard}><span>Avg duration</span><strong>{metrics.length ? (metrics.reduce((acc, m) => acc + m.durationMs, 0) / metrics.length).toFixed(2) : "0.00"} ms</strong></div>
+              </div>
+            </article>
             <article className={styles.card}>
               <h2 className={commonStyles.panelTitle}>Metrics by type (responses and averages)</h2>
               <div className={styles.summaryGrid}>
@@ -571,7 +631,18 @@ export default function AdminPage() {
       {focusGalaxyId && (
         <div className={styles.fullscreenModal}>
           <button className={styles.fullscreenClose} onClick={() => setFocusGalaxyId(null)}>Close</button>
-          <iframe className={styles.fullscreenFrame} src={`/dashboard?galaxyId=${focusGalaxyId}`} title="Galaxy interactive view" />
+          <iframe className={styles.fullscreenFrame} src={`/dashboard?galaxyId=${focusGalaxyId}&embed=1`} title="Galaxy interactive view" />
+        </div>
+      )}
+      {selectedLog && (
+        <div className={styles.logDetailsBackdrop}>
+          <div className={styles.logDetailsCard}>
+            <div className={styles.rowBetween}>
+              <h3 className={commonStyles.panelTitle}>Log Details</h3>
+              <button className={styles.exportButton} onClick={() => setSelectedLog(null)}>Close</button>
+            </div>
+            <pre className={styles.logDetailsPre}>{JSON.stringify(selectedLog, null, 2)}</pre>
+          </div>
         </div>
       )}
     </section>

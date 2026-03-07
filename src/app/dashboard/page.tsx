@@ -43,8 +43,23 @@ export default function DashboardPage() {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const hasBootstrappedRef = useRef(false);
+  const isEmbedded = searchParams.get("embed") === "1";
   const isSupporter = Boolean(user?.isSupporter);
   const canCreateGalaxy = isSupporter || galaxies.length < 3;
+
+  useEffect(() => {
+    if (!isEmbedded) return;
+    document.documentElement.style.setProperty("--app-shell-max-width", "100vw");
+    document.documentElement.style.setProperty("--app-shell-side-pad", "0px");
+    document.documentElement.style.setProperty("--app-shell-top-pad", "0px");
+    document.documentElement.style.setProperty("--app-footer-offset", "0px");
+    return () => {
+      document.documentElement.style.setProperty("--app-shell-max-width", "1200px");
+      document.documentElement.style.setProperty("--app-shell-side-pad", "20px");
+      document.documentElement.style.setProperty("--app-shell-top-pad", "20px");
+      document.documentElement.style.setProperty("--app-footer-offset", "114px");
+    };
+  }, [isEmbedded]);
 
   useEffect(() => {
     if (hasBootstrappedRef.current) return;
@@ -82,6 +97,35 @@ export default function DashboardPage() {
     await loadGalaxyById(created.id);
     await loadGalaxyForRender(created.id);
   };
+
+  if (isEmbedded) {
+    return (
+      <section className={styles.renderStage} style={{ minHeight: "calc(100vh - 40px)" }}>
+        <button
+          type="button"
+          className={styles.fullViewFloating}
+          onClick={() => {
+            if (window.top && window.top !== window) {
+              window.top.postMessage({ type: "simulactic:close-embedded-view" }, "*");
+            } else {
+              router.push("/admin");
+            }
+          }}
+        >
+          Close
+        </button>
+        <MockCanvasPanel
+          selectedGalaxy={selectedGalaxy}
+          isLoading={isLoading}
+          isRenderReady={Boolean(selectedGalaxy)}
+          machineState={machineState}
+          galaxyData={serializedGalaxyData}
+          systemData={serializedSystemData}
+          onWheelZoom={onWheelZoom}
+        />
+      </section>
+    );
+  }
 
   return (
     <>
