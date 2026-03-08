@@ -127,6 +127,28 @@ const renderBars = (points: Point[]) => {
   );
 };
 
+const userRoleClassName = (role: string, isSupporter: boolean) => {
+  if (role === "Admin") return styles.badgeToneInfo;
+  if (isSupporter) return styles.badgeToneSuccess;
+  return styles.badgeToneDefault;
+};
+
+const donationStatusClassName = (status: string) => {
+  if (status === "pending") return styles.badgeToneWarn;
+  if (status === "completed" || status === "active") return styles.badgeToneSuccess;
+  if (status === "failed" || status === "canceled" || status === "expired") return styles.badgeToneDanger;
+  return styles.badgeToneDefault;
+};
+
+const logLevelClassName = (level: string) => {
+  if (level === "debug") return styles.badgeToneDefault;
+  if (level === "info") return styles.badgeToneInfo;
+  if (level === "warn") return styles.badgeToneWarn;
+  if (level === "error") return styles.badgeToneError;
+  if (level === "critical") return styles.badgeToneDanger;
+  return styles.badgeToneDefault;
+};
+
 export default function AdminPage() {
   const router = useRouter();
   const { user, loadMe } = useAuth();
@@ -492,12 +514,12 @@ export default function AdminPage() {
                 <div className={styles.summaryCard}><span>This month</span><strong>{userGlobalCards.month}</strong></div>
                 <div className={styles.summaryCard}><span>This year</span><strong>{userGlobalCards.year}</strong></div>
               </div>
-              <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>User</th><th>Email</th><th>Role</th><th>Supporter</th><th>Created</th></tr></thead><tbody>{usersFiltered.map((u) => <tr key={u.id}><td>{u.username}</td><td>{u.email}</td><td>{u.role}</td><td>{u.isSupporter ? "Yes" : "No"}</td><td>{dateText(u.createdAt)}</td></tr>)}</tbody></table></div>
+              <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>User</th><th>Email</th><th>Role</th><th>Supporter</th><th>Created</th></tr></thead><tbody>{usersFiltered.map((u) => <tr key={u.id}><td>{u.username}</td><td>{u.email}</td><td><span className={`${styles.cellBadge} ${userRoleClassName(u.role, u.isSupporter)}`}>{u.role}</span></td><td>{u.isSupporter ? "Yes" : "No"}</td><td>{dateText(u.createdAt)}</td></tr>)}</tbody></table></div>
             </article>
           </section>
         )}
 
-        {section === "donations" && <section className={styles.sectionGrid}><article className={styles.card}><h2 className={commonStyles.panelTitle}>Donations ({donations.length} / {totals.donations})</h2><div className={styles.summaryGrid}><div className={styles.summaryCard}><span>Total amount</span><strong>{euro(donationGlobalCards.totalAmountMinor)}</strong></div><div className={styles.summaryCard}><span>Active monthly supporters</span><strong>{donationGlobalCards.activeMonthlySupporters}</strong></div></div><div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>User</th><th>Type</th><th>Status</th><th>Amount</th><th>Created</th></tr></thead><tbody>{donations.map((d) => <tr key={d.id}><td>{d.userId}</td><td>{d.donationType}</td><td>{d.status}</td><td>{euro(d.amountMinor)}</td><td>{dateText(d.createdAt)}</td></tr>)}</tbody></table></div></article></section>}
+        {section === "donations" && <section className={styles.sectionGrid}><article className={styles.card}><h2 className={commonStyles.panelTitle}>Donations ({donations.length} / {totals.donations})</h2><div className={styles.summaryGrid}><div className={styles.summaryCard}><span>Total amount</span><strong>{euro(donationGlobalCards.totalAmountMinor)}</strong></div><div className={styles.summaryCard}><span>Active monthly supporters</span><strong>{donationGlobalCards.activeMonthlySupporters}</strong></div></div><div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>User</th><th>Type</th><th>Status</th><th>Amount</th><th>Created</th></tr></thead><tbody>{donations.map((d) => <tr key={d.id}><td>{d.userId}</td><td>{d.donationType}</td><td><span className={`${styles.cellBadge} ${donationStatusClassName(d.status)}`}>{d.status}</span></td><td>{euro(d.amountMinor)}</td><td>{dateText(d.createdAt)}</td></tr>)}</tbody></table></div></article></section>}
         {section === "logs" && (
           <section className={styles.sectionGrid}>
             <article className={styles.card}>
@@ -552,7 +574,7 @@ export default function AdminPage() {
                     {logsFiltered.map((l) => (
                       <tr key={l.id}>
                         <td>{dateText(l.occurredAt)}</td>
-                        <td>{l.level}</td>
+                        <td><span className={`${styles.cellBadge} ${logLevelClassName(l.level)}`}>{l.level}</span></td>
                         <td>{l.category}</td>
                         <td>{l.source}</td>
                         <td>{l.message}</td>

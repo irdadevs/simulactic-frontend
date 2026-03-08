@@ -64,6 +64,21 @@ const toDate = (value: Date) =>
     day: "2-digit",
   }).format(value);
 
+const donationStatusTone = (status: string) => {
+  if (status === "pending") return "pending";
+  if (status === "completed" || status === "active") return "completed";
+  if (status === "failed" || status === "canceled" || status === "expired") return "failed";
+  return "default";
+};
+
+const donationBadgeClassByStatus = (status: string) => {
+  const tone = donationStatusTone(status);
+  if (tone === "pending") return styles.statusBadgePending;
+  if (tone === "completed") return styles.statusBadgeCompleted;
+  if (tone === "failed") return styles.statusBadgeFailed;
+  return styles.statusBadgeDefault;
+};
+
 export default function MePage() {
   const router = useRouter();
   const { user, isAuthenticated, loadMe, changeEmail, changePassword, changeUsername } = useAuth();
@@ -549,12 +564,17 @@ export default function MePage() {
               <h2 className={commonStyles.panelTitle}>Donations history</h2>
               <div className={styles.listGrid}>
                 {donations.map((donation) => (
-                  <article key={donation.id} className={styles.listCard}>
+                  <article
+                    key={donation.id}
+                    className={`${styles.listCard} ${styles.donationCard}`}
+                  >
                     <div className={styles.rowBetween}>
                       <h3 className={styles.cardTitle}>
                         {donation.donationType === "monthly" ? "Monthly" : "One-time"} donation
                       </h3>
-                      <span className={styles.badge}>{donation.status}</span>
+                      <span className={`${styles.badge} ${styles.statusBadge} ${donationBadgeClassByStatus(donation.status)}`}>
+                        {donation.status}
+                      </span>
                     </div>
                     <p className={styles.metaText}>Amount: {euro.format(donation.amountMinor / 100)}</p>
                     <p className={styles.metaText}>Created: {toDate(donation.createdAt)}</p>
