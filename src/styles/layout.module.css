@@ -56,9 +56,9 @@
   margin: 0 auto;
   width: 100%;
   max-width: var(--app-shell-max-width, 1200px);
-  padding: calc(var(--app-topbar-offset, 0px) + var(--app-shell-top-pad, 20px))
+  padding: calc(var(--app-topbar-offset, 0px) + var(--app-shell-top-pad, 0px))
     var(--app-shell-side-pad, 20px)
-    calc(var(--app-footer-offset, 114px));
+    calc(var(--app-footer-offset, 0px) + var(--app-shell-bottom-pad, 0px));
 }
 
 .globalFooter {
