@@ -144,6 +144,7 @@ export const useRenderStore = create<RenderState>((set, get) => ({
       machineState: "system_ready",
       viewMode: "system",
       systemDetail: detail,
+      zoom: 1,
       transitionReason: null,
     });
     return true;
@@ -175,6 +176,7 @@ export const useRenderStore = create<RenderState>((set, get) => ({
       viewMode: "galaxy",
       activeSystemId: null,
       systemDetail: null,
+      zoom: 1,
       transitionReason: null,
       galaxyNodes: input?.nodes ?? state.galaxyNodes,
     });

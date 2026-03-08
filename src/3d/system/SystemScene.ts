@@ -124,45 +124,43 @@ export class SystemScene implements IRenderableScene {
       return;
     }
 
-    const hit = intersections[0].object;
-    const starId = this.findStarId(hit);
-    if (starId) {
+    const target = this.pickTarget(intersections);
+    if (!target) return;
+
+    if (target.kind === "star") {
       this.eventBridge.emit("starClicked", {
-        starId,
+        starId: target.id,
         systemId: this.data.systemId,
         anchor: _pointer,
       });
       return;
     }
 
-    const planetId = this.findTaggedId(hit, PLANET_ID);
-    if (planetId) {
+    if (target.kind === "planet") {
       this.eventBridge.emit("planetClicked", {
-        planetId,
+        planetId: target.id,
         systemId: this.data.systemId,
         anchor: _pointer,
       });
       return;
     }
 
-    const moonId = this.findTaggedId(hit, MOON_ID);
-    if (moonId) {
+    if (target.kind === "moon") {
       this.eventBridge.emit("moonClicked", {
-        moonId,
+        moonId: target.id,
         systemId: this.data.systemId,
         anchor: _pointer,
       });
       return;
     }
 
-    const asteroidId = this.findTaggedId(hit, ASTEROID_ID);
-    if (!asteroidId) return;
-
-    this.eventBridge.emit("asteroidClicked", {
-      asteroidId,
-      systemId: this.data.systemId,
-      anchor: _pointer,
-    });
+    if (target.kind === "asteroid") {
+      this.eventBridge.emit("asteroidClicked", {
+        asteroidId: target.id,
+        systemId: this.data.systemId,
+        anchor: _pointer,
+      });
+    }
   }
 
   onPointerMove(
@@ -174,42 +172,43 @@ export class SystemScene implements IRenderableScene {
       return;
     }
 
-    const object = intersections[0].object;
-    const starId = this.findStarId(object);
-    if (starId) {
+    const target = this.pickTarget(intersections);
+    if (!target) {
+      this.eventBridge.emit("hoverCleared", undefined);
+      return;
+    }
+
+    if (target.kind === "star") {
       this.eventBridge.emit("starHovered", {
         systemId: this.data.systemId,
-        starId,
+        starId: target.id,
         anchor: pointer,
       });
       return;
     }
 
-    const planetId = this.findTaggedId(object, PLANET_ID);
-    if (planetId) {
+    if (target.kind === "planet") {
       this.eventBridge.emit("planetHovered", {
         systemId: this.data.systemId,
-        planetId,
+        planetId: target.id,
         anchor: pointer,
       });
       return;
     }
 
-    const moonId = this.findTaggedId(object, MOON_ID);
-    if (moonId) {
+    if (target.kind === "moon") {
       this.eventBridge.emit("moonHovered", {
         systemId: this.data.systemId,
-        moonId,
+        moonId: target.id,
         anchor: pointer,
       });
       return;
     }
 
-    const asteroidId = this.findTaggedId(object, ASTEROID_ID);
-    if (asteroidId) {
+    if (target.kind === "asteroid") {
       this.eventBridge.emit("asteroidHovered", {
         systemId: this.data.systemId,
-        asteroidId,
+        asteroidId: target.id,
         anchor: pointer,
       });
       return;
@@ -407,6 +406,27 @@ export class SystemScene implements IRenderableScene {
       if (value) return value;
       current = current.parent;
     }
+    return null;
+  }
+
+  private pickTarget(
+    intersections: Intersection<Object3D>[],
+  ): { kind: "moon" | "planet" | "asteroid" | "star"; id: string } | null {
+    // Prioritize smallest crowded targets first.
+    const priority: Array<{ kind: "moon" | "planet" | "asteroid" | "star"; symbol: symbol }> = [
+      { kind: "asteroid", symbol: ASTEROID_ID },
+      { kind: "moon", symbol: MOON_ID },
+      { kind: "planet", symbol: PLANET_ID },
+      { kind: "star", symbol: STAR_ID },
+    ];
+
+    for (const { kind, symbol } of priority) {
+      for (const entry of intersections) {
+        const id = this.findTaggedId(entry.object, symbol);
+        if (id) return { kind, id };
+      }
+    }
+
     return null;
   }
 }

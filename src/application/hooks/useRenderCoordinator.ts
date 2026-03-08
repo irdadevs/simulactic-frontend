@@ -136,7 +136,8 @@ export const useRenderCoordinator = () => {
       const nextZoom = Math.max(0.4, Math.min(3, zoom + (deltaY > 0 ? 0.08 : -0.08)));
       setZoom(nextZoom);
 
-      if (viewMode === "system" && nextZoom >= 1.45) {
+      // Return to galaxy only when user zooms out far enough while in system view.
+      if (viewMode === "system" && deltaY > 0 && nextZoom >= 2.2) {
         requestGalaxyTransition("zoom_threshold");
       }
     },

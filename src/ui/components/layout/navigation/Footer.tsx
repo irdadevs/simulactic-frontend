@@ -2,18 +2,31 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import styles from "../../../../styles/layout.module.css";
 
 export function Footer() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isEmbeddedDashboard = pathname === "/dashboard" && searchParams.get("embed") === "1";
+  const footerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    document.documentElement.style.setProperty("--app-footer-offset", isEmbeddedDashboard ? "0px" : "114px");
+    if (isEmbeddedDashboard) {
+      document.documentElement.style.setProperty("--app-footer-offset", "0px");
+      return;
+    }
+
+    const applyOffset = () => {
+      const height = footerRef.current?.offsetHeight ?? 0;
+      document.documentElement.style.setProperty("--app-footer-offset", `${height}px`);
+    };
+
+    applyOffset();
+    window.addEventListener("resize", applyOffset);
     return () => {
-      document.documentElement.style.setProperty("--app-footer-offset", "114px");
+      window.removeEventListener("resize", applyOffset);
+      document.documentElement.style.setProperty("--app-footer-offset", "0px");
     };
   }, [isEmbeddedDashboard]);
 
@@ -22,7 +35,7 @@ export function Footer() {
   }
 
   return (
-    <footer className={styles.globalFooter}>
+    <footer ref={footerRef} className={styles.globalFooter}>
       <div className={styles.globalFooterInner}>
         <p>Copyright 2026 Simulactic. All rights reserved.</p>
         <nav className={styles.globalFooterLinks}>

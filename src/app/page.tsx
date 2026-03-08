@@ -30,6 +30,34 @@ export default function Home() {
         </div>
       </section>
 
+      <section className={styles.zoneHowItWorks}>
+        <div className={styles.zoneInnerSingle}>
+          <article className={styles.cardWide}>
+            <h2 className={styles.cardTitle}>How it works</h2>
+            <div className={styles.howGrid}>
+              <article className={styles.howStep}>
+                <h3>Create your galaxy</h3>
+                <p className={styles.text}>
+                  Choose a name, shape, and system count. The backend generates the full structure.
+                </p>
+              </article>
+              <article className={styles.howStep}>
+                <h3>Explore in 3D</h3>
+                <p className={styles.text}>
+                  Start in galaxy view, inspect systems, and zoom into system detail for planets, moons and asteroids.
+                </p>
+              </article>
+              <article className={styles.howStep}>
+                <h3>Track growth</h3>
+                <p className={styles.text}>
+                  Use your profile and admin dashboards to monitor counts, activity and platform evolution over time.
+                </p>
+              </article>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <section className={styles.zoneSupport}>
         <div className={styles.zoneInnerSingle}>
           <article className={styles.cardWide}>
