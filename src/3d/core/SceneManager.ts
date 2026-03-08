@@ -349,7 +349,8 @@ export class SceneManager {
     move.normalize();
 
     const distanceScale = Math.max(18, camera.position.distanceTo(this.controls.target) * 0.26);
-    const speed = this.edgePanBaseSpeed * distanceScale;
+    const reverseBoost = vertical < 0 ? 1.35 : 1;
+    const speed = this.edgePanBaseSpeed * distanceScale * reverseBoost;
     move.multiplyScalar(speed * deltaSeconds * 0.01);
 
     camera.position.add(move);
