@@ -3,9 +3,11 @@
 import dynamic from "next/dynamic";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { sileo } from "sileo";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useGalaxy } from "../../application/hooks/useGalaxy";
 import { useRenderCoordinator } from "../../application/hooks/useRenderCoordinator";
+import { useRenderStore } from "../../state/render.store";
 import { GalaxyListPanel } from "../../ui/components/layout/galaxy/GalaxyListPanel";
 import styles from "../../styles/layout.module.css";
 
@@ -39,9 +41,11 @@ function DashboardPageContent() {
     loadGalaxies,
     loadGalaxyById,
     createGalaxy,
+    deleteGalaxy,
   } = useGalaxy();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [deletingGalaxyId, setDeletingGalaxyId] = useState<string | null>(null);
   const hasBootstrappedRef = useRef(false);
   const isEmbedded = searchParams.get("embed") === "1";
   const isSupporter = Boolean(user?.isSupporter);
@@ -98,6 +102,44 @@ function DashboardPageContent() {
     await loadGalaxyForRender(created.id);
   };
 
+  const onDeleteGalaxy = async (galaxyId: string) => {
+    const target = galaxies.find((item) => item.id === galaxyId);
+    if (!target) return;
+
+    const accepted = window.confirm(
+      `Delete galaxy "${target.name}"? This action cannot be undone.`,
+    );
+    if (!accepted) return;
+
+    try {
+      setDeletingGalaxyId(galaxyId);
+      await deleteGalaxy(galaxyId);
+
+      const remaining = galaxies.filter((item) => item.id !== galaxyId);
+      const next = remaining[0] ?? null;
+
+      if (next) {
+        await loadGalaxyById(next.id);
+        await loadGalaxyForRender(next.id);
+      } else {
+        useRenderStore.getState().resetRender();
+      }
+
+      sileo.success({
+        title: "Galaxy deleted",
+        description: `"${target.name}" was removed successfully.`,
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Could not delete galaxy.";
+      sileo.error({
+        title: "Delete failed",
+        description: message,
+      });
+    } finally {
+      setDeletingGalaxyId(null);
+    }
+  };
+
   if (isEmbedded) {
     return (
       <section className={styles.renderStage} style={{ minHeight: "calc(100vh - 40px)" }}>
@@ -138,6 +180,10 @@ function DashboardPageContent() {
             void loadGalaxyById(galaxyId);
             void loadGalaxyForRender(galaxyId);
           }}
+          onDeleteGalaxy={(galaxyId) => {
+            void onDeleteGalaxy(galaxyId);
+          }}
+          deletingGalaxyId={deletingGalaxyId}
           onCreateClick={() => setShowCreateModal(true)}
           canCreateGalaxy={canCreateGalaxy}
           isSupporter={isSupporter}

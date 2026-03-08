@@ -8,6 +8,8 @@ type GalaxyListPanelProps = {
   galaxies: GalaxyProps[];
   selectedGalaxyId: string | null;
   onSelectGalaxy: (galaxyId: string) => void;
+  onDeleteGalaxy: (galaxyId: string) => void;
+  deletingGalaxyId?: string | null;
   onCreateClick: () => void;
   canCreateGalaxy: boolean;
   isSupporter: boolean;
@@ -19,6 +21,8 @@ export function GalaxyListPanel({
   galaxies,
   selectedGalaxyId,
   onSelectGalaxy,
+  onDeleteGalaxy,
+  deletingGalaxyId,
   onCreateClick,
   canCreateGalaxy,
   isSupporter,
@@ -52,18 +56,32 @@ export function GalaxyListPanel({
 
       <div className={layoutStyles.list}>
         {galaxies.map((galaxy) => (
-          <button
+          <div
             key={galaxy.id}
-            className={`${layoutStyles.listItem} ${
+            className={`${layoutStyles.listItemRow} ${
               selectedGalaxyId === galaxy.id ? layoutStyles.listItemActive : ""
             }`}
-            onClick={() => onSelectGalaxy(galaxy.id)}
           >
-            <strong>{galaxy.name}</strong>
-            <p className={commonStyles.meta}>
-              {galaxy.shape} | {galaxy.systemCount} systems
-            </p>
-          </button>
+            <button
+              className={layoutStyles.listItemMain}
+              onClick={() => onSelectGalaxy(galaxy.id)}
+            >
+              <strong>{galaxy.name}</strong>
+              <p className={commonStyles.meta}>
+                {galaxy.shape} | {galaxy.systemCount} systems
+              </p>
+            </button>
+            <button
+              type="button"
+              className={layoutStyles.listItemDelete}
+              aria-label={`Delete galaxy ${galaxy.name}`}
+              title="Delete galaxy"
+              onClick={() => onDeleteGalaxy(galaxy.id)}
+              disabled={deletingGalaxyId === galaxy.id}
+            >
+              {deletingGalaxyId === galaxy.id ? "..." : "🗑"}
+            </button>
+          </div>
         ))}
         {galaxies.length === 0 && (
           <p className={commonStyles.meta} style={{ padding: 14 }}>

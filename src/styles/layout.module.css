@@ -162,6 +162,37 @@
   cursor: pointer;
 }
 
+.listItemRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-bottom: 1px solid var(--carbon-black-800);
+}
+
+.listItemMain {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  color: var(--carbon-black-100);
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.listItemDelete {
+  width: 40px;
+  border: none;
+  background: transparent;
+  color: #ff8a8a;
+  border-left: 1px solid var(--carbon-black-800);
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.listItemDelete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .listItemActive {
   background: color-mix(in srgb, var(--main-dark-violet) 35%, var(--carbon-black-900));
 }
