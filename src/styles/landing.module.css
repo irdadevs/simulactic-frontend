@@ -88,12 +88,14 @@
 .title {
   font-size: clamp(34px, 5vw, 56px);
   color: var(--main-ivory);
+  text-align: center;
 }
 
 .cardTitle {
   font-size: clamp(22px, 2.4vw, 30px);
   color: var(--main-ivory);
   margin-bottom: 8px;
+  text-align: center;
 }
 
 .text {
@@ -101,20 +103,40 @@
   line-height: 1.5;
 }
 
+.getStartedText {
+  color: var(--carbon-black-200);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.cardSubtitle {
+  font-size: clamp(22px, 2.4vw, 30px);
+  color: var(--main-ivory);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
 .ctaRow {
   margin-top: 8px;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  margin: auto
 }
 
 .supportLinkRow {
   margin-top: 10px;
+  text-align: center;
 }
 
 .supportLink {
-  color: var(--main-turquoise-surf);
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 30%, var(--carbon-black-700));
+  border-radius: 999px;
   font-weight: 700;
+  padding: 3px 9px;
+  font-size: 16px;
+  color: var(--carbon-black-100);
+  background: color-mix(in srgb, var(--main-turquoise-surf) 10%, transparent);
 }
 
 .faqList {
@@ -168,3 +190,4 @@
     grid-template-columns: 1fr;
   }
 }
+

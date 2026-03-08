@@ -69,7 +69,10 @@ export default function SignupPage() {
       subtitle="Create your Simulactic account."
       footer={
         <p className={styles.subtitle}>
-          Already have an account? <Link href="/login">Login</Link>
+          Already have an account?{" "}
+          <Link href="/login" className={styles.signupLoginLink}>
+            Login
+          </Link>
         </p>
       }
     >
@@ -115,7 +118,11 @@ export default function SignupPage() {
               onClick={() => setShowPassword((current) => !current)}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              <img src={showPassword ? "/icons/hide.svg" : "/icons/view.svg"} alt="" aria-hidden="true" />
+              <img
+                src={showPassword ? "/icons/hide.svg" : "/icons/view.svg"}
+                alt=""
+                aria-hidden="true"
+              />
             </button>
           </div>
         </div>
