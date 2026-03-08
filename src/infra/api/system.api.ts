@@ -6,12 +6,19 @@ export type ChangeSystemNameRequest = {
 };
 
 export type ChangeSystemPositionRequest = SystemPosition;
+export type ListSystemsByGalaxyQuery = {
+  limit?: number;
+  offset?: number;
+};
 
 const BASE = "/systems";
 
 export const systemApi = {
-  listByGalaxy: (galaxyId: string): Promise<ApiListResponse<SystemApiResponse>> =>
-    apiGet(`${BASE}/galaxy/${encodeURIComponent(galaxyId)}`),
+  listByGalaxy: (
+    galaxyId: string,
+    query?: ListSystemsByGalaxyQuery,
+  ): Promise<ApiListResponse<SystemApiResponse>> =>
+    apiGet(`${BASE}/galaxy/${encodeURIComponent(galaxyId)}`, { query }),
 
   findById: (id: string): Promise<SystemApiResponse | null> =>
     apiGet(`${BASE}/${encodeURIComponent(id)}`),

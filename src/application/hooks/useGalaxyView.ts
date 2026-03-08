@@ -1,8 +1,7 @@
 import { useCallback, useState } from "react";
 import { mapStarApiToDomain, mapStarDomainToView } from "../../domain/star/mappers";
 import { mapSystemApiToDomain, mapSystemDomainToView } from "../../domain/system/mappers";
-import { starApi } from "../../infra/api/star.api";
-import { systemApi } from "../../infra/api/system.api";
+import { galaxyApi } from "../../infra/api/galaxy.api";
 import { StarProps } from "../../types/star.types";
 import { SystemProps } from "../../types/system.types";
 
@@ -26,25 +25,34 @@ export const useGalaxyView = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const systemsResult = await systemApi.listByGalaxy(galaxyId);
-      const mappedSystems = systemsResult.rows.map((item) =>
-        mapSystemDomainToView(mapSystemApiToDomain(item)),
-      );
+      const pageSize = 40;
+      const loaded: GalaxyViewNode[] = [];
+      const seen = new Set<string>();
+      let offset = 0;
+      let total = Number.POSITIVE_INFINITY;
+      let lastLoadedCount = -1;
 
-      const starLists = await Promise.all(
-        mappedSystems.map((system) => starApi.listBySystem(system.id)),
-      );
+      while (loaded.length < total && loaded.length !== lastLoadedCount) {
+        const page = await galaxyApi.populate(galaxyId, { limit: pageSize, offset });
+        total = typeof page.total === "number" ? page.total : total;
+        lastLoadedCount = loaded.length;
 
-      const nodes = mappedSystems.map((system, index) => {
-        const stars = starLists[index].rows.map((item) =>
-          mapStarDomainToView(mapStarApiToDomain(item)),
-        );
-        const mainStar = stars.find((star) => star.isMain) ?? stars[0] ?? null;
-        return { system, mainStar, stars };
-      });
+        for (const systemNode of page.systems) {
+          if (seen.has(systemNode.system.id)) continue;
+          seen.add(systemNode.system.id);
 
-      setSystems(nodes);
-      return nodes;
+          const system = mapSystemDomainToView(mapSystemApiToDomain(systemNode.system));
+          const stars = systemNode.stars.map((item) => mapStarDomainToView(mapStarApiToDomain(item)));
+          const mainStar = stars.find((star) => star.isMain) ?? stars[0] ?? null;
+          loaded.push({ system, stars, mainStar });
+        }
+
+        if (page.systems.length < pageSize) break;
+        offset += pageSize;
+      }
+
+      setSystems(loaded);
+      return loaded;
     } catch (err: unknown) {
       setError(toErrorMessage(err));
       throw err;

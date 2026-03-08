@@ -64,30 +64,19 @@ const toDate = (value: Date) =>
     day: "2-digit",
   }).format(value);
 
-const computeStats = (
-  population: Awaited<ReturnType<typeof galaxyApi.populate>>,
-): GalaxyStats => {
-  let stars = 0;
-  let planets = 0;
-  let moons = 0;
-  let asteroids = 0;
+const donationStatusTone = (status: string) => {
+  if (status === "pending") return "pending";
+  if (status === "completed" || status === "active") return "completed";
+  if (status === "failed" || status === "canceled" || status === "expired") return "failed";
+  return "default";
+};
 
-  for (const systemNode of population.systems) {
-    stars += systemNode.stars.length;
-    planets += systemNode.planets.length;
-    asteroids += systemNode.asteroids.length;
-    for (const planetNode of systemNode.planets) {
-      moons += planetNode.moons.length;
-    }
-  }
-
-  return {
-    systems: population.systems.length,
-    stars,
-    planets,
-    moons,
-    asteroids,
-  };
+const donationBadgeClassByStatus = (status: string) => {
+  const tone = donationStatusTone(status);
+  if (tone === "pending") return styles.statusBadgePending;
+  if (tone === "completed") return styles.statusBadgeCompleted;
+  if (tone === "failed") return styles.statusBadgeFailed;
+  return styles.statusBadgeDefault;
 };
 
 export default function MePage() {
@@ -138,8 +127,8 @@ export default function MePage() {
           const entries = await Promise.all(
             galaxiesResult.rows.map(async (galaxy) => {
               try {
-                const population = await galaxyApi.populate(galaxy.id);
-                return [galaxy.id, computeStats(population)] as const;
+                const counts = await galaxyApi.counts(galaxy.id);
+                return [galaxy.id, counts] as const;
               } catch {
                 return [
                   galaxy.id,
@@ -575,12 +564,17 @@ export default function MePage() {
               <h2 className={commonStyles.panelTitle}>Donations history</h2>
               <div className={styles.listGrid}>
                 {donations.map((donation) => (
-                  <article key={donation.id} className={styles.listCard}>
+                  <article
+                    key={donation.id}
+                    className={`${styles.listCard} ${styles.donationCard}`}
+                  >
                     <div className={styles.rowBetween}>
                       <h3 className={styles.cardTitle}>
                         {donation.donationType === "monthly" ? "Monthly" : "One-time"} donation
                       </h3>
-                      <span className={styles.badge}>{donation.status}</span>
+                      <span className={`${styles.badge} ${styles.statusBadge} ${donationBadgeClassByStatus(donation.status)}`}>
+                        {donation.status}
+                      </span>
                     </div>
                     <p className={styles.metaText}>Amount: {euro.format(donation.amountMinor / 100)}</p>
                     <p className={styles.metaText}>Created: {toDate(donation.createdAt)}</p>

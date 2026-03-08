@@ -148,12 +148,32 @@
 }
 
 .badge {
-  border: 1px solid var(--carbon-black-700);
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 30%, var(--carbon-black-700));
   border-radius: 999px;
   padding: 4px 8px;
   font-size: 11px;
   color: var(--carbon-black-200);
   text-transform: capitalize;
+  background: color-mix(in srgb, var(--main-turquoise-surf) 10%, transparent);
+}
+
+.donationCard {
+  border-width: 1px;
+}
+
+.statusBadgeDefault {
+  border-color: color-mix(in srgb, var(--main-turquoise-surf) 30%, var(--carbon-black-700));
+}
+.statusBadgePending {
+  border-color: #d4af37;
+}
+
+.statusBadgeCompleted {
+  border-color: #3aa76d;
+}
+
+.statusBadgeFailed {
+  border-color: #c05050;
 }
 
 .detailGrid {
