@@ -197,7 +197,8 @@ function DonationGuidePageContent() {
         <p className={commonStyles.meta}>Support Simulactic</p>
         <h1 className={commonStyles.title}>Donation Guide</h1>
         <p className={commonStyles.subtitle}>
-          Placeholder content. Update this text with your donation policy, goals and impact details.
+          Donations help keep Simulactic stable, improve 3D rendering quality, and accelerate the
+          roadmap from galaxy simulator to full strategy experience.
         </p>
       </header>
 
@@ -276,18 +277,39 @@ function DonationGuidePageContent() {
 
       <section className={styles.placeholderGrid}>
         <article className={styles.placeholderCard}>
-          <h2 className={commonStyles.panelTitle}>Why Donate</h2>
-          <p className={commonStyles.meta}>Placeholder text. Replace with project mission and impact details.</p>
+          <h2 className={styles.cardTitle}>Why Donate</h2>
+          <p className={commonStyles.meta}>
+            Simulactic is built as a long-term solo project. Donations directly support development
+            time, infrastructure costs, and feature delivery quality.
+          </p>
+          <p className={commonStyles.meta}>
+            Your support helps fund improvements such as better scene interactions, richer simulation
+            depth, and a faster roadmap cadence.
+          </p>
         </article>
 
         <article className={styles.placeholderCard}>
-          <h2 className={commonStyles.panelTitle}>Donation Terms</h2>
-          <p className={commonStyles.meta}>Placeholder text. Add tax, billing, refund and cancelation details.</p>
+          <h2 className={styles.cardTitle}>Donation Terms</h2>
+          <p className={commonStyles.meta}>
+            Donations are voluntary and processed through Stripe. You can choose one-time or monthly
+            support and cancel monthly subscriptions from your account/provider controls.
+          </p>
+          <p className={commonStyles.meta}>
+            Charges are shown before confirmation. Billing handling, payment methods, and transaction
+            validation are managed by the payment provider.
+          </p>
         </article>
 
         <article className={styles.placeholderCard}>
-          <h2 className={commonStyles.panelTitle}>Supporter Benefits</h2>
-          <p className={commonStyles.meta}>Placeholder text. Explain badge progression and supporter rewards.</p>
+          <h2 className={styles.cardTitle}>Supporter Benefits</h2>
+          <p className={commonStyles.meta}>
+            Supporter status unlocks unlimited galaxy creation and badge progression that tracks both
+            total contribution and support duration over time.
+          </p>
+          <p className={commonStyles.meta}>
+            Supporters are also included in roadmap-focused update communications with transparent
+            progress notes and upcoming feature priorities.
+          </p>
         </article>
       </section>
     </section>

@@ -26,6 +26,13 @@
   padding: 14px;
 }
 
+.cardTitle {
+  color: var(--main-turquoise-surf);
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
 .helperText {
   margin-top: 6px;
   color: var(--carbon-black-300);
