@@ -2,10 +2,12 @@
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  min-height: 100vh;
+  min-height: calc(100vh - var(--app-topbar-offset, 0px) - var(--app-footer-offset, 0px));
   display: flex;
   flex-direction: column;
-  --zone-half-height: clamp(320px, 50vh, 620px);
+  --zone-height: calc(100vh - var(--app-topbar-offset, 0px) - var(--app-footer-offset, 0px));
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
 }
 
 .zoneHero,
@@ -13,10 +15,12 @@
 .zoneSupport,
 .zoneFaq {
   padding: 34px 20px;
+  min-height: var(--zone-height);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .zoneHero {
-  min-height: var(--zone-half-height);
   display: flex;
   align-items: center;
   background:
@@ -25,21 +29,18 @@
 }
 
 .zoneSupport {
-  min-height: var(--zone-half-height);
   display: flex;
   align-items: center;
   background: color-mix(in srgb, var(--carbon-black-900) 96%, #12202a);
 }
 
 .zoneHowItWorks {
-  min-height: var(--zone-half-height);
   display: flex;
   align-items: center;
   background: linear-gradient(180deg, #0f1619, #0b1215);
 }
 
 .zoneFaq {
-  min-height: var(--zone-half-height);
   display: flex;
   align-items: center;
   background: linear-gradient(180deg, #101413, #0d1210);
@@ -121,7 +122,7 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  margin: auto
+  margin: auto;
 }
 
 .supportLinkRow {

@@ -16,15 +16,15 @@ export default function Home() {
         <div className={styles.zoneInner}>
           <article className={styles.card}>
             <h1 className={styles.title}>Simulactic</h1>
-            <p className={styles.text}>Creating your own galaxy is at three fields of distance.</p>
+            <p className={styles.text}>Creating your own galaxy is just three fields away.</p>
             <p className={styles.text}>
-              Signup in our app, select a name for your new galaxy, choose its shape and the number
-              of solar systems that it will include and that is it.
+              Sign up, choose a name, select the galaxy shape, and define how many solar systems
+              you want to generate. That is all you need to start.
             </p>
             <p className={styles.text}>
-              Our 3D render will show your new creation and you will can interact direct on the
-              screen. Take a look about the info of your creation and look how your universe comes
-              into life.
+              Our 3D renderer brings your creation to life immediately. Explore systems, inspect
+              stars, planets, moons and asteroids, and interact directly on screen with your own
+              generated universe.
             </p>
           </article>
 
@@ -61,7 +61,7 @@ export default function Home() {
                 <h3 className={styles.cardSubtitle}>Explore in 3D</h3>
                 <p className={styles.text}>
                   Start in galaxy view, inspect systems, and zoom into system detail for planets,
-                  moons and asteroids. Play with your creations
+                  moons and asteroids. Play with your creations in real time.
                 </p>
               </article>
               <article className={styles.howStep}>
@@ -81,20 +81,20 @@ export default function Home() {
           <article className={styles.cardWide}>
             <h2 className={styles.cardTitle}>Why Support Simulactic</h2>
             <p className={styles.text}>
-              This project was born as a side portfolio project but the love for the astronomy and
-              galaxy dynamics and the passion for 4X strategy games made that this project became
-              the main project. As a solo developer with no graphic design experience, this will
-              need some help of the community in order to grow fast enough. As nowadays it is just a
-              galaxy simulator with a pretty 3D render the donations are totally voluntary and
-              without any minnimum quantity. If you decide to become supporter you will get some
-              benefits as unlimited galaxy creation, being part of the private community newsletter
-              that include an email of advance tracking of the project each 15 days (no spam at all)
-              and more playable benefits when it keeps becoming a real playable game.
+              Simulactic started as a portfolio side project, but love for astronomy, galaxy
+              dynamics, and 4X strategy design turned it into my main long-term project. I am
+              building it solo, so community support helps a lot to keep quality and progress moving
+              sprint by sprint.
             </p>
             <p className={styles.text}>
-              There are two types of donations: one-time and monthly supporting, both unlocks the
-              badges progress career and marks you as a supporter, no matter the time or the
-              quantity.
+              Donations are fully voluntary and there is no minimum amount. If you become a
+              supporter, you unlock unlimited galaxy creation, supporter badge progression, and
+              access to a private progress newsletter sent every 15 days with clear updates and no
+              spam.
+            </p>
+            <p className={styles.text}>
+              You can support with one-time or monthly donations. Both options unlock supporter
+              status and progress tracking, independently of amount or duration.
             </p>
             <nav className={styles.supportLinkRow} aria-label="Support actions">
               <Link href="/donations" className={styles.supportLink}>
@@ -113,68 +113,61 @@ export default function Home() {
               <details className={styles.faqItem}>
                 <summary>What is this and where are you going?</summary>
                 <p>
-                  Nowadays Simulactic App is a galaxy creation and simulation app. Users can create
-                  his own galaxies just with 3 information fields and our procedural algorithms
-                  create unique galaxies to interact with.
+                  Simulactic is currently a galaxy creation and simulation app. Users can create
+                  unique galaxies with just three fields, and our procedural engine builds the full
+                  structure to explore in 3D.
                 </p>
                 <p>
-                  Where we are going? Well... the growth planning is to turn it a 4X strategy game
-                  with stelar base. Create your own civilization, handle your resources, expand your
-                  empire and conquer another players.
+                  The long-term direction is to evolve into a stellar 4X strategy game where you can
+                  build civilizations, manage resources, expand your empire, and compete with other
+                  players.
                 </p>
               </details>
               <details className={styles.faqItem}>
                 <summary>What do you do with my information?</summary>
-                <p>Anything</p>
                 <p>
-                  We just collect basic information about you in order to ensure application
-                  security. We will not use or sell your information and never ever will contact you
-                  except you are voluntary included in our supporter community newsletter.
+                  We collect only the minimum required information to keep the platform secure and
+                  functional. We do not sell your data and we only contact you when you explicitly
+                  opt into supporter communications.
                 </p>
               </details>
               <details className={styles.faqItem}>
                 <summary>What happens if I become supporter? What benefits I will have?</summary>
                 <p>
-                  If you become supporter you will have some use benefits: first of all you will
-                  have unlimited creation power, also you will unlock a badge supporting career that
-                  tracks quantity and your time being supporter. It will include you into our
-                  private community newsletter, which we send every 15 days and where we explain our
-                  growth plan, sprint by sprint and where we are pointing our project.
+                  Supporters get unlimited galaxy creation and unlock a supporter badge career that
+                  tracks both total support and support time.
                 </p>
                 <p>
-                  When it become a real playable game, supporters will have some benefits, never pay
-                  to win but aestethic and unique unlockables.
+                  You are also included in the private 15-day newsletter with transparent progress
+                  updates. As Simulactic grows into a full game, supporters will receive benefits,
+                  but never pay-to-win advantages.
                 </p>
                 <p>
-                  Once you have supported our app you always will be kept as a supporter, no matter
-                  the quantity or the time that you were supporting. This is our way to thank
-                  everyone that helps the app growing.
+                  Once you support the project, you remain recognized as supporter. This is the way
+                  to thank everyone who helps the app grow.
                 </p>
               </details>
               <details className={styles.faqItem}>
                 <summary>What limits the app have?</summary>
                 <p>
-                  For now the only limit is that non-supporter users just can create up to 3
-                  galaxies. If you want to create more and you are not a supporter of the app you
-                  will have to delete at least one in order to make space for the new one.
-                  Supporters and admins have unlimited power creation.
+                  Right now, non-supporter users can create up to three galaxies. To create a new
+                  one after that, you need to delete an existing one first. Supporters and admins
+                  have unlimited creation.
                 </p>
                 <p>
-                  Non-admin users can not enter to the admin dashboard panel, where can track how
-                  the app is growing, data about the use and logs and metric about the app.
+                  Non-admin users cannot access the admin dashboard, where growth, usage, logs and
+                  performance metrics are monitored.
                 </p>
               </details>
               <details className={styles.faqItem}>
                 <summary>When it will become a real game?</summary>
                 <p>
-                  There is no real date. The growth plan include 15 day sprints to enhance
-                  functionalities, improve and fix bugs and make the app to grow, but there are not
-                  a date when this switch to a playable game.
+                  There is no fixed launch date yet. Development runs in 15-day sprints focused on
+                  features, stability, and continuous improvements.
                 </p>
                 <p>
-                  I am a solo developer and it will depend mainly on the support that I get, not
-                  only monetary, but with feedback and ideas of the community on how improve the app
-                  while transforming it into a game.
+                  As a solo developer, progress depends heavily on community support, feedback, and
+                  ideas while the project transitions from simulator to playable game.
                 </p>
               </details>
             </section>
