@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useGalaxy } from "../../application/hooks/useGalaxy";
@@ -19,7 +19,7 @@ const CreateGalaxyModal = dynamic(
   { ssr: false },
 );
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthenticated, loadMe } = useAuth();
@@ -162,5 +162,13 @@ export default function DashboardPage() {
         disabled={!canCreateGalaxy}
       />
     </>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<section className={styles.renderStage} style={{ minHeight: "60vh" }} />}>
+      <DashboardPageContent />
+    </Suspense>
   );
 }

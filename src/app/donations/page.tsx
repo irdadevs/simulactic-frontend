@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { sileo } from "sileo";
 import { useAuth } from "../../application/hooks/useAuth";
@@ -16,7 +16,7 @@ const monthlyPresets = [300, 500, 1000, 2000, 5000];
 
 const toEuroText = (amountMinor: number) => (amountMinor / 100).toFixed(2);
 
-export default function DonationGuidePage() {
+function DonationGuidePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthenticated, loadMe } = useAuth();
@@ -291,5 +291,13 @@ export default function DonationGuidePage() {
         </article>
       </section>
     </section>
+  );
+}
+
+export default function DonationGuidePage() {
+  return (
+    <Suspense fallback={<section className={styles.page} />}>
+      <DonationGuidePageContent />
+    </Suspense>
   );
 }
