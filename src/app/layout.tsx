@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat, Roboto_Condensed } from "next/font/google";
+import { Suspense } from "react";
 import "sileo/styles.css";
 import "../styles/globals.css";
 import layoutStyles from "../styles/layout.module.css";
@@ -32,10 +33,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${robotoCondensed.variable} ${montserrat.variable}`}>
-        <NavBar />
+        <Suspense fallback={null}>
+          <NavBar />
+        </Suspense>
         <ToastViewport />
         <main className={layoutStyles.appShell}>{children}</main>
-        <Footer />
+        <Suspense fallback={null}>
+          <Footer />
+        </Suspense>
       </body>
     </html>
   );
