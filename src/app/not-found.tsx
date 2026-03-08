@@ -194,8 +194,6 @@ export default function NotFound() {
     window.addEventListener("touchmove", onTouch, { passive: true });
     window.addEventListener("keydown", onKey);
 
-    setGameOver(false);
-    setScore(0);
     animationId = window.requestAnimationFrame(loop);
 
     return () => {
@@ -219,7 +217,14 @@ export default function NotFound() {
         </div>
         <canvas ref={canvasRef} className={styles.canvas} />
         <div className={styles.actions}>
-          <ActionButton variant="secondary" onClick={() => setRunId((prev) => prev + 1)}>
+          <ActionButton
+            variant="secondary"
+            onClick={() => {
+              setGameOver(false);
+              setScore(0);
+              setRunId((prev) => prev + 1);
+            }}
+          >
             Retry Minigame
           </ActionButton>
           <ActionButton onClick={() => window.location.assign("/")}>Go Home</ActionButton>

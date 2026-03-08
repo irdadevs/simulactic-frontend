@@ -11,6 +11,9 @@
     "validate": "npm run lint && npm run typecheck && npm test -- --runInBand",
     "prepare": "husky",
     "test": "jest --detectOpenHandles",
+    "test:unit": "jest src/test/unit --detectOpenHandles",
+    "test:integration": "jest src/test/integration --detectOpenHandles",
+    "test:e2e": "jest src/test/e2e --detectOpenHandles",
     "test:watch": "jest --watch --detectOpenHandles"
   },
   "dependencies": {
@@ -18,9 +21,6 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "clsx": "^2.1.1",
-    "i18next": "^25.8.13",
-    "i18next-browser-languagedetector": "^8.2.1",
-    "i18next-http-backend": "^3.0.2",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",

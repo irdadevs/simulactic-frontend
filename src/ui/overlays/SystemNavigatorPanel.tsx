@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   asteroidDetailItems,
   moonDetailItems,
@@ -28,12 +28,6 @@ export function SystemNavigatorPanel() {
   const navigateToSystemTarget = useUiStore((state) => state.navigateToSystemTarget);
   const [selectedInfo, setSelectedInfo] = useState<NavigatorRow | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
-
-  useEffect(() => {
-    if (!isExpanded) {
-      setSelectedInfo(null);
-    }
-  }, [isExpanded]);
 
   const rows: NavigatorRow[] = useMemo(() => {
     if (!systemDetail) return [];

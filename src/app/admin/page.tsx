@@ -12,15 +12,19 @@ import { donationApi } from "../../infra/api/donation.api";
 import { galaxyApi } from "../../infra/api/galaxy.api";
 import { logApi } from "../../infra/api/log.api";
 import { metricApi } from "../../infra/api/metric.api";
-import { userApi } from "../../infra/api/user.api";
+import { AdminUserListItemApiResponse, userApi } from "../../infra/api/user.api";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import styles from "../../styles/admin.module.css";
 import commonStyles from "../../styles/skeleton.module.css";
-import { GalaxyCountsResponse, GalaxyShapeValue, GlobalGalaxyCountsResponse } from "../../types/galaxy.types";
-import { UserRole } from "../../types/user.types";
+import { DonationApiResponse, DonationProps } from "../../types/donation.types";
+import { GalaxyApiResponse, GalaxyCountsResponse, GalaxyShapeValue, GlobalGalaxyCountsResponse } from "../../types/galaxy.types";
+import { LogApiResponse, LogProps } from "../../types/log.types";
+import { MetricApiResponse, MetricProps } from "../../types/metric.types";
+import { UserApiResponse, UserProps, UserRole } from "../../types/user.types";
 
 type Section = "overview" | "users" | "donations" | "logs" | "metrics" | "entities";
 type Point = { label: string; value: number };
+type GalaxyRow = Omit<GalaxyApiResponse, "createdAt"> & { createdAt: Date };
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -168,13 +172,13 @@ export default function AdminPage() {
   const [logState, setLogState] = useState<"all" | "open" | "resolved">("all");
   const [logLevelFilter, setLogLevelFilter] = useState<"all" | "debug" | "info" | "warn" | "error" | "critical">("all");
   const [logCategoryFilter, setLogCategoryFilter] = useState<"all" | "application" | "security" | "audit" | "infrastructure">("all");
-  const [selectedLog, setSelectedLog] = useState<any | null>(null);
+  const [selectedLog, setSelectedLog] = useState<LogProps | null>(null);
 
-  const [users, setUsers] = useState<any[]>([]);
-  const [donations, setDonations] = useState<any[]>([]);
-  const [logs, setLogs] = useState<any[]>([]);
-  const [metrics, setMetrics] = useState<any[]>([]);
-  const [galaxies, setGalaxies] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserProps[]>([]);
+  const [donations, setDonations] = useState<DonationProps[]>([]);
+  const [logs, setLogs] = useState<LogProps[]>([]);
+  const [metrics, setMetrics] = useState<MetricProps[]>([]);
+  const [galaxies, setGalaxies] = useState<GalaxyRow[]>([]);
   const [galaxyCounts, setGalaxyCounts] = useState<Record<string, GalaxyCountsResponse>>({});
   const [globalCounts, setGlobalCounts] = useState<GlobalGalaxyCountsResponse | null>(null);
   const [focusGalaxyId, setFocusGalaxyId] = useState<string | null>(null);
@@ -229,11 +233,24 @@ export default function AdminPage() {
           fetchAll((offset) => galaxyApi.list({ orderBy: "createdAt", orderDir: "desc", limit: PAGE_SIZE, offset })),
           galaxyApi.globalCounts(),
         ]);
-        const mappedUsers = u.rows.map((row: any) => mapUserDomainToView(mapUserApiToDomain("verified" in row ? row : { ...row, verified: row.isVerified })));
-        const mappedDonations = d.rows.map((row: any) => mapDonationDomainToView(mapDonationApiToDomain(row)));
-        const mappedLogs = l.rows.map((row: any) => mapLogDomainToView(mapLogApiToDomain(row)));
-        const mappedMetrics = m.rows.map((row: any) => mapMetricDomainToView(mapMetricApiToDomain(row)));
-        const mappedGalaxies = g.rows.map((row: any) => ({ ...row, createdAt: new Date(row.createdAt) }));
+        const mappedUsers = u.rows.map((row: UserApiResponse | AdminUserListItemApiResponse) =>
+          mapUserDomainToView(
+            mapUserApiToDomain("verified" in row ? row : { ...row, verified: row.isVerified }),
+          ),
+        );
+        const mappedDonations = d.rows.map((row: DonationApiResponse) =>
+          mapDonationDomainToView(mapDonationApiToDomain(row)),
+        );
+        const mappedLogs = l.rows.map((row: LogApiResponse) =>
+          mapLogDomainToView(mapLogApiToDomain(row)),
+        );
+        const mappedMetrics = m.rows.map((row: MetricApiResponse) =>
+          mapMetricDomainToView(mapMetricApiToDomain(row)),
+        );
+        const mappedGalaxies = g.rows.map((row: GalaxyApiResponse) => ({
+          ...row,
+          createdAt: new Date(row.createdAt),
+        }));
         setUsers(mappedUsers);
         setDonations(mappedDonations);
         setLogs(mappedLogs);
