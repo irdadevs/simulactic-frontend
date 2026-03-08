@@ -109,3 +109,8 @@
   display: flex;
   gap: 10px;
 }
+
+.signupLoginLink {
+  color: var(--turquoise-surf-600);
+  font-weight: 700;
+}

@@ -1,0 +1,43 @@
+.page {
+  max-width: 920px;
+  margin: 0 auto;
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--carbon-black-900) 94%, #0f1d24);
+  padding: 18px;
+}
+
+.section + .section {
+  margin-top: 16px;
+}
+
+.heading {
+  color: var(--main-ivory);
+  font-size: 17px;
+  margin-bottom: 8px;
+}
+
+.text {
+  color: var(--carbon-black-200);
+  line-height: 1.6;
+}
+
+.text + .text {
+  margin-top: 10px;
+}
+
+.list {
+  margin-top: 8px;
+  padding-left: 20px;
+  color: var(--carbon-black-200);
+  line-height: 1.6;
+}
+
+.list li + li {
+  margin-top: 6px;
+}

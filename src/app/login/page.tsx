@@ -68,7 +68,10 @@ export default function LoginPage() {
       subtitle="Enter your credentials to continue."
       footer={
         <p className={styles.subtitle}>
-          No account? <Link href="/signup">Create one</Link>
+          No account?{" "}
+          <Link href="/signup" className={styles.signupLoginLink}>
+            Create one
+          </Link>
         </p>
       }
     >
@@ -100,7 +103,11 @@ export default function LoginPage() {
               onClick={() => setShowPassword((current) => !current)}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              <img src={showPassword ? "/icons/hide.svg" : "/icons/view.svg"} alt="" aria-hidden="true" />
+              <img
+                src={showPassword ? "/icons/hide.svg" : "/icons/view.svg"}
+                alt=""
+                aria-hidden="true"
+              />
             </button>
           </div>
         </div>
