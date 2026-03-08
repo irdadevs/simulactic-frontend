@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, ReactNode, useLayoutEffect, useRef, useState } from "react";
+import { ReactNode, useLayoutEffect, useRef } from "react";
 import { usePopupController } from "../../application/hooks/usePopupController";
 import {
   asteroidDetailItems,
@@ -51,13 +51,23 @@ export function PopupLayer() {
   const layerRef = useRef<HTMLDivElement | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
-  const [popupStyle, setPopupStyle] = useState<CSSProperties | undefined>(undefined);
-  const [loaderStyle, setLoaderStyle] = useState<CSSProperties | undefined>(undefined);
 
   useLayoutEffect(() => {
+    const setHidden = (element: HTMLDivElement | null) => {
+      if (!element) return;
+      element.style.visibility = "hidden";
+    };
+
+    const setPositioned = (element: HTMLDivElement | null, left: number, top: number) => {
+      if (!element) return;
+      element.style.left = `${left}px`;
+      element.style.top = `${top}px`;
+      element.style.visibility = "visible";
+    };
+
     if (!popupAnchor) {
-      setPopupStyle(undefined);
-      setLoaderStyle(undefined);
+      setHidden(popupRef.current);
+      setHidden(loaderRef.current);
       return;
     }
 
@@ -75,13 +85,9 @@ export function PopupLayer() {
           14,
           12,
         );
-        setPopupStyle({
-          left: popupPos.left,
-          top: popupPos.top,
-          visibility: "visible",
-        });
+        setPositioned(popupRef.current, popupPos.left, popupPos.top);
       } else {
-        setPopupStyle(undefined);
+        setHidden(popupRef.current);
       }
 
       if (loaderRef.current) {
@@ -93,13 +99,9 @@ export function PopupLayer() {
           10,
           10,
         );
-        setLoaderStyle({
-          left: loaderPos.left,
-          top: loaderPos.top,
-          visibility: "visible",
-        });
+        setPositioned(loaderRef.current, loaderPos.left, loaderPos.top);
       } else {
-        setLoaderStyle(undefined);
+        setHidden(loaderRef.current);
       }
     };
 
@@ -112,7 +114,7 @@ export function PopupLayer() {
     <div
       ref={popupRef}
       className={popupStyles.popupPositioned}
-      style={popupStyle ?? { visibility: "hidden" }}
+      style={{ visibility: "hidden" }}
     >
       {content}
     </div>
@@ -126,7 +128,7 @@ export function PopupLayer() {
         <div
           ref={loaderRef}
           className={popupStyles.popupLoader}
-          style={loaderStyle ?? { visibility: "hidden" }}
+          style={{ visibility: "hidden" }}
           aria-label="Preparing popup"
         >
           <span className={popupStyles.popupLoaderSpinner} />

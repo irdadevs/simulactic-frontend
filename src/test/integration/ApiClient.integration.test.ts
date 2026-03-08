@@ -116,7 +116,7 @@ describe("api client integration", () => {
   });
 
   it("forwards external abort signal and rejects with timeout-formatted message", async () => {
-    let capturedSignal: AbortSignal | undefined;
+    let capturedSignal: AbortSignal | null | undefined;
     fetchMock.mockImplementation((_url: string, init?: RequestInit) => {
       capturedSignal = init?.signal;
       return new Promise<Response>((_resolve, reject) => {

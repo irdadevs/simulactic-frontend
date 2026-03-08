@@ -22,11 +22,11 @@ type EventKey = keyof EventMap;
 type Listener<K extends EventKey> = (payload: EventMap[K]) => void;
 
 export class EventBridge {
-  private listeners: Map<EventKey, Set<Listener<any>>> = new Map();
+  private listeners: Map<EventKey, Set<Listener<EventKey>>> = new Map();
 
   on<K extends EventKey>(event: K, listener: Listener<K>): () => void {
-    const set = this.listeners.get(event) ?? new Set();
-    set.add(listener);
+    const set = this.listeners.get(event) ?? new Set<Listener<EventKey>>();
+    set.add(listener as Listener<EventKey>);
     this.listeners.set(event, set);
 
     return () => this.off(event, listener);
@@ -35,7 +35,7 @@ export class EventBridge {
   off<K extends EventKey>(event: K, listener: Listener<K>): void {
     const set = this.listeners.get(event);
     if (!set) return;
-    set.delete(listener);
+    set.delete(listener as Listener<EventKey>);
     if (set.size === 0) this.listeners.delete(event);
   }
 
