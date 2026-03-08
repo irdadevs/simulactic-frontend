@@ -53,13 +53,12 @@ const csv = (value: unknown) => {
   const s = String(value ?? "");
   return /[,"\n]/.test(s) ? `"${s.replace(/"/g, "\"\"")}"` : s;
 };
-const renderLine = (points: Point[]) => {
+const renderLine = (points: Point[], maxTicks: number) => {
   const max = Math.max(1, ...points.map((p) => p.value));
   const w = 560;
   const h = 180;
   const pad = 20;
   const stepX = points.length > 1 ? (w - pad * 2) / (points.length - 1) : 0;
-  const maxTicks = 8;
   const tickIndexes = (() => {
     if (points.length <= maxTicks) {
       return points.map((_, i) => i);
@@ -136,6 +135,7 @@ export default function AdminPage() {
 
   const [section, setSection] = useState<Section>("overview");
   const [loading, setLoading] = useState(true);
+  const [isCompactChart, setIsCompactChart] = useState(false);
   const [from, setFrom] = useState(toDateInput(addDays(new Date(), -30)));
   const [to, setTo] = useState(toDateInput(new Date()));
 
@@ -168,6 +168,14 @@ export default function AdminPage() {
     checkedRef.current = true;
     void loadMe().catch(() => router.replace("/login"));
   }, [loadMe, router]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 900px)");
+    const apply = () => setIsCompactChart(media.matches);
+    apply();
+    media.addEventListener("change", apply);
+    return () => media.removeEventListener("change", apply);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -441,6 +449,7 @@ export default function AdminPage() {
   })();
   const openLogs = logs.filter((l) => !l.resolvedAt).length;
   const closedLogs = logs.filter((l) => Boolean(l.resolvedAt)).length;
+  const lineChartTicks = isCompactChart ? 5 : 8;
 
   return (
     <section className={styles.page}>
@@ -481,9 +490,9 @@ export default function AdminPage() {
             <article className={styles.card}>
               <h2 className={commonStyles.panelTitle}>Charts</h2>
               <div className={styles.chartGrid}>
-                <div className={styles.chartCard}><h3 className={styles.chartTitle}>Users historic counter (day by day)</h3>{renderLine(usersHistoricByDay)}</div>
-                <div className={styles.chartCard}><h3 className={styles.chartTitle}>Donations historic counter EUR (day by day)</h3>{renderLine(donationsHistoricByDay)}</div>
-                <div className={styles.chartCard}><h3 className={styles.chartTitle}>Galaxy creations historic counter (day by day)</h3>{renderLine(galaxyCreationsHistoricByDay)}</div>
+                <div className={styles.chartCard}><h3 className={styles.chartTitle}>Users historic counter (day by day)</h3>{renderLine(usersHistoricByDay, lineChartTicks)}</div>
+                <div className={styles.chartCard}><h3 className={styles.chartTitle}>Donations historic counter EUR (day by day)</h3>{renderLine(donationsHistoricByDay, lineChartTicks)}</div>
+                <div className={styles.chartCard}><h3 className={styles.chartTitle}>Galaxy creations historic counter (day by day)</h3>{renderLine(galaxyCreationsHistoricByDay, lineChartTicks)}</div>
               </div>
             </article>
           </section>
