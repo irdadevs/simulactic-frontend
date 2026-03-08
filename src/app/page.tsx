@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ActionButton } from "../ui/components/buttons/ActionButton";
+import { LandingSnapController } from "../ui/components/landing/LandingSnapController";
 import styles from "../styles/landing.module.css";
 
 export const metadata: Metadata = {
@@ -11,8 +12,9 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <section className={styles.page}>
-      <header className={styles.zoneHero}>
+    <section id="landing-root" className={styles.page}>
+      <LandingSnapController containerId="landing-root" sectionSelector="[data-landing-section]" />
+      <header className={styles.zoneHero} data-landing-section>
         <div className={styles.zoneInner}>
           <article className={styles.card}>
             <h1 className={styles.title}>Simulactic</h1>
@@ -45,9 +47,9 @@ export default function Home() {
         </div>
       </header>
 
-      <section className={styles.zoneHowItWorks}>
+      <section className={styles.zoneHowItWorks} data-landing-section>
         <div className={styles.zoneInnerSingle}>
-          <article className={styles.cardWide}>
+          <article className={`${styles.cardWide} ${styles.howCard}`}>
             <h2 className={styles.cardTitle}>How it works</h2>
             <section className={styles.howGrid} aria-label="How Simulactic works">
               <article className={styles.howStep}>
@@ -76,7 +78,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className={styles.zoneSupport}>
+      <section className={styles.zoneSupport} data-landing-section>
         <div className={styles.zoneInnerSingle}>
           <article className={styles.cardWide}>
             <h2 className={styles.cardTitle}>Why Support Simulactic</h2>
@@ -105,7 +107,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className={styles.zoneFaq}>
+      <section className={styles.zoneFaq} data-landing-section>
         <div className={styles.zoneInnerSingle}>
           <article className={styles.cardWide}>
             <h2 className={styles.cardTitle}>FAQs</h2>
