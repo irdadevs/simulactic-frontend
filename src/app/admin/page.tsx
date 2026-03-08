@@ -16,12 +16,11 @@ import { userApi } from "../../infra/api/user.api";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import styles from "../../styles/admin.module.css";
 import commonStyles from "../../styles/skeleton.module.css";
-import { GalaxyShapeValue } from "../../types/galaxy.types";
+import { GalaxyCountsResponse, GalaxyShapeValue, GlobalGalaxyCountsResponse } from "../../types/galaxy.types";
 import { UserRole } from "../../types/user.types";
 
 type Section = "overview" | "users" | "donations" | "logs" | "metrics" | "entities";
 type Point = { label: string; value: number };
-type GalaxyReport = { stars: number; planets: number; moons: number; asteroids: number };
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -154,7 +153,8 @@ export default function AdminPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<any[]>([]);
   const [galaxies, setGalaxies] = useState<any[]>([]);
-  const [reports, setReports] = useState<Record<string, GalaxyReport>>({});
+  const [galaxyCounts, setGalaxyCounts] = useState<Record<string, GalaxyCountsResponse>>({});
+  const [globalCounts, setGlobalCounts] = useState<GlobalGalaxyCountsResponse | null>(null);
   const [focusGalaxyId, setFocusGalaxyId] = useState<string | null>(null);
   const [totals, setTotals] = useState({ users: 0, donations: 0, logs: 0, metrics: 0, galaxies: 0 });
 
@@ -199,12 +199,13 @@ export default function AdminPage() {
     const load = async () => {
       setLoading(true);
       try {
-        const [u, d, l, m, g] = await Promise.all([
+        const [u, d, l, m, g, gc] = await Promise.all([
           fetchAll((offset) => userApi.list({ orderBy: "createdAt", orderDir: "desc", limit: PAGE_SIZE, offset })),
           fetchAll((offset) => donationApi.list({ orderBy: "createdAt", orderDir: "desc", limit: PAGE_SIZE, offset })),
           fetchAll((offset) => logApi.list({ from: rangeFrom, to: rangeTo, orderBy: "occurredAt", orderDir: "desc", limit: PAGE_SIZE, offset })),
           fetchAll((offset) => metricApi.list({ from: rangeFrom, to: rangeTo, orderBy: "occurredAt", orderDir: "desc", limit: PAGE_SIZE, offset })),
           fetchAll((offset) => galaxyApi.list({ orderBy: "createdAt", orderDir: "desc", limit: PAGE_SIZE, offset })),
+          galaxyApi.globalCounts(),
         ]);
         const mappedUsers = u.rows.map((row: any) => mapUserDomainToView(mapUserApiToDomain("verified" in row ? row : { ...row, verified: row.isVerified })));
         const mappedDonations = d.rows.map((row: any) => mapDonationDomainToView(mapDonationApiToDomain(row)));
@@ -216,6 +217,7 @@ export default function AdminPage() {
         setLogs(mappedLogs);
         setMetrics(mappedMetrics);
         setGalaxies(mappedGalaxies);
+        setGlobalCounts(gc);
         setTotals({ users: u.total, donations: d.total, logs: l.total, metrics: m.total, galaxies: g.total });
       } catch (error: unknown) {
         sileo.error({ title: "Admin data load failed", description: describeApiError(error, "Could not load admin dashboard data.") });
@@ -324,15 +326,15 @@ export default function AdminPage() {
   }, [donations]);
 
   const entityGlobalCards = useMemo(() => {
-    const reported = galaxies.map((g) => reports[g.id]).filter(Boolean) as GalaxyReport[];
     return {
-      galaxies: galaxies.length,
-      stars: reported.reduce((acc, r) => acc + r.stars, 0),
-      planets: reported.reduce((acc, r) => acc + r.planets, 0),
-      moons: reported.reduce((acc, r) => acc + r.moons, 0),
-      asteroids: reported.reduce((acc, r) => acc + r.asteroids, 0),
+      galaxies: globalCounts?.galaxies ?? galaxies.length,
+      systems: globalCounts?.systems ?? galaxies.reduce((acc, g) => acc + g.systemCount, 0),
+      stars: globalCounts?.stars ?? 0,
+      planets: globalCounts?.planets ?? 0,
+      moons: globalCounts?.moons ?? 0,
+      asteroids: globalCounts?.asteroids ?? 0,
     };
-  }, [galaxies, reports]);
+  }, [galaxies, globalCounts]);
 
   const onExportUsersCsv = () => {
     const rows = [
@@ -348,62 +350,36 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   };
 
-  const onGenerateReports = async () => {
-    try {
-      const next: Record<string, GalaxyReport> = {};
-      for (const g of galaxiesFiltered.slice(0, 25)) {
-        const pop = await galaxyApi.populate(g.id);
-        let stars = 0;
-        let planets = 0;
-        let moons = 0;
-        let asteroids = 0;
-        for (const s of pop.systems) {
-          stars += s.stars.length;
-          planets += s.planets.length;
-          asteroids += s.asteroids.length;
-          for (const p of s.planets) moons += p.moons.length;
-        }
-        next[g.id] = { stars, planets, moons, asteroids };
-      }
-      setReports((prev) => ({ ...prev, ...next }));
-    } catch (error: unknown) {
-      sileo.error({ title: "Entity report failed", description: describeApiError(error, "Could not generate entity report.") });
-    }
+  const loadGalaxyCounts = async (galaxyIds: string[]) => {
+    const missingIds = galaxyIds.filter((id) => !galaxyCounts[id]);
+    if (missingIds.length === 0) return;
+
+    const entries = await Promise.all(
+      missingIds.map(async (id) => {
+        const counts = await galaxyApi.counts(id);
+        return [id, counts] as const;
+      }),
+    );
+    setGalaxyCounts((prev) => ({ ...prev, ...Object.fromEntries(entries) }));
   };
 
   useEffect(() => {
-    const missing = galaxies.filter((g) => !reports[g.id]);
-    if (missing.length === 0) return;
-
-    let canceled = false;
+    let cancelled = false;
     const hydrate = async () => {
-      const next: Record<string, GalaxyReport> = {};
-      for (const g of missing) {
-        if (canceled) break;
-        try {
-          const pop = await galaxyApi.populate(g.id);
-          let stars = 0;
-          let planets = 0;
-          let moons = 0;
-          let asteroids = 0;
-          for (const s of pop.systems) {
-            stars += s.stars.length;
-            planets += s.planets.length;
-            asteroids += s.asteroids.length;
-            for (const p of s.planets) moons += p.moons.length;
-          }
-          next[g.id] = { stars, planets, moons, asteroids };
-        } catch {}
-      }
-      if (!canceled && Object.keys(next).length > 0) {
-        setReports((prev) => ({ ...prev, ...next }));
+      try {
+        const topVisibleIds = galaxiesFiltered.slice(0, 40).map((g) => g.id);
+        await loadGalaxyCounts(topVisibleIds);
+      } catch (error: unknown) {
+        if (!cancelled) {
+          sileo.error({ title: "Entity count load failed", description: describeApiError(error, "Could not load galaxy counts.") });
+        }
       }
     };
     void hydrate();
     return () => {
-      canceled = true;
+      cancelled = true;
     };
-  }, [galaxies, reports]);
+  }, [galaxiesFiltered, galaxyCounts]);
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -667,7 +643,7 @@ export default function AdminPage() {
             <article className={styles.card}>
               <div className={styles.rowBetween}>
                 <h2 className={commonStyles.panelTitle}>Galaxies ({galaxiesFiltered.length} / {totals.galaxies})</h2>
-                <button className={styles.exportButton} onClick={() => void onGenerateReports()}>Generate detailed report</button>
+                <button className={styles.exportButton} onClick={() => void loadGalaxyCounts(galaxiesFiltered.map((g) => g.id))}>Refresh counts</button>
               </div>
               <div className={styles.filtersGrid}>
                 <div className={styles.filterField}><label>Search</label><input value={entitySearch} onChange={(e) => setEntitySearch(e.target.value)} /></div>
@@ -675,12 +651,13 @@ export default function AdminPage() {
               </div>
               <div className={styles.summaryGrid}>
                 <div className={styles.summaryCard}><span>Total galaxies</span><strong>{entityGlobalCards.galaxies}</strong></div>
+                <div className={styles.summaryCard}><span>Total systems</span><strong>{entityGlobalCards.systems}</strong></div>
                 <div className={styles.summaryCard}><span>Total stars</span><strong>{entityGlobalCards.stars}</strong></div>
                 <div className={styles.summaryCard}><span>Total planets</span><strong>{entityGlobalCards.planets}</strong></div>
                 <div className={styles.summaryCard}><span>Total moons</span><strong>{entityGlobalCards.moons}</strong></div>
                 <div className={styles.summaryCard}><span>Total asteroids</span><strong>{entityGlobalCards.asteroids}</strong></div>
               </div>
-              <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Name</th><th>Shape</th><th>Systems</th><th>Stars</th><th>Planets</th><th>Moons</th><th>Asteroids</th><th>Action</th></tr></thead><tbody>{galaxiesFiltered.map((g) => <tr key={g.id}><td>{g.name}</td><td>{g.shape}</td><td>{g.systemCount}</td><td>{reports[g.id]?.stars ?? "-"}</td><td>{reports[g.id]?.planets ?? "-"}</td><td>{reports[g.id]?.moons ?? "-"}</td><td>{reports[g.id]?.asteroids ?? "-"}</td><td><button className={styles.exportButton} onClick={() => setFocusGalaxyId(g.id)}>Go to</button></td></tr>)}</tbody></table></div>
+              <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Name</th><th>Shape</th><th>Systems</th><th>Stars</th><th>Planets</th><th>Moons</th><th>Asteroids</th><th>Action</th></tr></thead><tbody>{galaxiesFiltered.map((g) => <tr key={g.id}><td>{g.name}</td><td>{g.shape}</td><td>{galaxyCounts[g.id]?.systems ?? g.systemCount}</td><td>{galaxyCounts[g.id]?.stars ?? "-"}</td><td>{galaxyCounts[g.id]?.planets ?? "-"}</td><td>{galaxyCounts[g.id]?.moons ?? "-"}</td><td>{galaxyCounts[g.id]?.asteroids ?? "-"}</td><td><button className={styles.exportButton} onClick={() => setFocusGalaxyId(g.id)}>Go to</button></td></tr>)}</tbody></table></div>
             </article>
           </section>
         )}

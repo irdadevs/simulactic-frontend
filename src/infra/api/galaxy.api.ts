@@ -1,5 +1,10 @@
 import { AsteroidApiResponse } from "../../types/asteroid.types";
-import { GalaxyApiResponse, GalaxyShapeValue } from "../../types/galaxy.types";
+import {
+  GalaxyApiResponse,
+  GalaxyCountsResponse,
+  GalaxyShapeValue,
+  GlobalGalaxyCountsResponse,
+} from "../../types/galaxy.types";
 import { MoonApiResponse } from "../../types/moon.types";
 import { PlanetApiResponse } from "../../types/planet.types";
 import { StarApiResponse } from "../../types/star.types";
@@ -30,6 +35,9 @@ export type ListGalaxiesQuery = {
 
 export type GalaxyPopulateResponse = {
   galaxy: GalaxyApiResponse;
+  total?: number;
+  limit?: number;
+  offset?: number;
   systems: Array<{
     system: SystemApiResponse;
     stars: StarApiResponse[];
@@ -39,6 +47,11 @@ export type GalaxyPopulateResponse = {
     }>;
     asteroids: AsteroidApiResponse[];
   }>;
+};
+
+export type PopulateGalaxyQuery = {
+  limit?: number;
+  offset?: number;
 };
 
 const BASE = "/galaxies";
@@ -59,8 +72,14 @@ export const galaxyApi = {
   findByName: (name: string): Promise<GalaxyApiResponse | null> =>
     apiGet(`${BASE}/name/${encodeURIComponent(name)}`),
 
-  populate: (id: string): Promise<GalaxyPopulateResponse> =>
-    apiGet(`${BASE}/${encodeURIComponent(id)}/populate`),
+  populate: (id: string, query?: PopulateGalaxyQuery): Promise<GalaxyPopulateResponse> =>
+    apiGet(`${BASE}/${encodeURIComponent(id)}/populate`, { query }),
+
+  counts: (id: string): Promise<GalaxyCountsResponse> =>
+    apiGet(`${BASE}/${encodeURIComponent(id)}/counts`),
+
+  globalCounts: (): Promise<GlobalGalaxyCountsResponse> =>
+    apiGet(`${BASE}/counts/global`),
 
   changeName: (id: string, body: ChangeGalaxyNameRequest): Promise<void> =>
     apiPatch(`${BASE}/${encodeURIComponent(id)}/name`, { body }),

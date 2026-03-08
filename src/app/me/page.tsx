@@ -64,32 +64,6 @@ const toDate = (value: Date) =>
     day: "2-digit",
   }).format(value);
 
-const computeStats = (
-  population: Awaited<ReturnType<typeof galaxyApi.populate>>,
-): GalaxyStats => {
-  let stars = 0;
-  let planets = 0;
-  let moons = 0;
-  let asteroids = 0;
-
-  for (const systemNode of population.systems) {
-    stars += systemNode.stars.length;
-    planets += systemNode.planets.length;
-    asteroids += systemNode.asteroids.length;
-    for (const planetNode of systemNode.planets) {
-      moons += planetNode.moons.length;
-    }
-  }
-
-  return {
-    systems: population.systems.length,
-    stars,
-    planets,
-    moons,
-    asteroids,
-  };
-};
-
 export default function MePage() {
   const router = useRouter();
   const { user, isAuthenticated, loadMe, changeEmail, changePassword, changeUsername } = useAuth();
@@ -138,8 +112,8 @@ export default function MePage() {
           const entries = await Promise.all(
             galaxiesResult.rows.map(async (galaxy) => {
               try {
-                const population = await galaxyApi.populate(galaxy.id);
-                return [galaxy.id, computeStats(population)] as const;
+                const counts = await galaxyApi.counts(galaxy.id);
+                return [galaxy.id, counts] as const;
               } catch {
                 return [
                   galaxy.id,

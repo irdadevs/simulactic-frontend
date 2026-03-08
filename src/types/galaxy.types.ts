@@ -39,3 +39,20 @@ export type GalaxyApiResponse = {
   systemCount: number;
   createdAt: string | Date;
 };
+
+export type GalaxyCountsResponse = {
+  systems: number;
+  stars: number;
+  planets: number;
+  moons: number;
+  asteroids: number;
+};
+
+export type GlobalGalaxyCountsResponse = {
+  galaxies: number;
+  systems: number;
+  stars: number;
+  planets: number;
+  moons: number;
+  asteroids: number;
+};
