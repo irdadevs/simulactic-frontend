@@ -1,11 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ActionButton } from "../ui/components/buttons/ActionButton";
 import styles from "../styles/landing.module.css";
 
+export const metadata: Metadata = {
+  title: "Home",
+  description:
+    "Create galaxies, explore star systems in 3D, and support the growth of Simulactic into a complete strategy simulation experience.",
+};
+
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <section className={styles.zoneHero}>
+    <section className={styles.page}>
+      <header className={styles.zoneHero}>
         <div className={styles.zoneInner}>
           <article className={styles.card}>
             <h1 className={styles.title}>Simulactic</h1>
@@ -26,23 +33,23 @@ export default function Home() {
             <p className={styles.getStartedText}>
               Access your account or create a new one to start exploring.
             </p>
-            <div className={styles.ctaRow}>
+            <nav className={styles.ctaRow} aria-label="Authentication shortcuts">
               <Link href="/login">
                 <ActionButton>Login</ActionButton>
               </Link>
               <Link href="/signup">
                 <ActionButton variant="secondary">Sign up</ActionButton>
               </Link>
-            </div>
+            </nav>
           </article>
         </div>
-      </section>
+      </header>
 
       <section className={styles.zoneHowItWorks}>
         <div className={styles.zoneInnerSingle}>
           <article className={styles.cardWide}>
             <h2 className={styles.cardTitle}>How it works</h2>
-            <div className={styles.howGrid}>
+            <section className={styles.howGrid} aria-label="How Simulactic works">
               <article className={styles.howStep}>
                 <h3 className={styles.cardSubtitle}>Create your galaxy</h3>
                 <p className={styles.text}>
@@ -64,7 +71,7 @@ export default function Home() {
                   a supporter and unlock a badge progress.
                 </p>
               </article>
-            </div>
+            </section>
           </article>
         </div>
       </section>
@@ -89,11 +96,11 @@ export default function Home() {
               badges progress career and marks you as a supporter, no matter the time or the
               quantity.
             </p>
-            <div className={styles.supportLinkRow}>
+            <nav className={styles.supportLinkRow} aria-label="Support actions">
               <Link href="/donations" className={styles.supportLink}>
                 Open donations
               </Link>
-            </div>
+            </nav>
           </article>
         </div>
       </section>
@@ -102,7 +109,7 @@ export default function Home() {
         <div className={styles.zoneInnerSingle}>
           <article className={styles.cardWide}>
             <h2 className={styles.cardTitle}>FAQs</h2>
-            <div className={styles.faqList}>
+            <section className={styles.faqList} aria-label="Frequently asked questions">
               <details className={styles.faqItem}>
                 <summary>What is this and where are you going?</summary>
                 <p>
@@ -170,10 +177,10 @@ export default function Home() {
                   while transforming it into a game.
                 </p>
               </details>
-            </div>
+            </section>
           </article>
         </div>
       </section>
-    </div>
+    </section>
   );
 }

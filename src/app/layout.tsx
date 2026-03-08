@@ -21,8 +21,37 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Simulactic Frontend",
-  description: "Frontend skeleton with auth and galaxy dashboard",
+  metadataBase: new URL("https://simulactic.app"),
+  title: {
+    default: "Simulactic | Interactive Galaxy Simulator",
+    template: "%s | Simulactic",
+  },
+  description:
+    "Simulactic is an interactive galaxy simulation platform where users create galaxies, explore systems in 3D, and track growth through personal and admin dashboards.",
+  keywords: [
+    "galaxy simulator",
+    "3d space simulation",
+    "astronomy app",
+    "procedural galaxies",
+    "simulactic",
+  ],
+  openGraph: {
+    title: "Simulactic | Interactive Galaxy Simulator",
+    description:
+      "Create your own galaxies, explore systems in 3D, and follow your simulation growth with a full dashboard experience.",
+    type: "website",
+    locale: "en_US",
+    siteName: "Simulactic",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Simulactic | Interactive Galaxy Simulator",
+    description:
+      "Create, explore, and manage galaxies in an immersive 3D simulation platform.",
+  },
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({
