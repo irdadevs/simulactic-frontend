@@ -45,7 +45,7 @@
   border: 1px solid var(--carbon-black-700);
   border-radius: 12px;
   overflow: hidden;
-  background: radial-gradient(circle at 35% 24%, #15212d 0%, #070b11 72%);
+  background: #020305;
 }
 
 .starLayerFar,
@@ -56,17 +56,17 @@
 }
 
 .starLayerFar {
-  background-image: radial-gradient(circle, rgba(232, 248, 255, 0.56) 1px, transparent 1.3px);
+  background-image: radial-gradient(circle, rgba(232, 248, 255, 0.54) 1px, transparent 1.3px);
   background-size: 180px 180px;
   opacity: 0.4;
   animation: starDriftFar 28s linear infinite;
 }
 
 .starLayerNear {
-  background-image: radial-gradient(circle, rgba(232, 248, 255, 0.86) 1.2px, transparent 1.5px);
+  background-image: radial-gradient(circle, rgba(232, 248, 255, 0.85) 1.2px, transparent 1.5px);
   background-size: 120px 120px;
   background-position: 38px 64px;
-  opacity: 0.36;
+  opacity: 0.34;
   animation: starDriftNear 18s linear infinite;
 }
 
@@ -81,15 +81,15 @@
 }
 
 .phase1 {
-  transform: scale(1.28) translate3d(-6%, -4%, 0);
+  transform: scale(1.26) translate3d(-5%, -3%, 0);
 }
 
 .phase2 {
-  transform: scale(1.46) translate3d(-12%, -10%, 0);
+  transform: scale(1.44) translate3d(-10%, -8%, 0);
 }
 
 .phase3 {
-  transform: scale(1.26) translate3d(8%, 3%, 0);
+  transform: scale(1.24) translate3d(8%, 2%, 0);
 }
 
 .systemA,
@@ -136,64 +136,104 @@
   box-shadow: 0 0 10px rgba(143, 183, 222, 0.6);
 }
 
-.orbitRing {
+.systemCore {
   position: absolute;
-  left: 16%;
-  top: 25%;
+  left: 21%;
+  top: 38%;
   width: 140px;
   height: 140px;
-  border: 1px solid rgba(232, 248, 255, 0.35);
-  border-radius: 999px;
   opacity: 0;
-  transition: opacity 600ms ease;
+  transition: opacity 550ms ease;
+}
+
+.focusStar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  background: #f8ffe5;
+  box-shadow: 0 0 20px rgba(248, 255, 229, 0.75);
+}
+
+.orbitRing {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border: 1px solid rgba(232, 248, 255, 0.26);
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+}
+
+.orbitPlanet {
+  width: 112px;
+  height: 112px;
+}
+
+.orbitMoon {
+  width: 72px;
+  height: 72px;
+}
+
+.orbitAsteroid {
+  width: 136px;
+  height: 136px;
+  border-style: dashed;
+}
+
+.orbiter {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: 0 0;
+}
+
+.planetOrbit {
+  animation: orbitSpin 7.2s linear infinite;
+}
+
+.moonOrbit {
+  animation: orbitSpin 4.2s linear infinite reverse;
+}
+
+.asteroidOrbit {
+  animation: orbitSpin 9.4s linear infinite;
+}
+
+.planet,
+.moon,
+.asteroid {
+  display: block;
+  border-radius: 999px;
 }
 
 .planet {
-  position: absolute;
-  left: 22%;
-  top: 47%;
-  width: 16px;
-  height: 16px;
-  border-radius: 999px;
+  width: 14px;
+  height: 14px;
+  transform: translateX(56px);
   background: #11c9ee;
   box-shadow: 0 0 12px rgba(17, 201, 238, 0.65);
-  opacity: 0;
-  transition: opacity 600ms ease;
 }
 
 .moon {
-  position: absolute;
-  left: 28%;
-  top: 52%;
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
+  width: 7px;
+  height: 7px;
+  transform: translateX(36px);
   background: #c8d0cb;
-  opacity: 0;
-  transition: opacity 600ms ease;
 }
 
 .asteroid {
-  position: absolute;
-  left: 33%;
-  top: 39%;
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
+  width: 6px;
+  height: 6px;
+  transform: translateX(68px);
   background: #77887e;
-  opacity: 0;
-  transition: opacity 600ms ease;
 }
 
-.viewport[data-phase="1"] .orbitRing,
-.viewport[data-phase="2"] .orbitRing,
-.viewport[data-phase="3"] .orbitRing,
-.viewport[data-phase="1"] .planet,
-.viewport[data-phase="2"] .planet,
-.viewport[data-phase="3"] .planet,
-.viewport[data-phase="2"] .moon,
-.viewport[data-phase="3"] .moon,
-.viewport[data-phase="3"] .asteroid {
+.viewport[data-phase="1"] .systemCore,
+.viewport[data-phase="2"] .systemCore,
+.viewport[data-phase="3"] .systemCore {
   opacity: 1;
 }
 
@@ -207,7 +247,24 @@
   color: var(--main-ivory);
   font-size: 13px;
   padding: 8px 10px;
-  min-width: 210px;
+  min-width: 220px;
+}
+
+.popupCard p + p {
+  margin-top: 2px;
+}
+
+.popupLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--main-turquoise-surf);
+}
+
+.popupTitle {
+  color: var(--main-ivory);
+  font-size: 15px;
+  margin-bottom: 4px;
 }
 
 .hud {
@@ -258,5 +315,14 @@
   }
   to {
     background-position: -300px 64px;
+  }
+}
+
+@keyframes orbitSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
