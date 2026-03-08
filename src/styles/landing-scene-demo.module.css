@@ -1,0 +1,262 @@
+.card {
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 36%, var(--carbon-black-700));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--carbon-black-900) 92%, #0c1c24);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--main-dark-violet) 30%, transparent) inset;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.eyebrow {
+  color: var(--main-turquoise-surf);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.title {
+  color: var(--main-ivory);
+  font-size: 18px;
+}
+
+.livePill {
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 35%, var(--carbon-black-700));
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--main-ivory);
+  background: color-mix(in srgb, var(--main-turquoise-surf) 18%, transparent);
+}
+
+.viewport {
+  position: relative;
+  height: 300px;
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 12px;
+  overflow: hidden;
+  background: radial-gradient(circle at 35% 24%, #15212d 0%, #070b11 72%);
+}
+
+.starLayerFar,
+.starLayerNear {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.starLayerFar {
+  background-image: radial-gradient(circle, rgba(232, 248, 255, 0.56) 1px, transparent 1.3px);
+  background-size: 180px 180px;
+  opacity: 0.4;
+  animation: starDriftFar 28s linear infinite;
+}
+
+.starLayerNear {
+  background-image: radial-gradient(circle, rgba(232, 248, 255, 0.86) 1.2px, transparent 1.5px);
+  background-size: 120px 120px;
+  background-position: 38px 64px;
+  opacity: 0.36;
+  animation: starDriftNear 18s linear infinite;
+}
+
+.camera {
+  position: absolute;
+  inset: 0;
+  transition: transform 900ms ease;
+}
+
+.phase0 {
+  transform: scale(1) translate3d(0, 0, 0);
+}
+
+.phase1 {
+  transform: scale(1.28) translate3d(-6%, -4%, 0);
+}
+
+.phase2 {
+  transform: scale(1.46) translate3d(-12%, -10%, 0);
+}
+
+.phase3 {
+  transform: scale(1.26) translate3d(8%, 3%, 0);
+}
+
+.systemA,
+.systemB,
+.systemC,
+.systemD {
+  position: absolute;
+  border-radius: 999px;
+}
+
+.systemA {
+  left: 24%;
+  top: 36%;
+  width: 10px;
+  height: 10px;
+  background: #f8ffe5;
+  box-shadow: 0 0 20px rgba(248, 255, 229, 0.7);
+}
+
+.systemB {
+  left: 58%;
+  top: 22%;
+  width: 8px;
+  height: 8px;
+  background: #11c9ee;
+  box-shadow: 0 0 16px rgba(17, 201, 238, 0.7);
+}
+
+.systemC {
+  left: 74%;
+  top: 63%;
+  width: 9px;
+  height: 9px;
+  background: #c7d6e4;
+  box-shadow: 0 0 12px rgba(199, 214, 228, 0.6);
+}
+
+.systemD {
+  left: 35%;
+  top: 68%;
+  width: 7px;
+  height: 7px;
+  background: #8fb7de;
+  box-shadow: 0 0 10px rgba(143, 183, 222, 0.6);
+}
+
+.orbitRing {
+  position: absolute;
+  left: 16%;
+  top: 25%;
+  width: 140px;
+  height: 140px;
+  border: 1px solid rgba(232, 248, 255, 0.35);
+  border-radius: 999px;
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+.planet {
+  position: absolute;
+  left: 22%;
+  top: 47%;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #11c9ee;
+  box-shadow: 0 0 12px rgba(17, 201, 238, 0.65);
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+.moon {
+  position: absolute;
+  left: 28%;
+  top: 52%;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #c8d0cb;
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+.asteroid {
+  position: absolute;
+  left: 33%;
+  top: 39%;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #77887e;
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+.viewport[data-phase="1"] .orbitRing,
+.viewport[data-phase="2"] .orbitRing,
+.viewport[data-phase="3"] .orbitRing,
+.viewport[data-phase="1"] .planet,
+.viewport[data-phase="2"] .planet,
+.viewport[data-phase="3"] .planet,
+.viewport[data-phase="2"] .moon,
+.viewport[data-phase="3"] .moon,
+.viewport[data-phase="3"] .asteroid {
+  opacity: 1;
+}
+
+.popup {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 40%, var(--carbon-black-700));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--carbon-black-900) 90%, #081a21);
+  color: var(--main-ivory);
+  font-size: 13px;
+  padding: 8px 10px;
+  min-width: 210px;
+}
+
+.hud {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hudChip,
+.hudChipActive {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.hudChip {
+  color: var(--carbon-black-300);
+  background: rgba(8, 12, 16, 0.7);
+}
+
+.hudChipActive {
+  color: var(--main-ivory);
+  border-color: color-mix(in srgb, var(--main-turquoise-surf) 60%, var(--carbon-black-700));
+  background: color-mix(in srgb, var(--main-turquoise-surf) 22%, transparent);
+}
+
+.caption {
+  color: var(--carbon-black-200);
+}
+
+@keyframes starDriftFar {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -240px 0;
+  }
+}
+
+@keyframes starDriftNear {
+  from {
+    background-position: 38px 64px;
+  }
+  to {
+    background-position: -300px 64px;
+  }
+}

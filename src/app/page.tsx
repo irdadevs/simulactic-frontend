@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ActionButton } from "../ui/components/buttons/ActionButton";
 import { LandingSnapController } from "../ui/components/landing/LandingSnapController";
+import { LandingSceneDemoCard } from "../ui/components/landing/LandingSceneDemoCard";
 import styles from "../styles/landing.module.css";
 
 export const metadata: Metadata = {
@@ -49,32 +50,35 @@ export default function Home() {
 
       <section className={styles.zoneHowItWorks} data-landing-section>
         <div className={styles.zoneInnerSingle}>
-          <article className={`${styles.cardWide} ${styles.howCard}`}>
-            <h2 className={styles.cardTitle}>How it works</h2>
-            <section className={styles.howGrid} aria-label="How Simulactic works">
-              <article className={styles.howStep}>
-                <h3 className={styles.cardSubtitle}>Create your galaxy</h3>
-                <p className={styles.text}>
-                  Choose a name, shape, and system count. The backend will generate the full
-                  structure.
-                </p>
-              </article>
-              <article className={styles.howStep}>
-                <h3 className={styles.cardSubtitle}>Explore in 3D</h3>
-                <p className={styles.text}>
-                  Start in galaxy view, inspect systems, and zoom into system detail for planets,
-                  moons and asteroids. Play with your creations in real time.
-                </p>
-              </article>
-              <article className={styles.howStep}>
-                <h3 className={styles.cardSubtitle}>Track growth</h3>
-                <p className={styles.text}>
-                  Use your profile to monitor your activity and platform evolution over time. Become
-                  a supporter and unlock a badge progress.
-                </p>
-              </article>
-            </section>
-          </article>
+          <div className={styles.howStack}>
+            <article className={`${styles.cardWide} ${styles.howCard}`}>
+              <h2 className={styles.cardTitle}>How it works</h2>
+              <section className={styles.howGrid} aria-label="How Simulactic works">
+                <article className={styles.howStep}>
+                  <h3 className={styles.cardSubtitle}>Create your galaxy</h3>
+                  <p className={styles.text}>
+                    Choose a name, shape, and system count. The backend will generate the full
+                    structure.
+                  </p>
+                </article>
+                <article className={styles.howStep}>
+                  <h3 className={styles.cardSubtitle}>Explore in 3D</h3>
+                  <p className={styles.text}>
+                    Start in galaxy view, inspect systems, and zoom into system detail for planets,
+                    moons and asteroids. Play with your creations in real time.
+                  </p>
+                </article>
+                <article className={styles.howStep}>
+                  <h3 className={styles.cardSubtitle}>Track growth</h3>
+                  <p className={styles.text}>
+                    Use your profile to monitor your activity and platform evolution over time.
+                    Become a supporter and unlock a badge progress.
+                  </p>
+                </article>
+              </section>
+            </article>
+            <LandingSceneDemoCard />
+          </div>
         </div>
       </section>
 

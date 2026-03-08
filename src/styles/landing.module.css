@@ -112,6 +112,11 @@
   align-items: center;
 }
 
+.howStack {
+  display: grid;
+  gap: 12px;
+}
+
 .card,
 .cardCta,
 .cardWide {
