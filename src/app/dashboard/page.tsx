@@ -169,6 +169,7 @@ function DashboardPageContent() {
         </button>
         <MockCanvasPanel
           selectedGalaxy={selectedGalaxy}
+          hasGalaxies={galaxies.length > 0}
           isLoading={isLoading}
           isRenderReady={Boolean(selectedGalaxy)}
           machineState={machineState}
@@ -204,6 +205,7 @@ function DashboardPageContent() {
 
         <MockCanvasPanel
           selectedGalaxy={selectedGalaxy}
+          hasGalaxies={galaxies.length > 0}
           isLoading={isLoading}
           isRenderReady={Boolean(selectedGalaxy)}
           machineState={machineState}

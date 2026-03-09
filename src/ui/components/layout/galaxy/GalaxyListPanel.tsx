@@ -54,7 +54,9 @@ export function GalaxyListPanel({
         </p>
       )}
 
-      <div className={layoutStyles.list}>
+      <div
+        className={`${layoutStyles.list} ${galaxies.length === 0 ? layoutStyles.listEmpty : ""}`}
+      >
         {galaxies.map((galaxy) => (
           <div
             key={galaxy.id}
@@ -84,9 +86,11 @@ export function GalaxyListPanel({
           </div>
         ))}
         {galaxies.length === 0 && (
-          <p className={commonStyles.meta} style={{ padding: 14 }}>
-            No galaxies yet. Create your first one.
-          </p>
+          <div className={layoutStyles.listEmptyState}>
+            <h3 className={layoutStyles.emptyStateTitle}>No galaxies yet</h3>
+            <p>Create your first one.</p>
+            <p className={commonStyles.meta}>This list will fill as you create galaxies.</p>
+          </div>
         )}
       </div>
     </aside>

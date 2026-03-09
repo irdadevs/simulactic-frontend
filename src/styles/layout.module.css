@@ -151,6 +151,27 @@
   overflow-y: auto;
 }
 
+.listEmpty {
+  flex: 1;
+}
+
+.listEmptyState {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--carbon-black-200);
+}
+
+.emptyStateTitle {
+  margin: 0 0 10px;
+  color: var(--main-turquoise-surf);
+  font-size: 28px;
+  line-height: 1.05;
+}
+
 .listItem {
   width: 100%;
   border: none;
@@ -198,7 +219,7 @@
 }
 
 .placeholder {
-  min-height: 420px;
+  min-height: 700px;
   border: 1px dashed var(--carbon-black-600);
   border-radius: 12px;
   background: linear-gradient(
@@ -211,6 +232,7 @@
   padding: 20px;
   color: var(--carbon-black-200);
   text-align: center;
+  flex: 1;
 }
 
 .renderStage {
@@ -277,7 +299,8 @@
   }
 
   .renderStage,
-  .canvasWrap {
+  .canvasWrap,
+  .placeholder {
     min-height: 520px;
   }
 }

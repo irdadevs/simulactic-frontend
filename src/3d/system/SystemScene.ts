@@ -24,6 +24,9 @@ const MOON_ID = Symbol("moonId");
 const ASTEROID_ID = Symbol("asteroidId");
 const DEFAULT_MOON_COLOR = "#d7dee4";
 const DEFAULT_ASTEROID_COLOR = "#8f6540";
+const STAR_CLEARANCE = 4.5;
+const ORBIT_CLEARANCE = 3.5;
+const MOON_CLEARANCE = 1.4;
 
 export class SystemScene implements IRenderableScene {
   readonly kind = "system" as const;
@@ -77,6 +80,7 @@ export class SystemScene implements IRenderableScene {
     speed: number;
   }> = [];
   private readonly starCenters: Group[] = [];
+  private readonly centerStarSizes: number[] = [];
   private mounted = false;
 
   constructor(eventBridge: EventBridge) {
@@ -251,6 +255,7 @@ export class SystemScene implements IRenderableScene {
     this.navigationPoints.asteroid.clear();
     this.orbitAnimations.length = 0;
     this.starCenters.length = 0;
+    this.centerStarSizes.length = 0;
   }
 
   getNavigationPoint(
@@ -279,6 +284,7 @@ export class SystemScene implements IRenderableScene {
     mainStarAnchor.position.set(0, 0, 0);
     this.group.add(mainStarAnchor);
     this.starCenters.push(mainStarAnchor);
+    this.centerStarSizes.push(Math.max(mainStar.size, 0.8));
 
     this.data.stars.forEach((star, index) => {
       const isMainStar = star.starId === mainStar.starId;
@@ -289,10 +295,12 @@ export class SystemScene implements IRenderableScene {
         orbitPivot.position.set(0, 0, 0);
         this.group.add(orbitPivot);
 
-        const orbitRadius = Math.max(16, star.orbital * 16);
+        const centerRadius = Math.max(this.centerStarSizes[0] ?? 0.8, 0.8);
+        const orbitRadius = Math.max(16, star.orbital * 16, centerRadius + Math.max(star.size, 0.8) + STAR_CLEARANCE);
         starAnchor.position.set(orbitRadius, 0, 0);
         orbitPivot.add(starAnchor);
         this.starCenters.push(starAnchor);
+        this.centerStarSizes.push(Math.max(star.size, 0.8));
 
         orbitPivot.rotation.y = index * 0.65;
         this.orbitAnimations.push({
@@ -318,17 +326,29 @@ export class SystemScene implements IRenderableScene {
 
   private buildPlanets(): void {
     if (this.starCenters.length === 0) return;
+    const occupiedRadii = new Array<number>(this.starCenters.length)
+      .fill(0)
+      .map((_, index) => Math.max(this.centerStarSizes[index] ?? 0.8, 0.8) + STAR_CLEARANCE);
 
-    this.data.planets.forEach((planet) => {
-      const center = this.starCenters[this.getCenterIndex(planet.planetId)];
-      const radius = this.toPlanetRadius(planet.orbital);
+    const sortedPlanets = [...this.data.planets].sort((left, right) => left.orbital - right.orbital);
+    sortedPlanets.forEach((planet) => {
+      const centerIndex = this.getCenterIndex(planet.planetId);
+      const center = this.starCenters[centerIndex];
+      const planetVisualRadius = Math.max(planet.size, 0.4);
+      const radius = this.resolveOrbitRadius(
+        this.toPlanetRadius(planet.orbital),
+        occupiedRadii[centerIndex],
+        planetVisualRadius,
+        ORBIT_CLEARANCE,
+      );
+      occupiedRadii[centerIndex] = radius + planetVisualRadius;
       const orbitPivot = new Group();
       orbitPivot.position.set(0, 0, 0);
       center.add(orbitPivot);
 
       this.orbitAnimations.push({
         pivot: orbitPivot,
-        speed: 0.2 + (this.getCenterIndex(planet.planetId) % 7) * 0.04,
+        speed: 0.2 + (centerIndex % 7) * 0.04,
       });
 
       const mesh = PlanetMesh.create(planet.size, planet.color ?? biomeBaseColor(planet.biome), {
@@ -343,12 +363,20 @@ export class SystemScene implements IRenderableScene {
       this.navigationPoints.planet.set(planet.planetId, mesh);
       center.add(OrbitHelper.create(radius, "#5f6d65", 128, "continuous"));
 
+      let moonOccupied = planetVisualRadius + MOON_CLEARANCE;
       (planet.moons ?? []).forEach((moon, index) => {
         const moonPivot = new Group();
         moonPivot.position.set(0, 0, 0);
         mesh.add(moonPivot);
 
-        const moonRadius = moon.orbital * 2.2 + index * 0.65 + 1.8;
+        const moonVisualRadius = Math.max(moon.size, 0.18);
+        const moonRadius = this.resolveOrbitRadius(
+          moon.orbital * 2.2 + index * 0.65 + 1.8,
+          moonOccupied,
+          moonVisualRadius,
+          MOON_CLEARANCE,
+        );
+        moonOccupied = moonRadius + moonVisualRadius;
         moonPivot.rotation.y = index * 0.85;
         this.orbitAnimations.push({
           pivot: moonPivot,
@@ -373,18 +401,35 @@ export class SystemScene implements IRenderableScene {
 
   private buildAsteroids(): void {
     if (this.starCenters.length === 0) return;
+    const occupiedRadii = new Array<number>(this.starCenters.length)
+      .fill(0)
+      .map((_, index) => Math.max(this.centerStarSizes[index] ?? 0.8, 0.8) + STAR_CLEARANCE);
+    this.data.planets.forEach((planet) => {
+      const centerIndex = this.getCenterIndex(planet.planetId);
+      const base = this.toPlanetRadius(planet.orbital);
+      occupiedRadii[centerIndex] = Math.max(occupiedRadii[centerIndex], base + Math.max(planet.size, 0.4));
+    });
 
-    (this.data.asteroids ?? []).forEach((asteroid) => {
-      const center = this.starCenters[this.getCenterIndex(asteroid.asteroidId)];
+    const sortedAsteroids = [...(this.data.asteroids ?? [])].sort((left, right) => left.orbital - right.orbital);
+    sortedAsteroids.forEach((asteroid) => {
+      const centerIndex = this.getCenterIndex(asteroid.asteroidId);
+      const center = this.starCenters[centerIndex];
       const orbitPivot = new Group();
       orbitPivot.position.set(0, 0, 0);
       center.add(orbitPivot);
       this.orbitAnimations.push({
         pivot: orbitPivot,
-        speed: 0.16 + (this.getCenterIndex(asteroid.asteroidId) % 9) * 0.03,
+        speed: 0.16 + (centerIndex % 9) * 0.03,
       });
 
-      const asteroidX = this.toAsteroidRadius(asteroid.orbital);
+      const asteroidVisualRadius = Math.max(asteroid.size, 0.42);
+      const asteroidX = this.resolveOrbitRadius(
+        this.toAsteroidRadius(asteroid.orbital),
+        occupiedRadii[centerIndex],
+        asteroidVisualRadius,
+        ORBIT_CLEARANCE,
+      );
+      occupiedRadii[centerIndex] = asteroidX + asteroidVisualRadius;
       const renderNode =
         asteroid.type === "cluster"
           ? AsteroidMesh.createCluster(asteroid.size, asteroid.color ?? DEFAULT_ASTEROID_COLOR, asteroid.asteroidId)
@@ -404,6 +449,15 @@ export class SystemScene implements IRenderableScene {
   private toAsteroidRadius(orbital: number): number {
     const stepped = Math.max(0.5, Math.round(orbital * 2) / 2);
     return stepped * 20;
+  }
+
+  private resolveOrbitRadius(
+    requestedRadius: number,
+    occupiedRadius: number,
+    visualRadius: number,
+    clearance: number,
+  ): number {
+    return Math.max(requestedRadius, occupiedRadius + visualRadius + clearance);
   }
 
   private getCenterIndex(id: string): number {

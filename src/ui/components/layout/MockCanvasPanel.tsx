@@ -1,6 +1,9 @@
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { SerializedGalaxyViewData, SerializedSystemViewData } from "../../../3d/core/serialized.types";
+import {
+  SerializedGalaxyViewData,
+  SerializedSystemViewData,
+} from "../../../3d/core/serialized.types";
 import { GalaxyProps } from "../../../types/galaxy.types";
 import { ActionButton } from "../buttons/ActionButton";
 import layoutStyles from "../../../styles/layout.module.css";
@@ -28,6 +31,7 @@ const LazySystemTimeControlsPanel = dynamic(
 
 type MockCanvasPanelProps = {
   selectedGalaxy: GalaxyProps | null;
+  hasGalaxies: boolean;
   isLoading: boolean;
   isRenderReady: boolean;
   machineState: "idle" | "galaxy_ready" | "system_loading" | "system_ready" | "galaxy_loading";
@@ -39,6 +43,7 @@ type MockCanvasPanelProps = {
 
 export function MockCanvasPanel({
   selectedGalaxy,
+  hasGalaxies,
   isLoading,
   isRenderReady,
   machineState,
@@ -48,11 +53,16 @@ export function MockCanvasPanel({
   loadingSystemName,
 }: MockCanvasPanelProps) {
   const renderStageRef = useRef<HTMLDivElement | null>(null);
+  const overlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showCanvas = useMemo(
     () => isRenderReady && machineState !== "idle",
     [isRenderReady, machineState],
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [loadingOverlay, setLoadingOverlay] = useState<{
+    kind: "system_loading" | "galaxy_loading";
+    systemName?: string | null;
+  } | null>(null);
 
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -63,6 +73,55 @@ export function MockCanvasPanel({
       document.removeEventListener("fullscreenchange", onFullscreenChange);
     };
   }, []);
+
+  useEffect(() => {
+    const clearOverlayTimer = () => {
+      if (overlayTimeoutRef.current) {
+        clearTimeout(overlayTimeoutRef.current);
+        overlayTimeoutRef.current = null;
+      }
+    };
+    let showOverlayTimer: ReturnType<typeof setTimeout> | null = null;
+
+    if (machineState === "system_loading") {
+      clearOverlayTimer();
+      showOverlayTimer = setTimeout(() => {
+        setLoadingOverlay({ kind: "system_loading", systemName: loadingSystemName });
+      }, 0);
+      return () => {
+        if (showOverlayTimer) {
+          clearTimeout(showOverlayTimer);
+        }
+      };
+    }
+
+    if (machineState === "galaxy_loading") {
+      clearOverlayTimer();
+      showOverlayTimer = setTimeout(() => {
+        setLoadingOverlay({ kind: "galaxy_loading" });
+      }, 0);
+      return () => {
+        if (showOverlayTimer) {
+          clearTimeout(showOverlayTimer);
+        }
+      };
+    }
+
+    if (loadingOverlay) {
+      clearOverlayTimer();
+      overlayTimeoutRef.current = setTimeout(() => {
+        setLoadingOverlay(null);
+        overlayTimeoutRef.current = null;
+      }, 450);
+    }
+
+    return () => {
+      if (showOverlayTimer) {
+        clearTimeout(showOverlayTimer);
+      }
+      clearOverlayTimer();
+    };
+  }, [loadingOverlay, loadingSystemName, machineState]);
 
   const onToggleFullscreen = async () => {
     if (!document.fullscreenElement && renderStageRef.current) {
@@ -88,7 +147,7 @@ export function MockCanvasPanel({
             systemData={systemData}
             onWheelZoom={onWheelZoom}
           />
-          {(machineState === "system_loading" || machineState === "galaxy_loading") && (
+          {loadingOverlay && (
             <div
               style={{
                 position: "absolute",
@@ -96,8 +155,7 @@ export function MockCanvasPanel({
                 zIndex: 6,
                 display: "grid",
                 placeItems: "center",
-                background:
-                  "linear-gradient(180deg, rgba(6,9,9,0.18) 0%, rgba(6,9,9,0.42) 100%)",
+                background: "linear-gradient(180deg, rgba(6,9,9,0.18) 0%, rgba(6,9,9,0.42) 100%)",
                 pointerEvents: "none",
               }}
             >
@@ -115,12 +173,12 @@ export function MockCanvasPanel({
                 }}
               >
                 <strong style={{ color: "var(--main-ivory)" }}>
-                  {machineState === "system_loading"
-                    ? `Loading ${loadingSystemName ?? "system"} detailed view`
+                  {loadingOverlay.kind === "system_loading"
+                    ? `Loading ${loadingOverlay.systemName ?? "system"} detailed view`
                     : "Loading galaxy view"}
                 </strong>
                 <p className={commonStyles.meta} style={{ marginTop: 8 }}>
-                  {machineState === "system_loading"
+                  {loadingOverlay.kind === "system_loading"
                     ? "Preparing stars, planets, moons and asteroids."
                     : "Returning to the galaxy scene."}
                 </p>
@@ -139,14 +197,20 @@ export function MockCanvasPanel({
       ) : (
         <div className={layoutStyles.placeholder}>
           <div>
-            <h3 style={{ color: "var(--main-ivory)", marginBottom: 8 }}>Mock Canvas Placeholder</h3>
+            <h3 style={{ color: "var(--main-turquoise-surf)", marginBottom: 8 }}>
+              {hasGalaxies ? "Loading data" : "No galaxies yet"}
+            </h3>
             <p>
-              {selectedGalaxy
-                ? `Selected galaxy: ${selectedGalaxy.name} (${selectedGalaxy.shape})`
-                : "Select a galaxy from the list."}
+              {hasGalaxies
+                ? selectedGalaxy
+                  ? `Selected galaxy: ${selectedGalaxy.name} (${selectedGalaxy.shape})`
+                  : "Select a galaxy from the list."
+                : "Create a galaxy to begin your first viewport."}
             </p>
             <p className={commonStyles.meta} style={{ marginTop: 8 }}>
-              Scene starts after backend data sync.
+              {hasGalaxies
+                ? "Scene starts after data sync."
+                : "This space will show a 3D scene once a galaxy exists."}
             </p>
             {isLoading && (
               <p className={commonStyles.meta} style={{ marginTop: 8 }}>
