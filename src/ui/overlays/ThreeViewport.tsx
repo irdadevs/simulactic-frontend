@@ -29,6 +29,7 @@ function ThreeViewportComponent({
   const setApplySystemTimeConfig = useUiStore((state) => state.setApplySystemTimeConfig);
   const systemTimeConfig = useUiStore((state) => state.systemTimeConfig);
   const clearLastSystemId = useRenderStore((state) => state.clearLastSystemId);
+  const commitGalaxyTransition = useRenderStore((state) => state.commitGalaxyTransition);
   const [managerReadyToken, setManagerReadyToken] = useState(0);
 
   useEffect(() => {
@@ -97,8 +98,7 @@ function ThreeViewportComponent({
   }, [systemTimeConfig]);
 
   useEffect(() => {
-    if (machineState === "system_loading" || machineState === "galaxy_loading") {
-      managerRef.current?.unmountScene();
+    if (machineState === "system_loading") {
       return;
     }
 
@@ -108,7 +108,7 @@ function ThreeViewportComponent({
       const manager = managerRef.current;
       if (!manager) return;
 
-      if (machineState === "galaxy_ready") {
+      if (machineState === "galaxy_ready" || machineState === "galaxy_loading") {
         const { GalaxyScene } = await import("../../3d/galaxy/GalaxyScene");
         if (isCancelled || !managerRef.current) return;
 
@@ -121,6 +121,9 @@ function ThreeViewportComponent({
             z: system.position.z,
             color: system.color,
             size: system.size,
+            representativeStarType: system.representativeStarType,
+            hasBlackHole: system.hasBlackHole,
+            hasNeutronStar: system.hasNeutronStar,
           })),
         });
         managerRef.current.showGalaxyScene(scene);
@@ -130,6 +133,9 @@ function ThreeViewportComponent({
             managerRef.current.animateGalaxyReturnFocus(focusPoint);
           }
           clearLastSystemId();
+        }
+        if (machineState === "galaxy_loading") {
+          commitGalaxyTransition();
         }
         return;
       }
@@ -149,7 +155,7 @@ function ThreeViewportComponent({
     return () => {
       isCancelled = true;
     };
-  }, [clearLastSystemId, galaxyData, machineState, systemData, managerReadyToken]);
+  }, [clearLastSystemId, commitGalaxyTransition, galaxyData, machineState, systemData, managerReadyToken]);
 
   return (
     <div className={styles.canvasWrap}>

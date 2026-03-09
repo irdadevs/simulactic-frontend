@@ -1,4 +1,6 @@
 import { AsteroidType } from "../../types/asteroid.types";
+import { PlanetBiome, PlanetType } from "../../types/planet.types";
+import { StarType } from "../../types/star.types";
 
 export type SerializedVector3 = {
   x: number;
@@ -11,6 +13,9 @@ export type SerializedGalaxyNode = {
   position: SerializedVector3;
   color?: string;
   size?: number;
+  representativeStarType?: StarType;
+  hasBlackHole?: boolean;
+  hasNeutronStar?: boolean;
 };
 
 export type SerializedGalaxyViewData = {
@@ -20,6 +25,8 @@ export type SerializedGalaxyViewData = {
 
 export type SerializedPlanet = {
   planetId: string;
+  planetType: PlanetType;
+  biome: PlanetBiome;
   orbital: number;
   size: number;
   color?: string;
@@ -35,6 +42,7 @@ export type SerializedSystemData = {
   systemId: string;
   stars: Array<{
     starId: string;
+    starType: StarType;
     isMain: boolean;
     orbital: number;
     size: number;

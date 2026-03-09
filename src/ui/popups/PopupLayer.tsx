@@ -10,6 +10,7 @@ import { useRenderStore } from "../../state/render.store";
 import { useUiStore } from "../../state/ui.store";
 import popupStyles from "../../styles/popup.module.css";
 import commonStyles from "../../styles/skeleton.module.css";
+import { ActionButton } from "../components/buttons/ActionButton";
 import { MoonPopup } from "./MoonPopup";
 import { PlanetPopup } from "./PlanetPopup";
 import { SystemPopup } from "./SystemPopup";
@@ -47,6 +48,7 @@ export function PopupLayer() {
   const requestSystemTransition = useRenderStore((state) => state.requestSystemTransition);
   const popupLoading = useUiStore((state) => state.popupLoading);
   const popupAnchor = useUiStore((state) => state.popupAnchor);
+  const navigateToSystemTarget = useUiStore((state) => state.navigateToSystemTarget);
   const setPopup = useUiStore((state) => state.setPopup);
   const layerRef = useRef<HTMLDivElement | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
@@ -158,13 +160,26 @@ export function PopupLayer() {
           <PlanetPopup
             planet={popup.data.planet}
             moons={popup.data.moons}
+            onGoToPlanet={() => {
+              navigateToSystemTarget?.({ kind: "planet", id: popup.data.planet.id });
+              setPopup(null);
+            }}
             onClose={() => setPopup(null)}
           />
         )
       )}
 
       {popup?.kind === "moon" && (
-        renderPopupContainer(<MoonPopup moon={popup.data} onClose={() => setPopup(null)} />)
+        renderPopupContainer(
+          <MoonPopup
+            moon={popup.data}
+            onGoToMoon={() => {
+              navigateToSystemTarget?.({ kind: "moon", id: popup.data.id });
+              setPopup(null);
+            }}
+            onClose={() => setPopup(null)}
+          />,
+        )
       )}
 
       {popup?.kind === "star" && (
@@ -174,6 +189,20 @@ export function PopupLayer() {
               <div>
                 <p className={popupStyles.popupEyebrow}>Star</p>
                 <h3 className={popupStyles.popupTitle}>{popup.data.name}</h3>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <ActionButton
+                  variant="secondary"
+                  onClick={() => {
+                    navigateToSystemTarget?.({ kind: "star", id: popup.data.id });
+                    setPopup(null);
+                  }}
+                >
+                  Go to
+                </ActionButton>
+                <ActionButton variant="secondary" onClick={() => setPopup(null)}>
+                  Close
+                </ActionButton>
               </div>
             </header>
             <div className={popupStyles.popupBody}>
@@ -194,6 +223,20 @@ export function PopupLayer() {
               <div>
                 <p className={popupStyles.popupEyebrow}>Asteroid</p>
                 <h3 className={popupStyles.popupTitle}>{popup.data.name}</h3>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <ActionButton
+                  variant="secondary"
+                  onClick={() => {
+                    navigateToSystemTarget?.({ kind: "asteroid", id: popup.data.id });
+                    setPopup(null);
+                  }}
+                >
+                  Go to
+                </ActionButton>
+                <ActionButton variant="secondary" onClick={() => setPopup(null)}>
+                  Close
+                </ActionButton>
               </div>
             </header>
             <div className={popupStyles.popupBody}>
