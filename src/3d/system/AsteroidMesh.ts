@@ -6,6 +6,7 @@ import {
   Mesh,
   MeshStandardMaterial,
 } from "three";
+import { createAsteroidTexture } from "./CelestialTextures";
 
 type RandomFn = () => number;
 
@@ -37,17 +38,21 @@ const jitterGeometry = (geometry: BufferGeometry, random: RandomFn, jitter: numb
   return clone;
 };
 
-const createIrregularRock = (size: number, color: string, random: RandomFn): Mesh => {
+const createIrregularRock = (size: number, color: string, seed: string, random: RandomFn): Mesh => {
   const base = new IcosahedronGeometry(Math.max(size, 0.18), 1);
   const geometry = jitterGeometry(base, random, 0.28);
   base.dispose();
+  const map = createAsteroidTexture(seed);
 
   return new Mesh(
     geometry,
     new MeshStandardMaterial({
-      color,
-      roughness: 0.9,
-      metalness: 0.05,
+      color: "#b49a7f",
+      map,
+      emissive: "#7a5d43",
+      emissiveIntensity: 0.03 + random() * 0.03,
+      roughness: 0.78,
+      metalness: 0.06 + random() * 0.08,
     }),
   );
 };
@@ -61,7 +66,8 @@ const clusterCountBySize = (size: number): number => {
 
 export class AsteroidMesh {
   static createSingle(size: number, color: string, seed: string): Mesh {
-    return createIrregularRock(size, color, createSeededRandom(seed));
+    const random = createSeededRandom(seed);
+    return createIrregularRock(size, color, seed, random);
   }
 
   static createCluster(size: number, color: string, seed: string): Group {
@@ -72,7 +78,7 @@ export class AsteroidMesh {
 
     for (let i = 0; i < count; i += 1) {
       const partScale = size * (0.28 + random() * 0.45);
-      const rock = createIrregularRock(partScale, color, random);
+      const rock = createIrregularRock(partScale, color, `${seed}:${i}`, random);
       rock.position.set(
         (random() * 2 - 1) * spread,
         (random() * 2 - 1) * (spread * 0.35),

@@ -1,20 +1,29 @@
 import {
-  Color,
   Group,
-  InstancedMesh,
   Intersection,
   Mesh,
   MeshBasicMaterial,
   Object3D,
   SphereGeometry,
 } from "three";
+import { StarType } from "../../types/star.types";
 import { EventBridge } from "../core/EventBridge";
 import { IRenderableScene } from "../core/SceneManager";
-import { StarInstancedMesh } from "./StarInstancedMesh";
+import { StarVisualFactory } from "../system/StarVisualFactory";
 
 const SYSTEM_ID = Symbol("systemId");
-const INSTANCE_INDEX_TO_SYSTEM = Symbol("instanceIndexToSystem");
-const INSTANCING_THRESHOLD = 100;
+
+type GalaxyMarkerInput = {
+  id: string;
+  x: number;
+  y: number;
+  z: number;
+  color?: string;
+  size?: number;
+  representativeStarType?: StarType;
+  hasBlackHole?: boolean;
+  hasNeutronStar?: boolean;
+};
 
 export class GalaxyScene implements IRenderableScene {
   readonly kind = "galaxy" as const;
@@ -27,16 +36,7 @@ export class GalaxyScene implements IRenderableScene {
     this.eventBridge = eventBridge;
   }
 
-  mount(input: {
-    systems: {
-      id: string;
-      x: number;
-      y: number;
-      z: number;
-      color?: string;
-      size?: number;
-    }[];
-  }): void {
+  mount(input: { systems: GalaxyMarkerInput[] }): void {
     this.dispose();
     this.mounted = true;
     const systems = this.normalizeSystems(input.systems);
@@ -46,41 +46,20 @@ export class GalaxyScene implements IRenderableScene {
         y: system.y,
         z: system.z,
       });
-    });
-
-    if (systems.length > INSTANCING_THRESHOLD) {
-      const stars = StarInstancedMesh.build(systems);
-      (stars.userData as Record<symbol, string[]>)[INSTANCE_INDEX_TO_SYSTEM] = systems.map(
-        (system) => system.id,
-      );
-      this.group.add(stars);
-      return;
-    }
-
-    const geometry = new SphereGeometry(1, 14, 14);
-    systems.forEach((system) => {
-      const mesh = new Mesh(
-        geometry.clone(),
-        new MeshBasicMaterial({ color: new Color(system.color ?? "#f8ffe5") }),
-      );
-      mesh.scale.setScalar(Math.max(system.size ?? 2, 1.1));
-      mesh.position.set(system.x, system.y, system.z);
-      (mesh.userData as Record<symbol, string>)[SYSTEM_ID] = system.id;
-      this.group.add(mesh);
+      this.group.add(this.buildSystemMarker(system));
     });
   }
 
   update(_deltaSeconds: number): void {}
 
-  onPointerDown(intersections: Intersection<Object3D>[], _pointer: { x: number; y: number }): void {
+  onPointerDown(intersections: Intersection<Object3D>[], pointer: { x: number; y: number }): void {
     if (intersections.length === 0) {
       this.eventBridge.emit("backgroundClicked", undefined);
       return;
     }
 
-    const hit = intersections[0].object;
     const intersection = intersections[0];
-    const systemId = this.findSystemId(intersection, hit);
+    const systemId = this.findSystemId(intersection.object);
     if (!systemId) return;
 
     this.eventBridge.emit("systemClicked", {
@@ -90,21 +69,17 @@ export class GalaxyScene implements IRenderableScene {
         y: intersection.point.y,
         z: intersection.point.z,
       },
-      anchor: _pointer,
+      anchor: pointer,
     });
   }
 
-  onPointerMove(
-    intersections: Intersection<Object3D>[],
-    pointer: { x: number; y: number },
-  ): void {
+  onPointerMove(intersections: Intersection<Object3D>[], pointer: { x: number; y: number }): void {
     if (intersections.length === 0) {
       this.eventBridge.emit("hoverCleared", undefined);
       return;
     }
 
-    const hit = intersections[0].object;
-    const systemId = this.findSystemId(intersections[0], hit);
+    const systemId = this.findSystemId(intersections[0].object);
     if (!systemId) {
       this.eventBridge.emit("hoverCleared", undefined);
       return;
@@ -136,15 +111,7 @@ export class GalaxyScene implements IRenderableScene {
     return this.systemPositions.get(systemId) ?? null;
   }
 
-  private findSystemId(
-    intersection: Intersection<Object3D>,
-    object: Object3D,
-  ): string | null {
-    if (object instanceof InstancedMesh && intersection.instanceId != null) {
-      const mapping = (object.userData as Record<symbol, string[]>)[INSTANCE_INDEX_TO_SYSTEM];
-      return mapping?.[intersection.instanceId] ?? null;
-    }
-
+  private findSystemId(object: Object3D): string | null {
     let current: Object3D | null = object;
     while (current) {
       const value = (current.userData as Record<symbol, string>)[SYSTEM_ID];
@@ -154,9 +121,7 @@ export class GalaxyScene implements IRenderableScene {
     return null;
   }
 
-  private normalizeSystems(
-    systems: Array<{ id: string; x: number; y: number; z: number; color?: string; size?: number }>,
-  ): Array<{ id: string; x: number; y: number; z: number; color?: string; size?: number }> {
+  private normalizeSystems(systems: GalaxyMarkerInput[]): GalaxyMarkerInput[] {
     if (systems.length === 0) return systems;
 
     const center = systems.reduce(
@@ -187,12 +152,45 @@ export class GalaxyScene implements IRenderableScene {
     const scale = Math.max(0.25, Math.min(7.5, targetRadius / maxDistance));
 
     return systems.map((system) => ({
-      id: system.id,
+      ...system,
       x: (system.x - centroid.x) * scale,
       y: (system.y - centroid.y) * scale,
       z: (system.z - centroid.z) * scale,
-      color: system.color,
-      size: system.size,
     }));
+  }
+
+  private buildSystemMarker(system: GalaxyMarkerInput): Group {
+    const marker = new Group();
+    marker.position.set(system.x, system.y, system.z);
+
+    const starType =
+      system.hasBlackHole
+        ? "Black hole"
+        : system.hasNeutronStar
+          ? "Neutron star"
+          : system.representativeStarType ?? "Yellow dwarf";
+    const visual = StarVisualFactory.create({
+      starId: system.id,
+      starType,
+      size: Math.max((system.size ?? 2) * 0.38, 0.56),
+      color: system.color,
+      isMain: true,
+    });
+
+    visual.traverse((node) => {
+      (node.userData as Record<symbol, string>)[SYSTEM_ID] = system.id;
+    });
+
+    marker.add(visual);
+
+    // Click target slightly larger than the rendered marker to keep interaction easy.
+    const hitArea = new Mesh(
+      new SphereGeometry(Math.max((system.size ?? 2) * 0.6, 1.2), 12, 12),
+      new MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }),
+    );
+    (hitArea.userData as Record<symbol, string>)[SYSTEM_ID] = system.id;
+    marker.add(hitArea);
+
+    return marker;
   }
 }

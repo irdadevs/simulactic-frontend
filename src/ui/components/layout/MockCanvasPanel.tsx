@@ -34,6 +34,7 @@ type MockCanvasPanelProps = {
   galaxyData: SerializedGalaxyViewData;
   systemData: SerializedSystemViewData | null;
   onWheelZoom: (deltaY: number) => void;
+  loadingSystemName?: string | null;
 };
 
 export function MockCanvasPanel({
@@ -44,6 +45,7 @@ export function MockCanvasPanel({
   galaxyData,
   systemData,
   onWheelZoom,
+  loadingSystemName,
 }: MockCanvasPanelProps) {
   const renderStageRef = useRef<HTMLDivElement | null>(null);
   const showCanvas = useMemo(
@@ -86,6 +88,45 @@ export function MockCanvasPanel({
             systemData={systemData}
             onWheelZoom={onWheelZoom}
           />
+          {(machineState === "system_loading" || machineState === "galaxy_loading") && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 6,
+                display: "grid",
+                placeItems: "center",
+                background:
+                  "linear-gradient(180deg, rgba(6,9,9,0.18) 0%, rgba(6,9,9,0.42) 100%)",
+                pointerEvents: "none",
+              }}
+            >
+              <div
+                style={{
+                  minWidth: 280,
+                  maxWidth: 420,
+                  padding: "16px 18px",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  borderRadius: 14,
+                  background: "rgba(9, 14, 14, 0.72)",
+                  boxShadow: "0 18px 50px rgba(0,0,0,0.28)",
+                  backdropFilter: "blur(6px)",
+                  textAlign: "center",
+                }}
+              >
+                <strong style={{ color: "var(--main-ivory)" }}>
+                  {machineState === "system_loading"
+                    ? `Loading ${loadingSystemName ?? "system"} detailed view`
+                    : "Loading galaxy view"}
+                </strong>
+                <p className={commonStyles.meta} style={{ marginTop: 8 }}>
+                  {machineState === "system_loading"
+                    ? "Preparing stars, planets, moons and asteroids."
+                    : "Returning to the galaxy scene."}
+                </p>
+              </div>
+            </div>
+          )}
           <LazySystemTimeControlsPanel />
           <LazySystemNavigatorPanel />
           <LazyPopupLayer />

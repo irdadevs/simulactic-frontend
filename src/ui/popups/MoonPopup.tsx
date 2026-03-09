@@ -6,10 +6,11 @@ import { ActionButton } from "../components/buttons/ActionButton";
 
 type MoonPopupProps = {
   moon: MoonProps;
+  onGoToMoon: () => void;
   onClose: () => void;
 };
 
-export function MoonPopup({ moon, onClose }: MoonPopupProps) {
+export function MoonPopup({ moon, onGoToMoon, onClose }: MoonPopupProps) {
   const detail = moonDetailItems(moon);
 
   return (
@@ -20,9 +21,14 @@ export function MoonPopup({ moon, onClose }: MoonPopupProps) {
           <h3 className={popupStyles.popupTitle}>{moon.name}</h3>
           <p className={commonStyles.meta}>Moon</p>
         </div>
-        <ActionButton variant="secondary" onClick={onClose}>
-          Close
-        </ActionButton>
+        <div style={{ display: "flex", gap: 8 }}>
+          <ActionButton variant="secondary" onClick={onGoToMoon}>
+            Go to
+          </ActionButton>
+          <ActionButton variant="secondary" onClick={onClose}>
+            Close
+          </ActionButton>
+        </div>
       </header>
 
       <div className={popupStyles.popupBody}>

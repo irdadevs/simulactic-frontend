@@ -7,6 +7,8 @@ import { sileo } from "sileo";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useGalaxy } from "../../application/hooks/useGalaxy";
 import { useRenderCoordinator } from "../../application/hooks/useRenderCoordinator";
+import { ApiError } from "../../infra/api/client";
+import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import { useRenderStore } from "../../state/render.store";
 import { GalaxyListPanel } from "../../ui/components/layout/galaxy/GalaxyListPanel";
 import styles from "../../styles/layout.module.css";
@@ -31,6 +33,7 @@ function DashboardPageContent() {
     serializedSystemData,
     loadGalaxyForRender,
     onWheelZoom,
+    pendingSystemName,
   } = useRenderCoordinator();
 
   const {
@@ -85,8 +88,16 @@ function DashboardPageContent() {
           await loadGalaxyById(initialGalaxyId);
           await loadGalaxyForRender(initialGalaxyId);
         }
-      } catch {
-        router.push("/login");
+      } catch (error: unknown) {
+        if (error instanceof ApiError && error.status === 401) {
+          router.push("/login");
+          return;
+        }
+
+        sileo.error({
+          title: "Dashboard load failed",
+          description: describeApiError(error, "Could not load dashboard data."),
+        });
       }
     };
     void bootstrap();
@@ -131,10 +142,9 @@ function DashboardPageContent() {
         description: `"${target.name}" was removed successfully.`,
       });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Could not delete galaxy.";
       sileo.error({
         title: "Delete failed",
-        description: message,
+        description: describeApiError(error, "Could not delete galaxy."),
       });
     } finally {
       setDeletingGalaxyId(null);
@@ -165,6 +175,7 @@ function DashboardPageContent() {
           galaxyData={serializedGalaxyData}
           systemData={serializedSystemData}
           onWheelZoom={onWheelZoom}
+          loadingSystemName={pendingSystemName}
         />
       </section>
     );
@@ -199,6 +210,7 @@ function DashboardPageContent() {
           galaxyData={serializedGalaxyData}
           systemData={serializedSystemData}
           onWheelZoom={onWheelZoom}
+          loadingSystemName={pendingSystemName}
         />
       </section>
 

@@ -1,27 +1,29 @@
 import {
-  Color,
   Group,
   Intersection,
   AmbientLight,
-  Mesh,
-  MeshStandardMaterial,
   Object3D,
   PointLight,
-  SphereGeometry,
   Vector3,
 } from "three";
 import { EventBridge } from "../core/EventBridge";
 import { IRenderableScene } from "../core/SceneManager";
 import { AsteroidType } from "../../types/asteroid.types";
+import { PlanetBiome, PlanetType } from "../../types/planet.types";
+import { StarType } from "../../types/star.types";
 import { OrbitHelper } from "./OrbitHelper";
 import { AsteroidMesh } from "./AsteroidMesh";
+import { biomeBaseColor } from "./CelestialTextures";
 import { PlanetMesh } from "./PlanetMesh";
+import { StarVisualFactory } from "./StarVisualFactory";
 
 const SYSTEM_ID = Symbol("systemId");
 const STAR_ID = Symbol("starId");
 const PLANET_ID = Symbol("planetId");
 const MOON_ID = Symbol("moonId");
 const ASTEROID_ID = Symbol("asteroidId");
+const DEFAULT_MOON_COLOR = "#d7dee4";
+const DEFAULT_ASTEROID_COLOR = "#8f6540";
 
 export class SystemScene implements IRenderableScene {
   readonly kind = "system" as const;
@@ -30,6 +32,7 @@ export class SystemScene implements IRenderableScene {
     systemId: string;
     stars: Array<{
       starId: string;
+      starType: StarType;
       isMain: boolean;
       orbital: number;
       size: number;
@@ -37,6 +40,8 @@ export class SystemScene implements IRenderableScene {
     }>;
     planets: Array<{
       planetId: string;
+      planetType: PlanetType;
+      biome: PlanetBiome;
       orbital: number;
       size: number;
       color?: string;
@@ -82,6 +87,7 @@ export class SystemScene implements IRenderableScene {
     systemId: string;
     stars: Array<{
       starId: string;
+      starType: StarType;
       isMain: boolean;
       orbital: number;
       size: number;
@@ -89,6 +95,8 @@ export class SystemScene implements IRenderableScene {
     }>;
     planets: Array<{
       planetId: string;
+      planetType: PlanetType;
+      biome: PlanetBiome;
       orbital: number;
       size: number;
       color?: string;
@@ -294,21 +302,17 @@ export class SystemScene implements IRenderableScene {
         this.group.add(OrbitHelper.create(orbitRadius, "#47524b", 128, "dashed"));
       }
 
-      const mesh = new Mesh(
-        new SphereGeometry(Math.max(star.size, 0.8), 20, 20),
-        new MeshStandardMaterial({
-          color: new Color(star.color ?? (star.isMain ? "#f8ffe5" : "#ffffff")),
-          emissive: new Color(star.color ?? "#f8ffe5"),
-          emissiveIntensity: star.isMain ? 0.7 : 0.35,
-          roughness: 0.4,
-        }),
-      );
-
-      mesh.position.set(0, 0, 0);
-      (mesh.userData as Record<symbol, string>)[STAR_ID] = star.starId;
-      (mesh.userData as Record<symbol, string>)[SYSTEM_ID] = this.data.systemId;
-      starAnchor.add(mesh);
-      this.navigationPoints.star.set(star.starId, mesh);
+      const starNode = StarVisualFactory.create({
+        starId: star.starId,
+        starType: star.starType,
+        size: Math.max(star.size, 0.8),
+        color: star.color,
+        isMain: star.isMain,
+      });
+      (starNode.userData as Record<symbol, string>)[STAR_ID] = star.starId;
+      (starNode.userData as Record<symbol, string>)[SYSTEM_ID] = this.data.systemId;
+      starAnchor.add(starNode);
+      this.navigationPoints.star.set(star.starId, starNode);
     });
   }
 
@@ -327,7 +331,12 @@ export class SystemScene implements IRenderableScene {
         speed: 0.2 + (this.getCenterIndex(planet.planetId) % 7) * 0.04,
       });
 
-      const mesh = PlanetMesh.create(planet.size, planet.color ?? "#0da1bf");
+      const mesh = PlanetMesh.create(planet.size, planet.color ?? biomeBaseColor(planet.biome), {
+        seed: planet.planetId,
+        kind: "planet",
+        biome: planet.biome,
+        planetType: planet.planetType,
+      });
       mesh.position.set(radius, 0, 0);
       (mesh.userData as Record<symbol, string>)[PLANET_ID] = planet.planetId;
       orbitPivot.add(mesh);
@@ -346,7 +355,10 @@ export class SystemScene implements IRenderableScene {
           speed: 0.45 + (index % 5) * 0.09,
         });
 
-        const moonMesh = PlanetMesh.create(moon.size, moon.color ?? "#c8d0cb");
+        const moonMesh = PlanetMesh.create(moon.size, moon.color ?? DEFAULT_MOON_COLOR, {
+          seed: moon.moonId,
+          kind: "moon",
+        });
         moonMesh.position.set(moonRadius, 0, 0);
         (moonMesh.userData as Record<symbol, string>)[MOON_ID] = moon.moonId;
         moonPivot.add(moonMesh);
@@ -375,8 +387,8 @@ export class SystemScene implements IRenderableScene {
       const asteroidX = this.toAsteroidRadius(asteroid.orbital);
       const renderNode =
         asteroid.type === "cluster"
-          ? AsteroidMesh.createCluster(asteroid.size, asteroid.color ?? "#77887e", asteroid.asteroidId)
-          : AsteroidMesh.createSingle(asteroid.size, asteroid.color ?? "#77887e", asteroid.asteroidId);
+          ? AsteroidMesh.createCluster(asteroid.size, asteroid.color ?? DEFAULT_ASTEROID_COLOR, asteroid.asteroidId)
+          : AsteroidMesh.createSingle(asteroid.size, asteroid.color ?? DEFAULT_ASTEROID_COLOR, asteroid.asteroidId);
       renderNode.position.set(asteroidX, 0, 0);
       (renderNode.userData as Record<symbol, string>)[ASTEROID_ID] = asteroid.asteroidId;
       orbitPivot.add(renderNode);

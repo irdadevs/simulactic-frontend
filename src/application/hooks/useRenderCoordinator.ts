@@ -5,6 +5,7 @@ import {
 } from "../../3d/core/serialized.types";
 import { useRenderStore } from "../../state/render.store";
 import { AsteroidSize } from "../../types/asteroid.types";
+import { colorByStarType } from "../../lib/visual/starColorPalette";
 import { useGalaxyView } from "./useGalaxyView";
 import { useSystemView } from "./useSystemView";
 
@@ -27,7 +28,6 @@ export const useRenderCoordinator = () => {
 
   const setZoom = useRenderStore((state) => state.setZoom);
   const initializeGalaxy = useRenderStore((state) => state.initializeGalaxy);
-  const commitGalaxyTransition = useRenderStore((state) => state.commitGalaxyTransition);
   const failTransition = useRenderStore((state) => state.failTransition);
   const requestGalaxyTransition = useRenderStore((state) => state.requestGalaxyTransition);
   const commitSystemTransition = useRenderStore((state) => state.commitSystemTransition);
@@ -74,18 +74,45 @@ export const useRenderCoordinator = () => {
     };
   }, [activeSystemId, commitSystemTransition, failTransition, loadSystemView, machineState, transitionToken]);
 
-  useEffect(() => {
-    if (machineState !== "galaxy_loading") return;
-    commitGalaxyTransition();
-  }, [commitGalaxyTransition, machineState]);
-
   const serializedGalaxyData = useMemo<SerializedGalaxyViewData>(
     () => ({
       systems: galaxyNodes.map((node) => ({
+        // If the system contains a black hole, surface it in galaxy overview color.
+        // Otherwise fallback to main star visual identity.
+        ...(function () {
+          const blackHole = node.stars.find((star) => star.starType === "Black hole") ?? null;
+          const neutronStar = node.stars.find((star) => star.starType === "Neutron star") ?? null;
+          const representative = blackHole ?? neutronStar ?? node.mainStar ?? null;
+          if (!representative) {
+            return {
+              color: "#f8ffe5",
+              size: Math.max(1.2, Math.min(8, 1.2 * 3)),
+              representativeStarType: "Yellow dwarf" as const,
+              hasBlackHole: false,
+              hasNeutronStar: false,
+            };
+          }
+
+          if (blackHole) {
+            return {
+              color: "#ff9b33",
+              size: Math.max(1.4, Math.min(8, representative.relativeRadius * 3.2)),
+              representativeStarType: representative.starType,
+              hasBlackHole: true,
+              hasNeutronStar: false,
+            };
+          }
+
+          return {
+            color: colorByStarType(representative.starType, representative.color),
+            size: Math.max(1.2, Math.min(8, representative.relativeRadius * 3)),
+            representativeStarType: representative.starType,
+            hasBlackHole: false,
+            hasNeutronStar: Boolean(neutronStar),
+          };
+        })(),
         systemId: node.system.id,
         position: node.system.position,
-        color: node.mainStar?.color,
-        size: Math.max(1.2, Math.min(8, (node.mainStar?.relativeRadius ?? 1.2) * 3)),
       })),
       focusSystemId: lastSystemId,
     }),
@@ -99,6 +126,7 @@ export const useRenderCoordinator = () => {
       systemId: systemDetail.system.id,
       stars: systemDetail.stars.map((star) => ({
         starId: star.id,
+        starType: star.starType,
         isMain: star.isMain,
         orbital: star.orbital,
         size: Math.max(star.relativeRadius, 0.6),
@@ -106,6 +134,8 @@ export const useRenderCoordinator = () => {
       })),
       planets: systemDetail.planets.map((entry) => ({
         planetId: entry.planet.id,
+        planetType: entry.planet.type,
+        biome: entry.planet.biome,
         orbital: entry.planet.orbital,
         size: Math.max(0.4, Math.min(4.2, entry.planet.relativeRadius)),
         moons: entry.moons.map((moon) => ({
@@ -122,6 +152,11 @@ export const useRenderCoordinator = () => {
       })),
     };
   }, [systemDetail]);
+
+  const pendingSystemName = useMemo(() => {
+    if (machineState !== "system_loading" || !activeSystemId) return null;
+    return galaxyNodes.find((node) => node.system.id === activeSystemId)?.system.name ?? null;
+  }, [activeSystemId, galaxyNodes, machineState]);
 
   const onWheelZoom = useCallback(
     (deltaY: number) => {
@@ -140,6 +175,7 @@ export const useRenderCoordinator = () => {
     machineState,
     viewMode,
     activeSystemId,
+    pendingSystemName,
     zoom,
     serializedGalaxyData,
     serializedSystemData,

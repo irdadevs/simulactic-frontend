@@ -8,10 +8,11 @@ import { ActionButton } from "../components/buttons/ActionButton";
 type PlanetPopupProps = {
   planet: PlanetProps;
   moons: MoonProps[];
+  onGoToPlanet: () => void;
   onClose: () => void;
 };
 
-export function PlanetPopup({ planet, moons, onClose }: PlanetPopupProps) {
+export function PlanetPopup({ planet, moons, onGoToPlanet, onClose }: PlanetPopupProps) {
   const detail = planetDetailItems(planet, moons.length);
 
   return (
@@ -22,9 +23,14 @@ export function PlanetPopup({ planet, moons, onClose }: PlanetPopupProps) {
           <h3 className={popupStyles.popupTitle}>{planet.name}</h3>
           <p className={commonStyles.meta}>Planet</p>
         </div>
-        <ActionButton variant="secondary" onClick={onClose}>
-          Close
-        </ActionButton>
+        <div style={{ display: "flex", gap: 8 }}>
+          <ActionButton variant="secondary" onClick={onGoToPlanet}>
+            Go to
+          </ActionButton>
+          <ActionButton variant="secondary" onClick={onClose}>
+            Close
+          </ActionButton>
+        </div>
       </header>
 
       <div className={popupStyles.popupBody}>

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { mapStarApiToDomain, mapStarDomainToView } from "../../domain/star/mappers";
 import { mapSystemApiToDomain, mapSystemDomainToView } from "../../domain/system/mappers";
 import { galaxyApi } from "../../infra/api/galaxy.api";
+import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import { StarProps } from "../../types/star.types";
 import { SystemProps } from "../../types/system.types";
 
@@ -12,8 +13,7 @@ export type GalaxyViewNode = {
 };
 
 const toErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) return error.message;
-  return "Unexpected error";
+  return describeApiError(error, "Unexpected error");
 };
 
 export const useGalaxyView = () => {
