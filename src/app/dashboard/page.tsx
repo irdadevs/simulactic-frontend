@@ -48,8 +48,9 @@ function DashboardPageContent() {
   const [deletingGalaxyId, setDeletingGalaxyId] = useState<string | null>(null);
   const hasBootstrappedRef = useRef(false);
   const isEmbedded = searchParams.get("embed") === "1";
+  const isAdmin = user?.role === "Admin";
   const isSupporter = Boolean(user?.isSupporter);
-  const canCreateGalaxy = isSupporter || galaxies.length < 3;
+  const canCreateGalaxy = isAdmin || isSupporter || galaxies.length < 3;
 
   useEffect(() => {
     if (!isEmbedded) return;
