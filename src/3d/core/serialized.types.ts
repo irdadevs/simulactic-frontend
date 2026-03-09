@@ -1,3 +1,5 @@
+import { AsteroidType } from "../../types/asteroid.types";
+
 export type SerializedVector3 = {
   x: number;
   y: number;
@@ -43,6 +45,7 @@ export type SerializedSystemData = {
     asteroidId: string;
     orbital: number;
     size: number;
+    type: AsteroidType;
     color?: string;
   }>;
 };

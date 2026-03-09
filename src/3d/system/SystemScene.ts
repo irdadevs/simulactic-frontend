@@ -12,7 +12,9 @@ import {
 } from "three";
 import { EventBridge } from "../core/EventBridge";
 import { IRenderableScene } from "../core/SceneManager";
+import { AsteroidType } from "../../types/asteroid.types";
 import { OrbitHelper } from "./OrbitHelper";
+import { AsteroidMesh } from "./AsteroidMesh";
 import { PlanetMesh } from "./PlanetMesh";
 
 const SYSTEM_ID = Symbol("systemId");
@@ -49,6 +51,7 @@ export class SystemScene implements IRenderableScene {
       asteroidId: string;
       orbital: number;
       size: number;
+      type: AsteroidType;
       color?: string;
     }>;
   } = {
@@ -100,6 +103,7 @@ export class SystemScene implements IRenderableScene {
       asteroidId: string;
       orbital: number;
       size: number;
+      type: AsteroidType;
       color?: string;
     }>;
   }): void {
@@ -368,12 +372,15 @@ export class SystemScene implements IRenderableScene {
         speed: 0.16 + (this.getCenterIndex(asteroid.asteroidId) % 9) * 0.03,
       });
 
-      const mesh = PlanetMesh.create(asteroid.size, asteroid.color ?? "#77887e");
       const asteroidX = this.toAsteroidRadius(asteroid.orbital);
-      mesh.position.set(asteroidX, 0, 0);
-      (mesh.userData as Record<symbol, string>)[ASTEROID_ID] = asteroid.asteroidId;
-      orbitPivot.add(mesh);
-      this.navigationPoints.asteroid.set(asteroid.asteroidId, mesh);
+      const renderNode =
+        asteroid.type === "cluster"
+          ? AsteroidMesh.createCluster(asteroid.size, asteroid.color ?? "#77887e", asteroid.asteroidId)
+          : AsteroidMesh.createSingle(asteroid.size, asteroid.color ?? "#77887e", asteroid.asteroidId);
+      renderNode.position.set(asteroidX, 0, 0);
+      (renderNode.userData as Record<symbol, string>)[ASTEROID_ID] = asteroid.asteroidId;
+      orbitPivot.add(renderNode);
+      this.navigationPoints.asteroid.set(asteroid.asteroidId, renderNode);
       center.add(OrbitHelper.create(asteroidX, "#7d8e89", 128, "dotted"));
     });
   }
