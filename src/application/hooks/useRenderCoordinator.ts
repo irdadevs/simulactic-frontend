@@ -5,23 +5,14 @@ import {
 } from "../../3d/core/serialized.types";
 import { useRenderStore } from "../../state/render.store";
 import { AsteroidSize } from "../../types/asteroid.types";
-import { PlanetSize } from "../../types/planet.types";
 import { useGalaxyView } from "./useGalaxyView";
 import { useSystemView } from "./useSystemView";
 
-const planetSizeMap: Record<PlanetSize, number> = {
-  proto: 0.45,
-  dwarf: 0.65,
-  medium: 0.9,
-  giant: 1.3,
-  supergiant: 1.8,
-};
-
 const asteroidSizeMap: Record<AsteroidSize, number> = {
-  small: 0.3,
-  medium: 0.5,
-  big: 0.75,
-  massive: 1.1,
+  small: 0.42,
+  medium: 0.62,
+  big: 0.9,
+  massive: 1.28,
 };
 
 export const useRenderCoordinator = () => {
@@ -116,17 +107,18 @@ export const useRenderCoordinator = () => {
       planets: systemDetail.planets.map((entry) => ({
         planetId: entry.planet.id,
         orbital: entry.planet.orbital,
-        size: planetSizeMap[entry.planet.size],
+        size: Math.max(0.4, Math.min(4.2, entry.planet.relativeRadius)),
         moons: entry.moons.map((moon) => ({
           moonId: moon.id,
           orbital: moon.orbital,
-          size: 0.25 + moon.relativeRadius * 0.45,
+          size: Math.max(0.18, Math.min(1.8, moon.relativeRadius * 0.85)),
         })),
       })),
       asteroids: systemDetail.asteroids.map((asteroid) => ({
         asteroidId: asteroid.id,
         orbital: asteroid.orbital,
         size: asteroidSizeMap[asteroid.size],
+        type: asteroid.type,
       })),
     };
   }, [systemDetail]);
