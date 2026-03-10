@@ -11,7 +11,7 @@ import { mapUserApiToDomain, mapUserDomainToView } from "../../domain/user/mappe
 import { donationApi } from "../../infra/api/donation.api";
 import { galaxyApi } from "../../infra/api/galaxy.api";
 import { logApi } from "../../infra/api/log.api";
-import { metricApi } from "../../infra/api/metric.api";
+import { metricApi, TrafficAnalyticsResponse } from "../../infra/api/metric.api";
 import { ActiveBansResponse, AdminUserListItemApiResponse, userApi } from "../../infra/api/user.api";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import styles from "../../styles/admin.module.css";
@@ -33,12 +33,25 @@ type ActiveIpBanRow = Omit<ActiveBansResponse["ips"][number], "createdAt" | "exp
   createdAt: Date;
   expiresAt: Date | null;
 };
-type TrafficPathRow = {
-  path: string;
-  views: number;
-  uniqueSessions: number;
-  avgDurationMs: number;
+type TrafficAnalyticsState = {
+  overview: TrafficAnalyticsResponse["overview"];
+  viewsByDay: Array<{ date: Date; views: number }>;
+  routes: TrafficAnalyticsResponse["routes"];
+  referrers: TrafficAnalyticsResponse["referrers"];
+  recentViews: Array<{
+    id: string;
+    occurredAt: Date;
+    path: string | null;
+    fullPath: string | null;
+    referrerHost: string | null;
+    sessionId: string | null;
+    viewport: { width: number; height: number } | null;
+    durationMs: number;
+  }>;
 };
+type BanDraft =
+  | { kind: "user"; logId: string; userId: string; ipAddress: null }
+  | { kind: "ip"; logId: string; userId: null; ipAddress: string };
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -55,6 +68,7 @@ const LOGS_PAGE_SIZE = 30;
 const sections: Section[] = ["overview", "entities", "users", "donations", "logs", "bans", "metrics", "traffic"];
 
 const toDateInput = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const toDateTimeInput = (d: Date) => `${toDateInput(d)}T${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 const parseDateInput = (value: string) => {
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day);
@@ -192,12 +206,18 @@ export default function AdminPage() {
   const [selectedLog, setSelectedLog] = useState<LogProps | null>(null);
   const [adminNoteDraft, setAdminNoteDraft] = useState("");
   const [adminNoteSaving, setAdminNoteSaving] = useState(false);
+  const [loadingLogDetails, setLoadingLogDetails] = useState(false);
   const [bansListView, setBansListView] = useState<"users" | "ips">("users");
+  const [banDraft, setBanDraft] = useState<BanDraft | null>(null);
+  const [banReasonDraft, setBanReasonDraft] = useState("");
+  const [banExpiresAtDraft, setBanExpiresAtDraft] = useState("");
+  const [banSaving, setBanSaving] = useState(false);
 
   const [users, setUsers] = useState<UserProps[]>([]);
   const [donations, setDonations] = useState<DonationProps[]>([]);
   const [logs, setLogs] = useState<LogProps[]>([]);
   const [metrics, setMetrics] = useState<MetricProps[]>([]);
+  const [traffic, setTraffic] = useState<TrafficAnalyticsState | null>(null);
   const [bannedUsers, setBannedUsers] = useState<ActiveUserBanRow[]>([]);
   const [bannedIps, setBannedIps] = useState<ActiveIpBanRow[]>([]);
   const [galaxies, setGalaxies] = useState<GalaxyRow[]>([]);
@@ -247,11 +267,12 @@ export default function AdminPage() {
     const load = async () => {
       setLoading(true);
       try {
-        const [u, d, l, m, bans, g, gc] = await Promise.all([
+        const [u, d, l, m, trafficAnalytics, bans, g, gc] = await Promise.all([
           fetchAll((offset) => userApi.list({ orderBy: "createdAt", orderDir: "desc", limit: PAGE_SIZE, offset })),
           fetchAll((offset) => donationApi.list({ orderBy: "createdAt", orderDir: "desc", limit: PAGE_SIZE, offset })),
-          fetchAll((offset) => logApi.list({ from: rangeFrom, to: rangeTo, orderBy: "occurredAt", orderDir: "desc", limit: PAGE_SIZE, offset })),
+          fetchAll((offset) => logApi.list({ from: rangeFrom, to: rangeTo, orderBy: "occurredAt", orderDir: "desc", limit: PAGE_SIZE, offset, view: "dashboard" })),
           fetchAll((offset) => metricApi.list({ from: rangeFrom, to: rangeTo, orderBy: "occurredAt", orderDir: "desc", limit: PAGE_SIZE, offset, view: "dashboard" })),
+          metricApi.traffic({ from: rangeFrom, to: rangeTo, limitRecent: 20, limitRoutes: 200, limitReferrers: 8 }),
           userApi.listActiveBans(200),
           fetchAll((offset) => galaxyApi.list({ orderBy: "createdAt", orderDir: "desc", limit: PAGE_SIZE, offset })),
           galaxyApi.globalCounts(),
@@ -270,6 +291,19 @@ export default function AdminPage() {
         const mappedMetrics = m.rows.map((row: MetricApiResponse) =>
           mapMetricDomainToView(mapMetricApiToDomain(row)),
         );
+        const mappedTraffic: TrafficAnalyticsState = {
+          overview: trafficAnalytics.overview,
+          viewsByDay: trafficAnalytics.viewsByDay.map((row) => ({
+            date: new Date(`${row.date}T00:00:00.000Z`),
+            views: row.views,
+          })),
+          routes: trafficAnalytics.routes,
+          referrers: trafficAnalytics.referrers,
+          recentViews: trafficAnalytics.recentViews.map((row) => ({
+            ...row,
+            occurredAt: new Date(row.occurredAt),
+          })),
+        };
         const mappedBannedUsers = bans.users.map((row) => ({
           ...row,
           createdAt: new Date(row.createdAt),
@@ -288,6 +322,7 @@ export default function AdminPage() {
         setDonations(mappedDonations);
         setLogs(mappedLogs);
         setMetrics(mappedMetrics);
+        setTraffic(mappedTraffic);
         setBannedUsers(mappedBannedUsers);
         setBannedIps(mappedBannedIps);
         setGalaxies(mappedGalaxies);
@@ -517,6 +552,13 @@ export default function AdminPage() {
     setAdminNoteDraft(selectedLog?.adminNote ?? "");
   }, [selectedLog]);
 
+  useEffect(() => {
+    if (!banDraft) {
+      setBanReasonDraft("");
+      setBanExpiresAtDraft("");
+    }
+  }, [banDraft]);
+
   if (!user) return <p className={commonStyles.meta}>Checking permissions...</p>;
   if (user.role !== "Admin") return null;
 
@@ -541,74 +583,11 @@ export default function AdminPage() {
 
   const metricErrors = metrics.filter((m) => !m.success);
   const metricErrorsByType = metricByType.map((item) => ({ label: item.type, value: item.errors }));
-  const trafficMetrics = metrics.filter((m) => m.metricName === "traffic.page_view");
-  const trafficViewsByDay = (() => {
-    const points: Point[] = [];
-    const totalDays = totalDaysInRange(rangeFrom, rangeTo);
-    for (let i = 0; i < totalDays; i += 1) {
-      const day = addDays(rangeFrom, i);
-      const dayEnd = end(day);
-      points.push({
-        label: `${day.getMonth() + 1}/${day.getDate()}`,
-        value: trafficMetrics.filter((m) => m.occurredAt >= rangeFrom && m.occurredAt <= dayEnd).length,
-      });
-    }
-    return points;
-  })();
-  const trafficByPath: TrafficPathRow[] = (() => {
-    const map = new Map<string, { views: number; sessions: Set<string>; duration: number }>();
-    for (const metric of trafficMetrics) {
-      const pathValue =
-        typeof metric.context?.pathname === "string"
-          ? metric.context.pathname
-          : typeof metric.context?.fullPath === "string"
-            ? metric.context.fullPath
-            : typeof metric.tags?.pathname === "string"
-              ? metric.tags.pathname
-              : metric.source;
-      const sessionId =
-        typeof metric.context?.sessionId === "string" ? metric.context.sessionId : null;
-      const current = map.get(pathValue) ?? { views: 0, sessions: new Set<string>(), duration: 0 };
-      current.views += 1;
-      current.duration += metric.durationMs;
-      if (sessionId) current.sessions.add(sessionId);
-      map.set(pathValue, current);
-    }
-    return Array.from(map.entries())
-      .map(([path, value]) => ({
-        path,
-        views: value.views,
-        uniqueSessions: value.sessions.size,
-        avgDurationMs: value.views ? value.duration / value.views : 0,
-      }))
-      .sort((left, right) => right.views - left.views);
-  })();
-  const trafficByReferrer = (() => {
-    const map = new Map<string, number>();
-    for (const metric of trafficMetrics) {
-      const referrer =
-        typeof metric.context?.referrerHost === "string"
-          ? metric.context.referrerHost
-          : typeof metric.tags?.referrerHost === "string"
-            ? metric.tags.referrerHost
-            : "direct";
-      map.set(referrer || "direct", (map.get(referrer || "direct") ?? 0) + 1);
-    }
-    return Array.from(map.entries())
-      .map(([label, value]) => ({ label, value }))
-      .sort((left, right) => right.value - left.value)
-      .slice(0, 8);
-  })();
-  const trafficUniqueSessions = new Set(
-    trafficMetrics
-      .map((metric) => (typeof metric.context?.sessionId === "string" ? metric.context.sessionId : null))
-      .filter((value): value is string => Boolean(value)),
-  ).size;
-  const trafficExternalViews = trafficMetrics.filter((metric) => metric.tags?.externalReferrer === true).length;
-  const topTrafficBars = trafficByPath.slice(0, 8).map((item) => ({ label: item.path, value: item.views }));
-  const recentTraffic = [...trafficMetrics]
-    .sort((left, right) => right.occurredAt.getTime() - left.occurredAt.getTime())
-    .slice(0, 20);
+  const trafficViewsByDay = (traffic?.viewsByDay ?? []).map((item) => ({
+    label: `${item.date.getUTCMonth() + 1}/${item.date.getUTCDate()}`,
+    value: item.views,
+  }));
+  const topTrafficBars = (traffic?.routes ?? []).slice(0, 8).map((item) => ({ label: item.path, value: item.views }));
   const logByLevel = (() => {
     const levels = ["debug", "info", "warn", "error", "critical"] as const;
     return levels.map((level) => ({ level, count: logs.filter((l) => l.level === level).length }));
@@ -638,6 +617,97 @@ export default function AdminPage() {
   const patchLogState = (logId: string, patch: Partial<LogProps>) => {
     setLogs((prev) => prev.map((item) => (item.id === logId ? { ...item, ...patch } : item)));
     setSelectedLog((prev) => (prev && prev.id === logId ? { ...prev, ...patch } : prev));
+  };
+
+  const openLogDetails = async (logId: string) => {
+    setLoadingLogDetails(true);
+    try {
+      const response = await logApi.findById(logId, "dashboard");
+      if (!response) {
+        sileo.error({
+          title: "Log not found",
+          description: "The selected log is no longer available.",
+        });
+        return;
+      }
+      setSelectedLog(mapLogDomainToView(mapLogApiToDomain(response)));
+    } finally {
+      setLoadingLogDetails(false);
+    }
+  };
+
+  const openBanModal = (draft: BanDraft) => {
+    setBanDraft(draft);
+    setBanReasonDraft(`Admin ban from log ${draft.logId}`);
+    setBanExpiresAtDraft(toDateTimeInput(addDays(new Date(), 7)));
+  };
+
+  const closeBanModal = () => {
+    setBanDraft(null);
+    setBanSaving(false);
+  };
+
+  const submitBan = async () => {
+    if (!banDraft) return;
+    const reason = banReasonDraft.trim();
+    if (reason.length < 5) {
+      sileo.error({
+        title: "Invalid reason",
+        description: "Ban reason must be at least 5 characters.",
+      });
+      return;
+    }
+
+    setBanSaving(true);
+    try {
+      const expiresAt = banExpiresAtDraft ? new Date(banExpiresAtDraft) : undefined;
+      if (banDraft.kind === "user") {
+        const created = await userApi.banUser(banDraft.userId, { reason, expiresAt });
+        setBannedUsers((prev) => [
+          {
+            id: created.id,
+            userId: created.userId ?? banDraft.userId,
+            reason: created.reason,
+            source: created.source,
+            bannedBy: created.bannedBy,
+            createdAt: new Date(created.createdAt),
+            expiresAt: created.expiresAt ? new Date(created.expiresAt) : null,
+          },
+          ...prev.filter((item) => item.userId !== (created.userId ?? banDraft.userId)),
+        ]);
+      } else {
+        const created = await userApi.banIp({
+          ipAddress: banDraft.ipAddress,
+          reason,
+          expiresAt,
+        });
+        setBannedIps((prev) => [
+          {
+            id: created.id,
+            ipAddress: created.ipAddress ?? banDraft.ipAddress,
+            reason: created.reason,
+            source: created.source,
+            bannedBy: created.bannedBy,
+            createdAt: new Date(created.createdAt),
+            expiresAt: created.expiresAt ? new Date(created.expiresAt) : null,
+          },
+          ...prev.filter((item) => item.ipAddress !== (created.ipAddress ?? banDraft.ipAddress)),
+        ]);
+      }
+      closeBanModal();
+    } finally {
+      setBanSaving(false);
+    }
+  };
+
+  const unbanUser = async (userId: string) => {
+    await userApi.unbanUser(userId);
+    setBannedUsers((prev) => prev.filter((item) => item.userId !== userId));
+  };
+
+  const unbanIp = async (ipAddress: string) => {
+    await userApi.unbanIp({ ipAddress });
+    setBannedIps((prev) => prev.filter((item) => item.ipAddress !== ipAddress));
   };
 
   const reopenLog = async (logId: string) => {
@@ -886,7 +956,18 @@ export default function AdminPage() {
                           )}
                         </td>
                         <td>
-                          <button className={styles.exportButton} onClick={() => setSelectedLog(l)}>
+                          <button
+                            className={styles.exportButton}
+                            disabled={loadingLogDetails}
+                            onClick={() => {
+                              void openLogDetails(l.id).catch((error: unknown) => {
+                                sileo.error({
+                                  title: "Log load failed",
+                                  description: describeApiError(error, "Could not load log details."),
+                                });
+                              });
+                            }}
+                          >
                             Details
                           </button>
                         </td>
@@ -964,10 +1045,10 @@ export default function AdminPage() {
             <article className={styles.card}>
               <h2 className={commonStyles.panelTitle}>Traffic overview</h2>
               <div className={styles.summaryGrid}>
-                <div className={styles.summaryCard}><span>Page views</span><strong>{trafficMetrics.length}</strong></div>
-                <div className={styles.summaryCard}><span>Unique sessions</span><strong>{trafficUniqueSessions}</strong></div>
-                <div className={styles.summaryCard}><span>Tracked routes</span><strong>{trafficByPath.length}</strong></div>
-                <div className={styles.summaryCard}><span>External referrals</span><strong>{trafficExternalViews}</strong></div>
+                <div className={styles.summaryCard}><span>Page views</span><strong>{traffic?.overview.pageViews ?? 0}</strong></div>
+                <div className={styles.summaryCard}><span>Unique sessions</span><strong>{traffic?.overview.uniqueSessions ?? 0}</strong></div>
+                <div className={styles.summaryCard}><span>Tracked routes</span><strong>{traffic?.overview.trackedRoutes ?? 0}</strong></div>
+                <div className={styles.summaryCard}><span>External referrals</span><strong>{traffic?.overview.externalReferrals ?? 0}</strong></div>
               </div>
             </article>
             <article className={styles.card}>
@@ -981,13 +1062,13 @@ export default function AdminPage() {
             <article className={styles.card}>
               <h2 className={commonStyles.panelTitle}>Top referrers</h2>
               <div className={styles.summaryGrid}>
-                {trafficByReferrer.length === 0 ? (
+                {(traffic?.referrers.length ?? 0) === 0 ? (
                   <div className={styles.summaryCard}><span>No traffic tracked yet</span><strong>0</strong></div>
                 ) : (
-                  trafficByReferrer.map((item) => (
-                    <div key={item.label} className={styles.summaryCard}>
-                      <span>{item.label}</span>
-                      <strong>{item.value}</strong>
+                  traffic?.referrers.map((item) => (
+                    <div key={item.referrer} className={styles.summaryCard}>
+                      <span>{item.referrer}</span>
+                      <strong>{item.views}</strong>
                     </div>
                   ))
                 )}
@@ -999,14 +1080,20 @@ export default function AdminPage() {
                 <table className={styles.table}>
                   <thead><tr><th>Path</th><th>Views</th><th>Unique sessions</th><th>Avg duration</th></tr></thead>
                   <tbody>
-                    {trafficByPath.map((item) => (
-                      <tr key={item.path}>
-                        <td>{item.path}</td>
-                        <td>{item.views}</td>
-                        <td>{item.uniqueSessions}</td>
-                        <td>{item.avgDurationMs.toFixed(2)} ms</td>
+                    {(traffic?.routes.length ?? 0) === 0 ? (
+                      <tr>
+                        <td colSpan={4}>No route traffic in the selected range.</td>
                       </tr>
-                    ))}
+                    ) : (
+                      traffic?.routes.map((item) => (
+                        <tr key={item.path}>
+                          <td>{item.path}</td>
+                          <td>{item.views}</td>
+                          <td>{item.uniqueSessions}</td>
+                          <td>{item.avgDurationMs.toFixed(2)} ms</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1017,42 +1104,27 @@ export default function AdminPage() {
                 <table className={styles.table}>
                   <thead><tr><th>When</th><th>Path</th><th>Referrer</th><th>Session</th><th>Viewport</th></tr></thead>
                   <tbody>
-                    {recentTraffic.map((metric, index) => {
-                      const viewport =
-                        metric.context?.viewport &&
-                        typeof metric.context.viewport === "object" &&
-                        metric.context.viewport !== null &&
-                        "width" in metric.context.viewport &&
-                        "height" in metric.context.viewport
-                          ? `${String(metric.context.viewport.width)}x${String(metric.context.viewport.height)}`
-                          : "-";
-                      const path =
-                        typeof metric.context?.fullPath === "string"
-                          ? metric.context.fullPath
-                          : typeof metric.context?.pathname === "string"
-                            ? metric.context.pathname
-                            : "-";
-                      const referrer =
-                        typeof metric.context?.referrerHost === "string"
-                          ? metric.context.referrerHost
-                          : typeof metric.tags?.referrerHost === "string"
-                            ? metric.tags.referrerHost
-                            : "direct";
-                      const session =
-                        typeof metric.context?.sessionId === "string"
-                          ? metric.context.sessionId.slice(0, 8)
-                          : "-";
+                    {(traffic?.recentViews.length ?? 0) === 0 ? (
+                      <tr>
+                        <td colSpan={5}>No recent page views in the selected range.</td>
+                      </tr>
+                    ) : (
+                      traffic?.recentViews.map((metric, index) => {
+                        const viewport = metric.viewport ? `${metric.viewport.width}x${metric.viewport.height}` : "-";
+                        const path = metric.fullPath ?? metric.path ?? "-";
+                        const session = metric.sessionId ? metric.sessionId.slice(0, 8) : "-";
 
-                      return (
-                        <tr key={`${metric.id}-${metric.occurredAt.getTime()}-${path}-${session}-${index}`}>
-                          <td>{dateText(metric.occurredAt)}</td>
-                          <td>{path}</td>
-                          <td>{referrer || "direct"}</td>
-                          <td>{session}</td>
-                          <td>{viewport}</td>
-                        </tr>
-                      );
-                    })}
+                        return (
+                          <tr key={`${metric.id}-${metric.occurredAt.getTime()}-${path}-${session}-${index}`}>
+                            <td>{dateText(metric.occurredAt)}</td>
+                            <td>{path}</td>
+                            <td>{metric.referrerHost ?? "direct"}</td>
+                            <td>{session}</td>
+                            <td>{viewport}</td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1107,14 +1179,14 @@ export default function AdminPage() {
                 <table className={styles.table}>
                   <thead>
                     {bansListView === "users"
-                      ? <tr><th>User ID</th><th>Reason</th><th>Source</th><th>Banned by</th><th>Created</th><th>Expires</th></tr>
-                      : <tr><th>IP address</th><th>Reason</th><th>Source</th><th>Banned by</th><th>Created</th><th>Expires</th></tr>}
+                      ? <tr><th>User ID</th><th>Reason</th><th>Source</th><th>Banned by</th><th>Created</th><th>Expires</th><th>Action</th></tr>
+                      : <tr><th>IP address</th><th>Reason</th><th>Source</th><th>Banned by</th><th>Created</th><th>Expires</th><th>Action</th></tr>}
                   </thead>
                   <tbody>
                     {bansListView === "users"
                       ? (bannedUsers.length === 0 ? (
                         <tr>
-                          <td colSpan={6}>No active user bans.</td>
+                          <td colSpan={7}>No active user bans.</td>
                         </tr>
                       ) : (
                         bannedUsers.map((ban) => (
@@ -1125,12 +1197,32 @@ export default function AdminPage() {
                             <td>{ban.bannedBy ?? "-"}</td>
                             <td>{dateText(ban.createdAt)}</td>
                             <td>{ban.expiresAt ? dateText(ban.expiresAt) : "Never"}</td>
+                            <td>
+                              <button
+                                className={styles.exportButton}
+                                onClick={() => {
+                                  void unbanUser(ban.userId).then(() => {
+                                    sileo.success({
+                                      title: "User unbanned",
+                                      description: "The selected user ban was removed.",
+                                    });
+                                  }).catch((error: unknown) => {
+                                    sileo.error({
+                                      title: "User unban failed",
+                                      description: describeApiError(error, "Could not unban the selected user."),
+                                    });
+                                  });
+                                }}
+                              >
+                                Unban
+                              </button>
+                            </td>
                           </tr>
                         ))
                       ))
                       : (bannedIps.length === 0 ? (
                         <tr>
-                          <td colSpan={6}>No active IP bans.</td>
+                          <td colSpan={7}>No active IP bans.</td>
                         </tr>
                       ) : (
                         bannedIps.map((ban) => (
@@ -1141,6 +1233,26 @@ export default function AdminPage() {
                             <td>{ban.bannedBy ?? "-"}</td>
                             <td>{dateText(ban.createdAt)}</td>
                             <td>{ban.expiresAt ? dateText(ban.expiresAt) : "Never"}</td>
+                            <td>
+                              <button
+                                className={styles.exportButton}
+                                onClick={() => {
+                                  void unbanIp(ban.ipAddress).then(() => {
+                                    sileo.success({
+                                      title: "IP unbanned",
+                                      description: "The selected IP ban was removed.",
+                                    });
+                                  }).catch((error: unknown) => {
+                                    sileo.error({
+                                      title: "IP unban failed",
+                                      description: describeApiError(error, "Could not unban the selected IP."),
+                                    });
+                                  });
+                                }}
+                              >
+                                Unban
+                              </button>
+                            </td>
                           </tr>
                         ))
                       ))}
@@ -1248,6 +1360,97 @@ export default function AdminPage() {
               </div>
             </section>
             <pre className={styles.logDetailsPre}>{JSON.stringify(selectedLog, null, 2)}</pre>
+            <div className={styles.logActionBar}>
+              <button
+                className={styles.exportButton}
+                disabled={!selectedLog.userId}
+                onClick={() => {
+                  if (!selectedLog.userId) return;
+                  openBanModal({
+                    kind: "user",
+                    logId: selectedLog.id,
+                    userId: selectedLog.userId,
+                    ipAddress: null,
+                  });
+                }}
+              >
+                Ban user
+              </button>
+              <button
+                className={styles.exportButton}
+                disabled={!selectedLog.ip}
+                onClick={() => {
+                  if (!selectedLog.ip) return;
+                  openBanModal({
+                    kind: "ip",
+                    logId: selectedLog.id,
+                    userId: null,
+                    ipAddress: selectedLog.ip,
+                  });
+                }}
+              >
+                Ban IP
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {banDraft && (
+        <div className={styles.logDetailsBackdrop}>
+          <div className={styles.banModalCard}>
+            <div className={styles.rowBetween}>
+              <h3 className={commonStyles.panelTitle}>{banDraft.kind === "user" ? "Ban user" : "Ban IP"}</h3>
+              <button className={styles.exportButton} onClick={closeBanModal}>Close</button>
+            </div>
+            <div className={styles.filtersGrid}>
+              <div className={styles.filterField}>
+                <label>Source</label>
+                <input value="admin" readOnly />
+              </div>
+              <div className={styles.filterField}>
+                <label>Log</label>
+                <input value={banDraft.logId} readOnly />
+              </div>
+              <div className={styles.filterField}>
+                <label>{banDraft.kind === "user" ? "User ID" : "IP address"}</label>
+                <input value={banDraft.kind === "user" ? banDraft.userId : banDraft.ipAddress} readOnly />
+              </div>
+              <div className={styles.filterField}>
+                <label>Expires at</label>
+                <input type="datetime-local" value={banExpiresAtDraft} onChange={(e) => setBanExpiresAtDraft(e.target.value)} />
+              </div>
+            </div>
+            <div className={styles.filterField}>
+              <label>Reason</label>
+              <textarea
+                className={styles.adminNoteTextarea}
+                value={banReasonDraft}
+                onChange={(e) => setBanReasonDraft(e.target.value)}
+                placeholder="Describe why this user or IP is being banned."
+                rows={5}
+              />
+            </div>
+            <div className={styles.logActionBar}>
+              <button
+                className={styles.exportButton}
+                disabled={banSaving || banReasonDraft.trim().length < 5}
+                onClick={() => {
+                  void submitBan().then(() => {
+                    sileo.success({
+                      title: banDraft.kind === "user" ? "User banned" : "IP banned",
+                      description: "The ban was created successfully.",
+                    });
+                  }).catch((error: unknown) => {
+                    sileo.error({
+                      title: "Ban failed",
+                      description: describeApiError(error, "Could not create the ban."),
+                    });
+                  });
+                }}
+              >
+                Confirm ban
+              </button>
+            </div>
           </div>
         </div>
       )}

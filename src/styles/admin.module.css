@@ -440,6 +440,16 @@
   padding: 14px;
 }
 
+.banModalCard {
+  width: min(760px, 95vw);
+  max-height: 85vh;
+  overflow: auto;
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--carbon-black-900) 92%, #102029);
+  padding: 14px;
+}
+
 .adminNoteBlock {
   margin-top: 10px;
   border: 1px solid var(--carbon-black-700);
@@ -477,6 +487,14 @@
   margin-top: 10px;
   display: flex;
   justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.logActionBar {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
 }

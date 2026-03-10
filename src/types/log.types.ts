@@ -86,8 +86,10 @@ export type LogApiResponse = {
   method: string | null;
   path: string | null;
   statusCode: number | null;
+  ip?: string | null;
   ipMasked?: string | null;
   userAgent?: string | null;
+  fingerprint?: string | null;
   fingerprintMasked?: string | null;
   tags: string[];
   occurredAt: string | Date;
