@@ -22,13 +22,16 @@ export const mapLogApiToDomain = (input: LogApiResponse): Log =>
     method: input.method,
     path: input.path,
     statusCode: input.statusCode,
-    ip: input.ipMasked ?? null,
+    ip: input.ip ?? input.ipMasked ?? null,
     userAgent: input.userAgent ?? null,
-    fingerprint: input.fingerprintMasked ?? null,
+    fingerprint: input.fingerprint ?? input.fingerprintMasked ?? null,
     tags: input.tags,
     occurredAt: parseDateOrThrow(input.occurredAt, "occurredAt"),
     resolvedAt: parseOptionalDate(input.resolvedAt, "resolvedAt"),
     resolvedBy: input.resolvedBy,
+    adminNote: input.adminNote ?? null,
+    adminNoteUpdatedAt: parseOptionalDate(input.adminNoteUpdatedAt ?? null, "adminNoteUpdatedAt"),
+    adminNoteUpdatedBy: input.adminNoteUpdatedBy ?? null,
   });
 
 export const mapLogDomainToDTO = (log: Log): LogDTO => log.toDB();

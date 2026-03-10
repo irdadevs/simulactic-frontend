@@ -75,6 +75,47 @@ export type MetricsDashboardResponse = {
   }>;
 };
 
+export type TrafficAnalyticsQuery = {
+  from: string | Date;
+  to: string | Date;
+  limitRecent?: number;
+  limitRoutes?: number;
+  limitReferrers?: number;
+};
+
+export type TrafficAnalyticsResponse = {
+  overview: {
+    pageViews: number;
+    uniqueSessions: number;
+    trackedRoutes: number;
+    externalReferrals: number;
+  };
+  viewsByDay: Array<{
+    date: string;
+    views: number;
+  }>;
+  routes: Array<{
+    path: string;
+    views: number;
+    uniqueSessions: number;
+    avgDurationMs: number;
+  }>;
+  referrers: Array<{
+    referrer: string;
+    views: number;
+  }>;
+  recentViews: Array<{
+    id: string;
+    occurredAt: string;
+    path: string | null;
+    fullPath: string | null;
+    referrerHost: string | null;
+    sessionId: string | null;
+    viewport: { width: number; height: number } | null;
+    durationMs: number;
+  }>;
+};
+
 const BASE = "/metrics/performance";
 
 export const metricApi = {
@@ -83,6 +124,9 @@ export const metricApi = {
 
   list: (query?: ListMetricsQuery): Promise<ApiListResponse<MetricApiResponse>> =>
     apiGet(BASE, { query }),
+
+  traffic: (query: TrafficAnalyticsQuery): Promise<TrafficAnalyticsResponse> =>
+    apiGet(`${BASE}/traffic`, { query }),
 
   findById: (id: string, view?: "dashboard"): Promise<MetricApiResponse | null> =>
     apiGet(`${BASE}/${encodeURIComponent(id)}`, view ? { query: { view } } : undefined),
