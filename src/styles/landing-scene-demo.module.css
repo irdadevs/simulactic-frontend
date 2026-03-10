@@ -1,10 +1,12 @@
 .card {
-  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 36%, var(--carbon-black-700));
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--carbon-black-900) 92%, #0c1c24);
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 34%, var(--carbon-black-700));
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(8, 18, 26, 0.96), rgba(3, 8, 12, 0.98)),
+    radial-gradient(circle at top, rgba(82, 214, 227, 0.09), transparent 48%);
   box-shadow:
-    0 14px 30px rgba(0, 0, 0, 0.35),
-    0 0 0 1px color-mix(in srgb, var(--main-dark-violet) 30%, transparent) inset;
+    0 18px 40px rgba(0, 0, 0, 0.42),
+    0 0 0 1px color-mix(in srgb, var(--main-turquoise-surf) 12%, transparent) inset;
   padding: 16px;
   display: grid;
   gap: 10px;
@@ -41,39 +43,61 @@
 
 .viewport {
   position: relative;
-  height: 300px;
-  border: 1px solid var(--carbon-black-700);
-  border-radius: 12px;
+  height: 320px;
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 14%, var(--carbon-black-700));
+  border-radius: 14px;
   overflow: hidden;
-  background: #020305;
+  background:
+    radial-gradient(circle at 28% 26%, rgba(51, 135, 163, 0.16), transparent 28%),
+    radial-gradient(circle at 74% 74%, rgba(79, 55, 124, 0.16), transparent 30%),
+    linear-gradient(180deg, #04070b, #020305 70%);
 }
 
+.nebulaBackdrop,
 .starLayerFar,
-.starLayerNear {
+.starLayerNear,
+.gridGlow {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
+.nebulaBackdrop {
+  background:
+    radial-gradient(circle at 18% 32%, rgba(61, 153, 182, 0.18), transparent 22%),
+    radial-gradient(circle at 72% 18%, rgba(249, 189, 101, 0.1), transparent 18%),
+    radial-gradient(circle at 82% 70%, rgba(126, 93, 198, 0.16), transparent 22%);
+  filter: blur(4px);
+}
+
 .starLayerFar {
-  background-image: radial-gradient(circle, rgba(232, 248, 255, 0.54) 1px, transparent 1.3px);
-  background-size: 180px 180px;
-  opacity: 0.4;
-  animation: starDriftFar 28s linear infinite;
+  background-image: radial-gradient(circle, rgba(232, 248, 255, 0.44) 1px, transparent 1.3px);
+  background-size: 170px 170px;
+  opacity: 0.48;
+  animation: starDriftFar 34s linear infinite;
 }
 
 .starLayerNear {
-  background-image: radial-gradient(circle, rgba(232, 248, 255, 0.85) 1.2px, transparent 1.5px);
-  background-size: 120px 120px;
-  background-position: 38px 64px;
-  opacity: 0.34;
-  animation: starDriftNear 18s linear infinite;
+  background-image: radial-gradient(circle, rgba(242, 250, 255, 0.85) 1.2px, transparent 1.6px);
+  background-size: 112px 112px;
+  background-position: 24px 56px;
+  opacity: 0.3;
+  animation: starDriftNear 20s linear infinite;
+}
+
+.gridGlow {
+  background:
+    linear-gradient(rgba(70, 115, 141, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(70, 115, 141, 0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(180deg, transparent, black 14%, black 86%, transparent);
+  opacity: 0.35;
 }
 
 .camera {
   position: absolute;
   inset: 0;
-  transition: transform 900ms ease;
+  transition: transform 950ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .phase0 {
@@ -81,106 +105,213 @@
 }
 
 .phase1 {
-  transform: scale(1.26) translate3d(-5%, -3%, 0);
+  transform: scale(1.2) translate3d(-3%, -2%, 0);
 }
 
 .phase2 {
-  transform: scale(1.44) translate3d(-10%, -8%, 0);
+  transform: scale(1.4) translate3d(-9%, -8%, 0);
 }
 
 .phase3 {
-  transform: scale(1.24) translate3d(8%, 2%, 0);
+  transform: scale(1.3) translate3d(7%, -2%, 0);
 }
 
-.systemA,
-.systemB,
-.systemC,
-.systemD {
+.systemNode {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+}
+
+.systemHalo,
+.systemDot {
   position: absolute;
   border-radius: 999px;
 }
 
+.systemHalo {
+  inset: 0;
+  opacity: 0.55;
+  filter: blur(8px);
+}
+
+.systemDot {
+  width: 8px;
+  height: 8px;
+}
+
 .systemA {
-  left: 24%;
-  top: 36%;
-  width: 10px;
-  height: 10px;
+  left: 22%;
+  top: 33%;
+}
+
+.systemA .systemHalo {
+  background: radial-gradient(circle, rgba(248, 255, 229, 0.75), rgba(248, 255, 229, 0));
+}
+
+.systemA .systemDot {
   background: #f8ffe5;
-  box-shadow: 0 0 20px rgba(248, 255, 229, 0.7);
+  box-shadow: 0 0 18px rgba(248, 255, 229, 0.82);
 }
 
 .systemB {
-  left: 58%;
-  top: 22%;
-  width: 8px;
-  height: 8px;
-  background: #11c9ee;
-  box-shadow: 0 0 16px rgba(17, 201, 238, 0.7);
+  left: 61%;
+  top: 19%;
+}
+
+.systemB .systemHalo {
+  background: radial-gradient(circle, rgba(96, 197, 237, 0.72), rgba(96, 197, 237, 0));
+}
+
+.systemB .systemDot {
+  background: #64c5ed;
+  box-shadow: 0 0 16px rgba(96, 197, 237, 0.82);
 }
 
 .systemC {
-  left: 74%;
-  top: 63%;
-  width: 9px;
-  height: 9px;
-  background: #c7d6e4;
-  box-shadow: 0 0 12px rgba(199, 214, 228, 0.6);
+  left: 73%;
+  top: 61%;
+}
+
+.systemC .systemHalo {
+  background: radial-gradient(circle, rgba(255, 171, 88, 0.62), rgba(255, 171, 88, 0));
+}
+
+.systemC .systemDot {
+  background: #ffab58;
+  box-shadow: 0 0 14px rgba(255, 171, 88, 0.74);
 }
 
 .systemD {
-  left: 35%;
-  top: 68%;
-  width: 7px;
-  height: 7px;
-  background: #8fb7de;
-  box-shadow: 0 0 10px rgba(143, 183, 222, 0.6);
+  left: 34%;
+  top: 69%;
+}
+
+.systemD .systemHalo {
+  background: radial-gradient(circle, rgba(178, 193, 223, 0.56), rgba(178, 193, 223, 0));
+}
+
+.systemD .systemDot {
+  background: #b2c1df;
+  box-shadow: 0 0 12px rgba(178, 193, 223, 0.72);
+}
+
+.systemLabel {
+  position: absolute;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(227, 241, 248, 0.82);
+  opacity: 0.8;
+}
+
+.labelA {
+  left: 20%;
+  top: 29%;
+}
+
+.labelB {
+  left: 59%;
+  top: 15%;
+}
+
+.labelC {
+  left: 71%;
+  top: 67%;
+}
+
+.labelD {
+  left: 32%;
+  top: 75%;
 }
 
 .systemCore {
   position: absolute;
-  left: 21%;
-  top: 38%;
-  width: 140px;
-  height: 140px;
+  left: 20%;
+  top: 34%;
+  width: 172px;
+  height: 172px;
   opacity: 0;
-  transition: opacity 550ms ease;
+  transition: opacity 520ms ease;
 }
 
+.viewport[data-phase="1"] .systemCore,
+.viewport[data-phase="2"] .systemCore,
+.viewport[data-phase="3"] .systemCore {
+  opacity: 1;
+}
+
+.focusStarAura,
+.focusStarCorona,
 .focusStar {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 14px;
-  height: 14px;
   border-radius: 999px;
   transform: translate(-50%, -50%);
-  background: #f8ffe5;
-  box-shadow: 0 0 20px rgba(248, 255, 229, 0.75);
+}
+
+.focusStarAura {
+  width: 64px;
+  height: 64px;
+  background: radial-gradient(circle, rgba(249, 252, 211, 0.42), rgba(249, 252, 211, 0));
+  filter: blur(8px);
+}
+
+.focusStarCorona {
+  width: 26px;
+  height: 26px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.96), rgba(255, 234, 164, 0.08));
+  box-shadow: 0 0 20px rgba(248, 255, 229, 0.62);
+}
+
+.focusStar {
+  width: 15px;
+  height: 15px;
+  background: radial-gradient(circle at 32% 32%, #ffffff, #fff1b7 56%, #ffcc6f 100%);
+  box-shadow: 0 0 18px rgba(248, 255, 229, 0.82);
 }
 
 .orbitRing {
   position: absolute;
   left: 50%;
   top: 50%;
-  border: 1px solid rgba(232, 248, 255, 0.26);
+  border: 1px solid rgba(232, 248, 255, 0.18);
   border-radius: 999px;
   transform: translate(-50%, -50%);
 }
 
 .orbitPlanet {
-  width: 112px;
-  height: 112px;
+  width: 106px;
+  height: 106px;
+}
+
+.orbitPlanetOuter {
+  width: 146px;
+  height: 146px;
+  border-color: rgba(232, 248, 255, 0.14);
 }
 
 .orbitMoon {
-  width: 72px;
-  height: 72px;
+  width: 68px;
+  height: 68px;
+  border-style: dotted;
+  border-color: rgba(158, 175, 192, 0.22);
 }
 
 .orbitAsteroid {
-  width: 136px;
-  height: 136px;
+  width: 188px;
+  height: 188px;
   border-style: dashed;
+  border-color: rgba(135, 151, 168, 0.22);
+}
+
+.localMoonOrbit {
+  width: 24px;
+  height: 24px;
+  border-style: dotted;
+  border-color: rgba(192, 208, 220, 0.24);
 }
 
 .orbiter {
@@ -194,12 +325,20 @@
   animation: orbitSpin 7.2s linear infinite;
 }
 
+.outerPlanetOrbit {
+  animation: orbitSpin 12.5s linear infinite reverse;
+}
+
+.moonCarrierOrbit {
+  animation: orbitSpin 7.2s linear infinite;
+}
+
 .moonOrbit {
-  animation: orbitSpin 4.2s linear infinite reverse;
+  animation: orbitSpin 2.8s linear infinite reverse;
 }
 
 .asteroidOrbit {
-  animation: orbitSpin 9.4s linear infinite;
+  animation: orbitSpin 10.6s linear infinite;
 }
 
 .planet,
@@ -210,31 +349,108 @@
 }
 
 .planet {
-  width: 14px;
-  height: 14px;
-  transform: translateX(56px);
-  background: #11c9ee;
-  box-shadow: 0 0 12px rgba(17, 201, 238, 0.65);
+  position: relative;
+  overflow: hidden;
+}
+
+.planet::before,
+.planet::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.planetOceanic {
+  width: 16px;
+  height: 16px;
+  transform: translateX(53px);
+  background:
+    radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.38), transparent 32%),
+    radial-gradient(circle at 72% 65%, rgba(18, 95, 118, 0.28), transparent 38%),
+    linear-gradient(135deg, #74dfec, #2898bc 45%, #246c84);
+  box-shadow: 0 0 16px rgba(80, 202, 221, 0.34);
+}
+
+.planetOceanic::before {
+  background:
+    radial-gradient(circle at 38% 55%, rgba(214, 236, 183, 0.84), transparent 24%),
+    radial-gradient(circle at 72% 36%, rgba(88, 158, 98, 0.7), transparent 20%);
+  opacity: 0.82;
+}
+
+.planetOceanic::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 65%);
+}
+
+.planetVolcanic {
+  width: 12px;
+  height: 12px;
+  transform: translateX(73px);
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 208, 126, 0.3), transparent 28%),
+    linear-gradient(135deg, #6a3024, #36231f 48%, #1b1718);
+  box-shadow: 0 0 10px rgba(212, 101, 48, 0.28);
+}
+
+.planetVolcanic::before {
+  background:
+    linear-gradient(45deg, transparent 22%, rgba(255, 126, 44, 0.8) 26%, transparent 30%),
+    linear-gradient(120deg, transparent 60%, rgba(255, 89, 20, 0.72) 66%, transparent 72%);
+}
+
+.planetVolcanic::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 70%);
+}
+
+.moonAnchor {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 1px;
+  transform: translateX(53px);
 }
 
 .moon {
-  width: 7px;
-  height: 7px;
-  transform: translateX(36px);
-  background: #c8d0cb;
+  width: 6px;
+  height: 6px;
+  transform: translateX(12px);
+  background:
+    radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.34), transparent 38%),
+    linear-gradient(135deg, #b7c0c7, #7c868d 62%, #535d66);
+}
+
+.asteroidCluster {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 1px;
+  transform: translateX(94px);
 }
 
 .asteroid {
-  width: 6px;
-  height: 6px;
-  transform: translateX(68px);
-  background: #77887e;
+  position: absolute;
+  background: linear-gradient(135deg, #8d735b, #5a493d);
+  border-radius: 999px;
 }
 
-.viewport[data-phase="1"] .systemCore,
-.viewport[data-phase="2"] .systemCore,
-.viewport[data-phase="3"] .systemCore {
-  opacity: 1;
+.asteroidA {
+  width: 7px;
+  height: 5px;
+}
+
+.asteroidB {
+  width: 5px;
+  height: 5px;
+  left: -9px;
+  top: 6px;
+}
+
+.asteroidC {
+  width: 4px;
+  height: 6px;
+  left: 8px;
+  top: -4px;
 }
 
 .popup {
@@ -242,12 +458,15 @@
   right: 12px;
   top: 12px;
   border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 40%, var(--carbon-black-700));
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--carbon-black-900) 90%, #081a21);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(6, 18, 24, 0.96), rgba(4, 12, 18, 0.98)),
+    radial-gradient(circle at top, rgba(82, 214, 227, 0.08), transparent 60%);
   color: var(--main-ivory);
   font-size: 13px;
-  padding: 8px 10px;
-  min-width: 220px;
+  padding: 10px 12px;
+  min-width: 230px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
 }
 
 .popupCard p + p {
@@ -265,6 +484,25 @@
   color: var(--main-ivory);
   font-size: 15px;
   margin-bottom: 4px;
+}
+
+.statusRail {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  display: grid;
+  gap: 3px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(4, 10, 16, 0.76);
+  border: 1px solid rgba(114, 154, 177, 0.16);
+}
+
+.statusLine {
+  color: rgba(218, 232, 239, 0.82);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .hud {
@@ -287,7 +525,7 @@
 
 .hudChip {
   color: var(--carbon-black-300);
-  background: rgba(8, 12, 16, 0.7);
+  background: rgba(8, 12, 16, 0.74);
 }
 
 .hudChipActive {
@@ -311,10 +549,10 @@
 
 @keyframes starDriftNear {
   from {
-    background-position: 38px 64px;
+    background-position: 24px 56px;
   }
   to {
-    background-position: -300px 64px;
+    background-position: -280px 56px;
   }
 }
 

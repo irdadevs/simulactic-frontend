@@ -85,6 +85,7 @@ type UiState = {
   openMoonPopup: (moonId: string) => void;
   openAsteroidPopup: (asteroidId: string) => void;
   clearPopupRequest: () => void;
+  resetPopupState: () => void;
   setLoadingMessage: (message: string | null) => void;
   closeAllPanels: () => void;
 };
@@ -169,6 +170,14 @@ export const useUiStore = create<UiState>((set) => ({
       return { popupRequest: { kind: "asteroid", asteroidId } };
     }),
   clearPopupRequest: () => set({ popupRequest: null }),
+  resetPopupState: () =>
+    set({
+      popup: null,
+      popupRequest: null,
+      popupAnchor: null,
+      popupPinned: false,
+      popupLoading: false,
+    }),
   setLoadingMessage: (message) => set({ loadingMessage: message }),
 
   closeAllPanels: () =>

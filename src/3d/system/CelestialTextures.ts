@@ -4,7 +4,7 @@ import { PlanetBiome, PlanetType } from "../../types/planet.types";
 type RandomFn = () => number;
 
 const textureCache = new Map<string, CanvasTexture>();
-const TEXTURE_VERSION = "v3";
+const TEXTURE_VERSION = "v4";
 
 const createSeededRandom = (seedInput: string): RandomFn => {
   let seed = 2166136261;
@@ -44,6 +44,12 @@ const lerpColor = (a: string, b: string, t: number): string => {
   const g = Math.round(ag + (bg - ag) * t);
   const bl = Math.round(ab + (bb - ab) * t);
   return `rgb(${r}, ${g}, ${bl})`;
+};
+
+const offsetColor = (color: string, dr: number, dg: number, db: number): string => {
+  const [r, g, b] = parseColor(color);
+  const clamp = (value: number) => Math.max(0, Math.min(255, Math.round(value)));
+  return `rgb(${clamp(r + dr)}, ${clamp(g + dg)}, ${clamp(b + db)})`;
 };
 
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
@@ -672,24 +678,91 @@ export const createPlanetTexture = (input: {
     const seedB = `${key}:moisture`;
     const seedC = `${key}:detail`;
     const waterThreshold = 1 - profile.waterRatio;
+    const supportsRivers = [
+      "gaia",
+      "temperate",
+      "continental",
+      "archipelago",
+      "forest",
+      "jungle",
+      "wetlands",
+      "meadow",
+      "tundra",
+      "snow",
+    ].includes(input.biome);
+    const supportsBeaches = [
+      "gaia",
+      "temperate",
+      "continental",
+      "ocean",
+      "archipelago",
+      "meadow",
+      "desert",
+      "savanna",
+      "wetlands",
+      "frozen_ocean",
+    ].includes(input.biome);
+    const coldBiome = [
+      "ice",
+      "tundra",
+      "glacial",
+      "snow",
+      "permafrost",
+      "frozen_ocean",
+      "ice_canyon",
+      "cryo_volcanic",
+      "polar_desert",
+      "frost_crystal",
+    ].includes(input.biome);
+    const hotBiome = [
+      "desert",
+      "arid",
+      "dune",
+      "lava",
+      "volcanic",
+      "toxic",
+      "radioactive",
+      "sulfuric",
+      "savanna",
+      "jungle",
+    ].includes(input.biome);
 
     for (let y = 0; y < size; y += 1) {
       for (let x = 0; x < size; x += 1) {
         const nx = x / size;
         const ny = y / size;
+        const latitude = Math.abs(ny - 0.5) * 2;
+        const latitudeCooling = smoothstep(0.24, 1, latitude);
+        const continentMask = fractalNoise(`${seedA}:continents`, nx * 2.2, ny * 2.2, 4);
+        const basinMask = fractalNoise(`${seedA}:basins`, nx * 3.1, ny * 3.1, 3);
         const elevation =
-          fractalNoise(seedA, nx * (4.2 + (variant % 3)), ny * (4.2 + (variant % 3)), 5) * 0.68 +
+          fractalNoise(seedA, nx * (4.2 + (variant % 3)), ny * (4.2 + (variant % 3)), 5) * 0.58 +
+          continentMask * 0.22 +
           fractalNoise(seedC, nx * 12.4, ny * 12.4, 3) * 0.22 +
-          fractalNoise(`${seedC}:micro`, nx * 24.6, ny * 24.6, 2) * 0.1;
+          fractalNoise(`${seedC}:micro`, nx * 24.6, ny * 24.6, 2) * 0.08 -
+          basinMask * (profile.waterRatio > 0.5 ? 0.12 : 0.05);
         const moisture = fractalNoise(seedB, nx * 4.4, ny * 4.4, 4);
-        const heat = fractalNoise(`${seedB}:heat`, nx * 2.8, ny * 2.8, 3);
+        const heatBase = fractalNoise(`${seedB}:heat`, nx * 2.8, ny * 2.8, 3);
+        const heat = clamp01(
+          heatBase * 0.72 +
+          (hotBiome ? 0.22 : 0) +
+          (coldBiome ? -0.22 : 0) +
+          (0.5 - latitudeCooling) * 0.32,
+        );
         const ridges = fractalNoise(`${seedA}:ridge`, nx * 14.8, ny * 14.8, 3);
+        const micro = fractalNoise(`${seedC}:surface`, nx * 30.5, ny * 30.5, 2);
+        const riverMask = supportsRivers
+          ? Math.abs(fractalNoise(`${seedB}:river`, nx * 7.2 + moisture * 0.6, ny * 7.2 + heat * 0.35, 3) - 0.5)
+          : 1;
         const idx = (y * size + x) * 4;
 
         let color = secondary;
         if (elevation < waterThreshold) {
           const depthT = smoothstep(0, waterThreshold, elevation);
           color = depthT > 0.72 ? profile.waterShallow : lerpColor(profile.waterDeep, profile.waterShallow, depthT);
+          if (coldBiome) {
+            color = lerpColor(color, "#f3fbff", latitudeCooling * 0.2);
+          }
         } else {
           const landT = smoothstep(waterThreshold, 1, elevation);
           const climateMix = clamp01(moisture * 0.62 + (1 - heat) * 0.18 + random() * 0.04);
@@ -698,6 +771,30 @@ export const createPlanetTexture = (input: {
             : lerpColor(profile.dryLow, profile.dryHigh, landT);
           const highland = lerpColor(profile.peakLow, profile.peakHigh, clamp01(landT * 0.9 + ridges * 0.25));
           color = landT > 0.68 ? lerpColor(lowland, highland, smoothstep(0.64, 1, landT)) : lowland;
+
+          const coastBlend = smoothstep(waterThreshold, waterThreshold + 0.035, elevation);
+          if (supportsBeaches && coastBlend < 0.9 && !coldBiome) {
+            const beachColor =
+              input.biome === "desert" || input.biome === "dune"
+                ? "#efd59c"
+                : input.biome === "archipelago"
+                  ? "#f0dfb1"
+                  : "#d9c58f";
+            color = lerpColor(beachColor, color, coastBlend);
+          }
+
+          if (coldBiome) {
+            color = lerpColor(color, "#eef7fb", latitudeCooling * 0.2 + landT * 0.08);
+          } else if (hotBiome) {
+            color = lerpColor(color, offsetColor(color, 18, 10, -4), heat * 0.18);
+          }
+
+          if (landT < 0.62) {
+            color = lerpColor(color, offsetColor(color, -8, 6, -6), clamp01((0.5 - riverMask) * 5) * moisture * 0.32);
+          }
+
+          color = lerpColor(color, highland, clamp01(ridges * 0.22 + landT * 0.12));
+          color = lerpColor(color, offsetColor(color, micro * 12 - 6, micro * 10 - 5, micro * 8 - 4), 0.18);
         }
 
         const [r, g, b] = parseColor(color);
@@ -710,12 +807,36 @@ export const createPlanetTexture = (input: {
 
     ctx.putImageData(image, 0, 0);
 
+    if (supportsRivers) {
+      for (let i = 0; i < 4; i += 1) {
+        const startY = size * (0.16 + random() * 0.68);
+        const amplitude = 10 + random() * 24;
+        const frequency = 1.4 + random() * 2.2;
+        const width = 0.7 + random() * 1.4;
+        ctx.strokeStyle = coldBiome ? "rgba(214, 240, 250, 0.14)" : "rgba(96, 170, 196, 0.16)";
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        for (let x = 0; x <= size; x += 8) {
+          const y =
+            startY +
+            Math.sin((x / size) * Math.PI * frequency + random() * Math.PI) * amplitude +
+            Math.sin((x / size) * Math.PI * frequency * 0.45 + i) * (amplitude * 0.35);
+          if (x === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        ctx.stroke();
+      }
+    }
+
     if (profile.overlay === "lush" || profile.overlay === "wetlands") {
-      for (let i = 0; i < 24; i += 1) {
+      for (let i = 0; i < 30; i += 1) {
         const x = random() * size;
         const y = random() * size;
         const growth = ctx.createRadialGradient(x, y, 0, x, y, 8 + random() * 16);
-        growth.addColorStop(0, `rgba(44, 92, 41, ${0.05 + random() * 0.05})`);
+        growth.addColorStop(0, `rgba(36, 98, 39, ${0.05 + random() * 0.06})`);
         growth.addColorStop(1, "rgba(44, 92, 41, 0)");
         ctx.fillStyle = growth;
         ctx.beginPath();
@@ -729,7 +850,7 @@ export const createPlanetTexture = (input: {
         const y = random() * size;
         const dune = ctx.createLinearGradient(0, y, size, y + 24);
         dune.addColorStop(0, "rgba(255,255,255,0)");
-        dune.addColorStop(0.45, `rgba(255,245,214,${0.05 + random() * 0.05})`);
+        dune.addColorStop(0.45, `rgba(255,245,214,${0.06 + random() * 0.06})`);
         dune.addColorStop(1, "rgba(255,255,255,0)");
         ctx.fillStyle = dune;
         ctx.fillRect(0, y, size, 12 + random() * 18);
@@ -754,6 +875,23 @@ export const createPlanetTexture = (input: {
         ctx.rotate(random() * Math.PI);
         ctx.fillRect(-w / 2, -h / 2, w, h);
         ctx.restore();
+      }
+
+      if (profile.overlay === "lava" || profile.overlay === "volcanic") {
+        for (let i = 0; i < 8; i += 1) {
+          const startX = random() * size;
+          const startY = random() * size;
+          ctx.strokeStyle = profile.overlay === "lava" ? "rgba(255, 132, 38, 0.22)" : "rgba(196, 88, 42, 0.16)";
+          ctx.lineWidth = 1.2 + random() * 1.8;
+          ctx.beginPath();
+          for (let step = 0; step < 6; step += 1) {
+            const px = startX + step * (8 + random() * 8);
+            const py = startY + Math.sin(step * 0.9 + i) * (6 + random() * 7);
+            if (step === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+        }
       }
     }
 
@@ -789,6 +927,20 @@ export const createPlanetTexture = (input: {
         ctx.lineTo(x, y + 8 + random() * 12);
         ctx.lineTo(x - 5 - random() * 7, y);
         ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    if (input.biome === "ocean" || input.biome === "archipelago" || input.biome === "frozen_ocean") {
+      for (let i = 0; i < 18; i += 1) {
+        const x = random() * size;
+        const y = random() * size;
+        const shelf = ctx.createRadialGradient(x, y, 0, x, y, 14 + random() * 30);
+        shelf.addColorStop(0, input.biome === "frozen_ocean" ? "rgba(235, 248, 255, 0.08)" : "rgba(153, 220, 224, 0.08)");
+        shelf.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = shelf;
+        ctx.beginPath();
+        ctx.arc(x, y, 14 + random() * 30, 0, Math.PI * 2);
         ctx.fill();
       }
     }
