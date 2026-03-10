@@ -12,6 +12,7 @@ import {
   VerifyRequest,
 } from "../../infra/api/auth.api";
 import { mapUserApiToDomain, mapUserDomainToView } from "../../domain/user/mappers";
+import { UserProps } from "../../types/user.types";
 
 const toMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message;
@@ -31,16 +32,18 @@ export const useAuth = () => {
     setAuthenticatedUser(mapped);
   }, [setAuthenticatedUser]);
 
-  const login = useCallback(async (body: LoginRequest): Promise<void> => {
+  const login = useCallback(async (body: LoginRequest): Promise<UserProps> => {
     const response = await authApi.login(body);
     const mapped = mapUserDomainToView(mapUserApiToDomain(response.user));
     setAuthenticatedUser(mapped);
+    return mapped;
   }, [setAuthenticatedUser]);
 
-  const signup = useCallback(async (body: SignupRequest): Promise<void> => {
+  const signup = useCallback(async (body: SignupRequest): Promise<UserProps> => {
     const response = await authApi.signup(body);
     const mapped = mapUserDomainToView(mapUserApiToDomain(response.user));
     setAuthenticatedUser(mapped);
+    return mapped;
   }, [setAuthenticatedUser]);
 
   const loadMe = useCallback(async (): Promise<void> => {

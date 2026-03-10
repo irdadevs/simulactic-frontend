@@ -69,14 +69,29 @@ export type SupporterBadgeBranchProgress = {
   maxLevel: number;
   nextLevel: number | null;
   nextThreshold: number | null;
+  currentBadge: SupporterBadgeLevelResponse | null;
+  nextBadge: SupporterBadgeLevelResponse | null;
+};
+
+export type SupporterBadgeLevelResponse = {
+  level: number;
+  branch: "amount" | "months";
+  name: string;
+  quantityLabel: string;
+  threshold: number;
+};
+
+export type SupporterUnlockedBadgeResponse = SupporterBadgeLevelResponse & {
+  unlockedAt: string;
 };
 
 export type SupporterProgressResponse = {
   totalDonatedEurMinor: number;
   monthlySupportingMonths: number;
-  unlockedBadges: string[];
+  unlockedBadges: SupporterUnlockedBadgeResponse[];
   amountBranch: SupporterBadgeBranchProgress;
   monthlyBranch: SupporterBadgeBranchProgress;
+  updatedAt: string | null;
 };
 
 export type ActiveBansResponse = {

@@ -3,6 +3,7 @@ import { Montserrat, Roboto_Condensed } from "next/font/google";
 import { Suspense } from "react";
 import "sileo/styles.css";
 import "../styles/globals.css";
+import { publicEnv } from "../config/env";
 import layoutStyles from "../styles/layout.module.css";
 import { TrafficTracker } from "../ui/components/layout/TrafficTracker";
 import { Footer } from "../ui/components/layout/navigation/Footer";
@@ -22,7 +23,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://simulactic.app"),
+  metadataBase: new URL(publicEnv.siteUrl),
   title: {
     default: "Simulactic | Interactive Galaxy Simulator",
     template: "%s | Simulactic",

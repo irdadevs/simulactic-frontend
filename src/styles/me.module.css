@@ -127,7 +127,11 @@
   border: 1px solid var(--carbon-black-700);
   border-radius: 12px;
   padding: 10px;
-  background: color-mix(in srgb, var(--carbon-black-950) 86%, #12222a);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--carbon-black-900) 92%, #12222a),
+    color-mix(in srgb, var(--carbon-black-950) 96%, #091116)
+  );
 }
 
 .summaryCard span {
@@ -190,27 +194,130 @@
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: 10px;
-  border: 1px dashed var(--carbon-black-600);
+  border: 1px solid color-mix(in srgb, rgba(255, 255, 255, 0.16) 70%, var(--carbon-black-600));
   display: grid;
   place-items: center;
   font-size: 12px;
   margin-bottom: 8px;
-  background: color-mix(in srgb, var(--carbon-black-800) 80%, #0e1a20);
+  padding: 14px;
+  text-align: center;
+  background: radial-gradient(circle at 50% 35%, rgba(255,255,255,0.08), transparent 55%),
+    color-mix(in srgb, var(--carbon-black-800) 80%, #0e1a20);
 }
 
 .badgeUnlocked {
   border-color: #d4af37;
-  box-shadow: 0 0 16px color-mix(in srgb, #d4af37 40%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, #d4af37 32%, transparent);
 }
 
 .badgeLocked {
+  border-color: color-mix(in srgb, #9aa0a6 28%, var(--carbon-black-700));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #6c737c 10%, var(--carbon-black-900)),
+    color-mix(in srgb, #545b64 8%, var(--carbon-black-950))
+  );
+}
+
+.badgeLocked .badgeArtPlaceholder,
+.badgeLocked .badge,
+.badgeLocked .cardTitle,
+.badgeLocked .metaText,
+.badgeLocked .badgePlaceholderMark,
+.badgeLocked .badgePlaceholderNote {
   filter: grayscale(1);
   opacity: 0.78;
+}
+
+.badgeUnlocked .badgeArtPlaceholder {
+  border-color: color-mix(in srgb, #d4af37 52%, rgba(255, 255, 255, 0.14));
+}
+
+.supporterToggleBar {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.supporterToggle,
+.supporterToggleActive {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: var(--carbon-black-100);
+  background: color-mix(in srgb, var(--carbon-black-900) 85%, transparent);
+  cursor: pointer;
+}
+
+.supporterToggleActive {
+  border-color: color-mix(in srgb, var(--main-turquoise-surf) 48%, var(--carbon-black-700));
+  background: color-mix(in srgb, var(--main-turquoise-surf) 18%, transparent);
+}
+
+.badgePlaceholderMark {
+  color: var(--main-ivory);
+  font-size: 18px;
+  font-weight: 700;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.24);
+}
+
+.badgePlaceholderNote {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badgeToneBronze {
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 219, 183, 0.22), transparent 34%),
+    linear-gradient(135deg, #7a4a2a 0%, #a96b3f 42%, #5b3420 100%);
+}
+
+.badgeToneSilver {
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.24), transparent 34%),
+    linear-gradient(135deg, #68727d 0%, #c6ced7 46%, #545d68 100%);
+}
+
+.badgeToneGold {
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 246, 196, 0.24), transparent 34%),
+    linear-gradient(135deg, #8e6a12 0%, #d4af37 44%, #6f520a 100%);
+}
+
+.badgeTonePlatinum {
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.24), transparent 34%),
+    linear-gradient(135deg, #74808d 0%, #d9e2ec 38%, #8a97a5 68%, #5f6974 100%);
+}
+
+.badgeToneTitan {
+  background:
+    radial-gradient(circle at 30% 24%, rgba(223, 238, 255, 0.22), transparent 34%),
+    linear-gradient(135deg, #4f6177 0%, #7c93ae 42%, #344455 100%);
+}
+
+.badgeToneLegend {
+  background:
+    radial-gradient(circle at 30% 24%, rgba(242, 220, 255, 0.22), transparent 34%),
+    linear-gradient(135deg, #5c2d91 0%, #8b4bd1 42%, #2c1748 100%);
 }
 
 .empty {
   color: var(--carbon-black-300);
   font-size: 13px;
+}
+
+.preferenceRow {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 980px) {

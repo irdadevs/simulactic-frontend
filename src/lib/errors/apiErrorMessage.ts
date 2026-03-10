@@ -65,6 +65,8 @@ const knownCodeMessages: Record<string, string> = {
   NOT_FOUND: "The requested resource was not found.",
 };
 
+export const getApiErrorCode = (error: unknown): string | undefined => parseApiErrorBody(error).code;
+
 export const describeApiError = (error: unknown, fallback: string): string => {
   const parsed = parseApiErrorBody(error);
   const safeMessage = cleanMessage(parsed.message);

@@ -23,14 +23,46 @@
 .header,
 .checkoutCard,
 .placeholderCard {
-  padding: 14px;
+  padding: 18px;
 }
 
 .cardTitle {
   color: var(--main-turquoise-surf);
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.cardEyebrow {
+  margin-bottom: 8px;
+  color: color-mix(in srgb, var(--main-turquoise-surf) 72%, white);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cardLead {
+  color: var(--main-ivory);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.cardList {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+  color: var(--carbon-black-100);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.cardClosing {
+  margin-top: 14px;
+  color: var(--carbon-black-200);
+  font-size: 14px;
+  line-height: 1.65;
 }
 
 .helperText {
@@ -117,6 +149,13 @@
 
 .placeholderGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.placeholderCard {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--main-turquoise-surf) 10%, transparent), transparent 42%),
+    linear-gradient(180deg, color-mix(in srgb, var(--carbon-black-900) 92%, #10232b), color-mix(in srgb, var(--carbon-black-950) 96%, #091116));
 }

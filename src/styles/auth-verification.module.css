@@ -1,0 +1,39 @@
+.verificationBanner {
+  margin-bottom: 14px;
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 28%, var(--carbon-black-700));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--main-turquoise-surf) 10%, var(--carbon-black-900));
+  padding: 10px 12px;
+  color: var(--carbon-black-100);
+  font-size: 13px;
+}
+
+.verificationCodeInput {
+  text-transform: uppercase;
+  letter-spacing: 0.42em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.verificationHintRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.resendButton {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--main-turquoise-surf);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.resendButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

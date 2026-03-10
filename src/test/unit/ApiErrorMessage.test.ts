@@ -1,5 +1,5 @@
 import { ApiError } from "../../infra/api/client";
-import { describeApiError } from "../../lib/errors/apiErrorMessage";
+import { describeApiError, getApiErrorCode } from "../../lib/errors/apiErrorMessage";
 
 describe("describeApiError", () => {
   it("uses known code mapping when available", () => {
@@ -39,5 +39,13 @@ describe("describeApiError", () => {
 
     expect(describeApiError(error, "fallback")).toBe("Galaxy name already exists");
   });
-});
 
+  it("extracts API error codes for flow-specific handling", () => {
+    const error = new ApiError(401, {
+      error: "USERS.EMAIL_NOT_VERIFIED",
+      message: "Email is not verified",
+    });
+
+    expect(getApiErrorCode(error)).toBe("USERS.EMAIL_NOT_VERIFIED");
+  });
+});

@@ -1,6 +1,15 @@
 import { DonationApiResponse, DonationStatus, DonationType } from "../../types/donation.types";
 import { apiGet, apiPost, ApiListResponse } from "./client";
 
+export type SupporterBadgeCatalogItemResponse = {
+  id: number;
+  branch: "amount" | "months";
+  level: number;
+  name: string;
+  quantityLabel: string;
+  threshold: number;
+};
+
 export type CreateDonationCheckoutRequest = {
   donationType: DonationType;
   amountMinor: number;
@@ -40,6 +49,9 @@ export const donationApi = {
 
   list: (query?: ListDonationsQuery): Promise<ApiListResponse<DonationApiResponse>> =>
     apiGet(`${BASE}`, { query }),
+
+  listBadges: (): Promise<ApiListResponse<SupporterBadgeCatalogItemResponse>> =>
+    apiGet(`${BASE}/badges`),
 
   findById: (id: string, view?: "dashboard"): Promise<DonationApiResponse> =>
     apiGet(`${BASE}/${encodeURIComponent(id)}`, view ? { query: { view } } : undefined),
