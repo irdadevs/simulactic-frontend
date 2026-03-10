@@ -32,11 +32,11 @@ export class PlanetMesh {
           });
 
     const material = new MeshStandardMaterial({
-      color: input?.kind === "moon" ? tone : new Color("#f2f4f5"),
+      color: input?.kind === "moon" ? tone.clone().multiplyScalar(0.86) : new Color("#f2f4f5"),
       map,
-      emissive: input?.kind === "moon" ? tone.clone().multiplyScalar(0.1) : tone.clone().multiplyScalar(0.08),
-      emissiveIntensity: input?.kind === "moon" ? 0.42 : 0.35,
-      roughness: input?.kind === "moon" ? 0.8 : input?.planetType === "gas" ? 0.5 : 0.62,
+      emissive: input?.kind === "moon" ? tone.clone().multiplyScalar(0.04) : tone.clone().multiplyScalar(0.08),
+      emissiveIntensity: input?.kind === "moon" ? 0.22 : 0.35,
+      roughness: input?.kind === "moon" ? 0.92 : input?.planetType === "gas" ? 0.5 : 0.62,
       metalness: input?.kind === "moon" ? 0.03 : 0.06,
     });
     return new Mesh(geometry, material);

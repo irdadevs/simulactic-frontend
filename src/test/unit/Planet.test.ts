@@ -52,7 +52,7 @@ describe("Planet aggregate", () => {
       type: "gas",
       size: "giant",
       orbital: 5,
-      biome: "toxic",
+      biome: "none",
       relativeMass: 20,
       relativeRadius: 4,
       temperature: 320,
@@ -78,6 +78,7 @@ describe("Planet value objects", () => {
     expect(PlanetTypeValue.create("solid").toString()).toBe("solid");
     expect(PlanetSizeValue.create("medium").toString()).toBe("medium");
     expect(PlanetBiomeValue.create("desert").toString()).toBe("desert");
+    expect(PlanetBiomeValue.create("none").toString()).toBe("none");
   });
 
   it("throws on invalid planet type", () => {

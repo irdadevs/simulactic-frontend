@@ -13,13 +13,37 @@ export const ALLOWED_PLANET_SIZES: readonly PlanetSize[] = [
 ] as const;
 
 export const ALLOWED_PLANET_BIOMES: readonly PlanetBiome[] = [
+  "none",
+  "gaia",
   "temperate",
+  "continental",
   "desert",
   "ocean",
+  "archipelago",
+  "forest",
+  "jungle",
+  "savanna",
+  "wetlands",
+  "meadow",
+  "arid",
+  "dune",
+  "volcanic",
+  "lava",
   "ice",
+  "tundra",
+  "glacial",
+  "snow",
+  "permafrost",
+  "frozen_ocean",
+  "ice_canyon",
+  "cryo_volcanic",
+  "polar_desert",
+  "frost_crystal",
   "toxic",
   "radioactive",
+  "sulfuric",
   "crystal",
+  "barren",
 ] as const;
 
 export class PlanetName {
