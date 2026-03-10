@@ -81,4 +81,44 @@ describe("ui store", () => {
     expect(state.popupLoading).toBe(false);
     expect(state.systemTimeConfig).toEqual({ isPlaying: true, speed: 1 });
   });
+
+  it("resetPopupState clears only popup-related fields", () => {
+    useUiStore.setState({
+      isSidebarOpen: true,
+      isInspectorOpen: true,
+      popup: {
+        kind: "asteroid",
+        data: {
+          id: "ast-1",
+          systemId: "sys-1",
+          name: "Aster",
+          type: "single",
+          size: "medium",
+          orbital: 2,
+        },
+      },
+      popupRequest: { kind: "asteroid", asteroidId: "ast-1" },
+      popupAnchor: { x: 10, y: 20 },
+      popupPinned: true,
+      popupLoading: true,
+      loadingMessage: "loading",
+      systemTimeConfig: {
+        isPlaying: false,
+        speed: 2,
+      },
+    });
+
+    useUiStore.getState().resetPopupState();
+    const state = useUiStore.getState();
+
+    expect(state.isSidebarOpen).toBe(true);
+    expect(state.isInspectorOpen).toBe(true);
+    expect(state.popup).toBeNull();
+    expect(state.popupRequest).toBeNull();
+    expect(state.popupAnchor).toBeNull();
+    expect(state.popupPinned).toBe(false);
+    expect(state.popupLoading).toBe(false);
+    expect(state.loadingMessage).toBe("loading");
+    expect(state.systemTimeConfig).toEqual({ isPlaying: false, speed: 2 });
+  });
 });

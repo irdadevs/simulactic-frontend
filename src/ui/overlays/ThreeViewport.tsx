@@ -27,7 +27,9 @@ function ThreeViewportComponent({
   const onWheelZoomRef = useRef(onWheelZoom);
   const setNavigateToSystemTarget = useUiStore((state) => state.setNavigateToSystemTarget);
   const setApplySystemTimeConfig = useUiStore((state) => state.setApplySystemTimeConfig);
+  const resetPopupState = useUiStore((state) => state.resetPopupState);
   const systemTimeConfig = useUiStore((state) => state.systemTimeConfig);
+  const systemTimeConfigRef = useRef(systemTimeConfig);
   const clearLastSystemId = useRenderStore((state) => state.clearLastSystemId);
   const commitGalaxyTransition = useRenderStore((state) => state.commitGalaxyTransition);
   const [managerReadyToken, setManagerReadyToken] = useState(0);
@@ -35,6 +37,10 @@ function ThreeViewportComponent({
   useEffect(() => {
     onWheelZoomRef.current = onWheelZoom;
   }, [onWheelZoom]);
+
+  useEffect(() => {
+    systemTimeConfigRef.current = systemTimeConfig;
+  }, [systemTimeConfig]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -61,7 +67,7 @@ function ThreeViewportComponent({
       setApplySystemTimeConfig((config) => {
         manager.setSystemTimeConfig(config);
       });
-      manager.setSystemTimeConfig(systemTimeConfig);
+      manager.setSystemTimeConfig(systemTimeConfigRef.current);
       cleanupEventsRef.current = bind3dEvents(eventBridge);
       setManagerReadyToken((prev) => prev + 1);
 
@@ -112,6 +118,7 @@ function ThreeViewportComponent({
         const { GalaxyScene } = await import("../../3d/galaxy/GalaxyScene");
         if (isCancelled || !managerRef.current) return;
 
+        resetPopupState();
         const scene = new GalaxyScene(managerRef.current.eventBridge);
         scene.mount({
           systems: galaxyData.systems.map((system) => ({
@@ -155,7 +162,7 @@ function ThreeViewportComponent({
     return () => {
       isCancelled = true;
     };
-  }, [clearLastSystemId, commitGalaxyTransition, galaxyData, machineState, systemData, managerReadyToken]);
+  }, [clearLastSystemId, commitGalaxyTransition, galaxyData, machineState, resetPopupState, systemData, managerReadyToken]);
 
   return (
     <div className={styles.canvasWrap}>

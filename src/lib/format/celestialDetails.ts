@@ -52,7 +52,6 @@ export const starDetailItems = (star: StarProps): DetailItem[] => {
     { label: "Name", value: star.name },
     { label: "Star Type", value: star.starType },
     { label: "Star Class", value: star.starClass },
-    { label: "Color", value: star.color },
     { label: "Surface Temperature (K)", value: formatNumber(star.surfaceTemperature) },
     { label: "Relative Mass (M☉)", value: formatNumber(star.relativeMass) },
     { label: "Mass (kg)", value: formatSci(star.relativeMass * SUN.massKg) },
@@ -60,7 +59,6 @@ export const starDetailItems = (star: StarProps): DetailItem[] => {
     { label: "Radius (km)", value: formatNumber(star.relativeRadius * SUN.radiusKm) },
     { label: "Relative Gravity (g☉)", value: formatNumber(relativeGravity) },
     { label: "Gravity (m/s²)", value: formatNumber(relativeGravity * SUN.gravityMs2) },
-    { label: "Orbital", value: formatNumber(star.orbital) },
   ];
 };
 
@@ -78,7 +76,6 @@ export const planetDetailItems = (planet: PlanetProps, moonCount?: number): Deta
     { label: "Radius (km)", value: formatNumber(planet.relativeRadius * EARTH.radiusKm) },
     { label: "Relative Gravity (g⊕)", value: formatNumber(relativeGravity) },
     { label: "Gravity (m/s²)", value: formatNumber(relativeGravity * EARTH.gravityMs2) },
-    { label: "Orbital", value: formatNumber(planet.orbital) },
   ];
   if (typeof moonCount === "number") {
     rows.push({ label: "Moon Count", value: formatNumber(moonCount) });
@@ -98,7 +95,6 @@ export const moonDetailItems = (moon: MoonProps): DetailItem[] => {
     { label: "Radius (km)", value: formatNumber(moon.relativeRadius * MOON.radiusKm) },
     { label: "Relative Gravity (g☾)", value: formatNumber(relativeGravity) },
     { label: "Gravity (m/s²)", value: formatNumber(relativeGravity * MOON.gravityMs2) },
-    { label: "Orbital", value: formatNumber(moon.orbital) },
   ];
 };
 
