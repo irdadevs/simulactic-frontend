@@ -26,11 +26,21 @@ const fallbackBadgeCatalog: SupporterBadgeCatalogItemResponse[] = [
   { id: 10, branch: "months", level: 4, name: "Monthly Captain", quantityLabel: "12 months", threshold: 12 },
   { id: 11, branch: "months", level: 5, name: "Monthly Admiral", quantityLabel: "24 months", threshold: 24 },
   { id: 12, branch: "months", level: 6, name: "Monthly Sovereign", quantityLabel: "36 months", threshold: 36 },
-  { id: 13, branch: "months", level: 7, name: "Monthly Sovereign", quantityLabel: "48 months", threshold: 48 },
 ];
 
 const branchLabel = (branch: SupporterBadgeCatalogItemResponse["branch"]) =>
   branch === "amount" ? "Total donated" : "Monthly support";
+
+const badgeToneClassName = (badge: SupporterBadgeCatalogItemResponse) => {
+  const toneLevel = badge.branch === "months" && badge.level >= 6 ? 6 : badge.level;
+
+  if (toneLevel === 1) return styles.badgeToneBronze;
+  if (toneLevel === 2) return styles.badgeToneSilver;
+  if (toneLevel === 3) return styles.badgeToneGold;
+  if (toneLevel === 4) return styles.badgeTonePlatinum;
+  if (toneLevel === 5) return styles.badgeToneTitan;
+  return styles.badgeToneLegend;
+};
 
 export function SupporterProgressSection({
   supporterProgress,
@@ -114,7 +124,7 @@ export function SupporterProgressSection({
                   key={badge.id}
                   className={unlocked ? `${styles.badgeCard} ${styles.badgeUnlocked}` : `${styles.badgeCard} ${styles.badgeLocked}`}
                 >
-                  <div className={styles.badgeArtPlaceholder}>
+                  <div className={`${styles.badgeArtPlaceholder} ${badgeToneClassName(badge)}`}>
                     <div className={styles.badgePlaceholderMark}>{badge.name}</div>
                     <div className={styles.badgePlaceholderNote}>{branchLabel(badge.branch)}</div>
                   </div>
