@@ -8,7 +8,7 @@ import styles from "../styles/landing.module.css";
 export const metadata: Metadata = {
   title: "Home",
   description:
-    "Create galaxies, explore star systems in 3D, and support the growth of Simulactic into a complete strategy simulation experience.",
+    "Design galaxies in seconds, explore them in 3D, and follow Simulactic as it grows from a polished space simulator into a full strategy experience.",
 };
 
 export default function Home() {
@@ -19,22 +19,33 @@ export default function Home() {
         <div className={styles.zoneInner}>
           <article className={styles.card}>
             <h1 className={styles.title}>Simulactic</h1>
-            <p className={styles.text}>Creating your own galaxy is just three fields away.</p>
             <p className={styles.text}>
-              Sign up, choose a name, select the galaxy shape, and define how many solar systems
-              you want to generate. That is all you need to start.
+              Build a galaxy of your own in minutes, then fly straight into it.
             </p>
             <p className={styles.text}>
-              Our 3D renderer brings your creation to life immediately. Explore systems, inspect
-              stars, planets, moons and asteroids, and interact directly on screen with your own
-              generated universe.
+              Simulactic turns a simple creation flow into a living 3D experience. Pick a name,
+              choose a galaxy shape, decide how many systems you want, and let the backend generate
+              the structure for you.
+            </p>
+            <p className={styles.text}>
+              From there, you can move from galaxy-scale exploration into system detail, inspect
+              stars, planets, moons, and asteroid fields, and interact with your own generated
+              universe as if you were navigating a real map of space.
+            </p>
+            <p className={styles.text}>
+              It starts as a creation tool, but it is being built with a larger destination in
+              mind: a deeper long-term simulation and strategy platform shaped around galaxies you
+              actually care about.
             </p>
           </article>
 
           <article className={styles.cardCta}>
-            <h2 className={styles.cardTitle}>Get Started</h2>
+            <h2 className={styles.cardTitle}>Enter Your First Galaxy</h2>
             <p className={styles.getStartedText}>
-              Access your account or create a new one to start exploring.
+              Create an account, generate your first universe, and start exploring immediately.
+            </p>
+            <p className={styles.getStartedText}>
+              If you already have an account, log in and continue building from your dashboard.
             </p>
             <nav className={styles.ctaRow} aria-label="Authentication shortcuts">
               <Link href="/login">
@@ -57,22 +68,24 @@ export default function Home() {
                 <article className={styles.howStep}>
                   <h3 className={styles.cardSubtitle}>Create your galaxy</h3>
                   <p className={styles.text}>
-                    Choose a name, shape, and system count. The backend will generate the full
-                    structure.
+                    Start with three decisions only: name, shape, and system count. Simulactic
+                    handles the heavy lifting and generates the structure behind the scenes.
                   </p>
                 </article>
                 <article className={styles.howStep}>
                   <h3 className={styles.cardSubtitle}>Explore in 3D</h3>
                   <p className={styles.text}>
-                    Start in galaxy view, inspect systems, and zoom into system detail for planets,
-                    moons and asteroids. Play with your creations in real time.
+                    Move from the galaxy map into system detail, inspect celestial bodies, and
+                    navigate your creation with a real-time renderer designed to make exploration
+                    feel immediate and tactile.
                   </p>
                 </article>
                 <article className={styles.howStep}>
-                  <h3 className={styles.cardSubtitle}>Track growth</h3>
+                  <h3 className={styles.cardSubtitle}>Grow with the project</h3>
                   <p className={styles.text}>
-                    Use your profile to monitor your activity and platform evolution over time.
-                    Become a supporter and unlock a badge progress.
+                    Follow your profile activity, track your supporter progression, and stay close
+                    to the roadmap as Simulactic evolves toward a larger simulation and strategy
+                    experience.
                   </p>
                 </article>
               </section>
@@ -87,20 +100,20 @@ export default function Home() {
           <article className={styles.cardWide}>
             <h2 className={styles.cardTitle}>Why Support Simulactic</h2>
             <p className={styles.text}>
-              Simulactic started as a portfolio side project, but love for astronomy, galaxy
-              dynamics, and 4X strategy design turned it into my main long-term project. I am
-              building it solo, so community support helps a lot to keep quality and progress moving
-              sprint by sprint.
+              Simulactic began as a portfolio project, but it has grown into a serious long-term
+              build shaped by astronomy, galaxy simulation, and strategy-game ambition. It is being
+              developed solo, so community support has a direct effect on how fast quality improves
+              and how much of the roadmap can be pushed forward each cycle.
             </p>
             <p className={styles.text}>
-              Donations are fully voluntary and there is no minimum amount. If you become a
-              supporter, you unlock unlimited galaxy creation, supporter badge progression, and
-              access to a private progress newsletter sent every 15 days with clear updates and no
-              spam.
+              Donations are optional, but meaningful. They help fund development time, infrastructure,
+              tooling, and the steady polishing needed to move from a promising simulator into a
+              platform that feels stable, ambitious, and worth coming back to.
             </p>
             <p className={styles.text}>
-              You can support with one-time or monthly donations. Both options unlock supporter
-              status and progress tracking, independently of amount or duration.
+              If you become a supporter, you unlock unlimited galaxy creation, real supporter badge
+              progression, and closer visibility into where the project is going next. One-time and
+              monthly donations both count, and both push your supporter progression forward.
             </p>
             <nav className={styles.supportLinkRow} aria-label="Support actions">
               <Link href="/donations" className={styles.supportLink}>
@@ -119,61 +132,63 @@ export default function Home() {
               <details className={styles.faqItem}>
                 <summary>What is this and where are you going?</summary>
                 <p>
-                  Simulactic is currently a galaxy creation and simulation app. Users can create
-                  unique galaxies with just three fields, and our procedural engine builds the full
-                  structure to explore in 3D.
+                  Simulactic is currently a galaxy creation and exploration app. You define the
+                  starting inputs, the backend generates the structure, and the frontend turns that
+                  into a navigable 3D experience.
                 </p>
                 <p>
-                  The long-term direction is to evolve into a stellar 4X strategy game where you can
-                  build civilizations, manage resources, expand your empire, and compete with other
-                  players.
+                  The long-term goal is bigger: a richer space simulation and 4X strategy direction
+                  where creation, discovery, progression, and eventually larger game systems can
+                  live together without rebuilding the core product from scratch.
                 </p>
               </details>
               <details className={styles.faqItem}>
                 <summary>What do you do with my information?</summary>
                 <p>
-                  We collect only the minimum required information to keep the platform secure and
-                  functional. We do not sell your data and we only contact you when you explicitly
-                  opt into supporter communications.
+                  Simulactic keeps data collection narrow and practical. The app stores what it needs
+                  to run accounts securely, operate the platform, and support the features you use.
+                </p>
+                <p>
+                  Your data is not sold, and supporter communications only happen when you explicitly
+                  choose to be part of them.
                 </p>
               </details>
               <details className={styles.faqItem}>
-                <summary>What happens if I become supporter? What benefits I will have?</summary>
+                <summary>What happens if I become a supporter?</summary>
                 <p>
-                  Supporters get unlimited galaxy creation and unlock a supporter badge career that
-                  tracks both total support and support time.
+                  Supporters get unlimited galaxy creation and unlock a real badge wall that tracks
+                  both total contribution and long-term monthly support.
                 </p>
                 <p>
-                  You are also included in the private 15-day newsletter with transparent progress
-                  updates. As Simulactic grows into a full game, supporters will receive benefits,
-                  but never pay-to-win advantages.
+                  Support also gives you a closer relationship to the roadmap, clearer progress
+                  visibility, and recognition inside the platform as the project grows.
                 </p>
                 <p>
-                  Once you support the project, you remain recognized as supporter. This is the way
-                  to thank everyone who helps the app grow.
-                </p>
-              </details>
-              <details className={styles.faqItem}>
-                <summary>What limits the app have?</summary>
-                <p>
-                  Right now, non-supporter users can create up to three galaxies. To create a new
-                  one after that, you need to delete an existing one first. Supporters and admins
-                  have unlimited creation.
-                </p>
-                <p>
-                  Non-admin users cannot access the admin dashboard, where growth, usage, logs and
-                  performance metrics are monitored.
+                  The intent is to reward support with progression and recognition, never with
+                  pay-to-win advantages.
                 </p>
               </details>
               <details className={styles.faqItem}>
-                <summary>When it will become a real game?</summary>
+                <summary>What limits does the app have right now?</summary>
                 <p>
-                  There is no fixed launch date yet. Development runs in 15-day sprints focused on
-                  features, stability, and continuous improvements.
+                  Right now, non-supporter users can create up to three galaxies. If you reach that
+                  cap, you need to remove one before creating another. Supporters and admins are not
+                  limited by that cap.
                 </p>
                 <p>
-                  As a solo developer, progress depends heavily on community support, feedback, and
-                  ideas while the project transitions from simulator to playable game.
+                  This is still an actively developing product, so parts of the long-term game vision
+                  are not public yet. The admin dashboard also remains admin-only.
+                </p>
+              </details>
+              <details className={styles.faqItem}>
+                <summary>When will this become a full game?</summary>
+                <p>
+                  There is no fixed launch date for a full game stage yet. Development moves in
+                  short iterations focused on features, stability, and platform quality.
+                </p>
+                <p>
+                  The speed of that transition depends heavily on support, feedback, and how much
+                  sustained development time can be invested into the roadmap.
                 </p>
               </details>
             </section>

@@ -277,38 +277,58 @@ function DonationGuidePageContent() {
 
       <section className={styles.placeholderGrid}>
         <article className={styles.placeholderCard}>
+          <p className={styles.cardEyebrow}>Fuel the project</p>
           <h2 className={styles.cardTitle}>Why Donate</h2>
-          <p className={commonStyles.meta}>
-            Simulactic is built as a long-term solo project. Donations directly support development
-            time, infrastructure costs, and feature delivery quality.
+          <p className={styles.cardLead}>
+            Every donation buys real development time for Simulactic: more polish, more systems,
+            more stability, and a faster path from visual galaxy builder to the full strategy
+            experience the project is aiming for.
           </p>
-          <p className={commonStyles.meta}>
-            Your support helps fund improvements such as better scene interactions, richer simulation
-            depth, and a faster roadmap cadence.
+          <ul className={styles.cardList}>
+            <li>Helps cover infrastructure, email, analytics, and payment-provider operating costs.</li>
+            <li>Funds deeper work on simulation quality, 3D fidelity, usability, and production hardening.</li>
+            <li>Keeps roadmap momentum high so new features land faster and with better finish.</li>
+          </ul>
+          <p className={styles.cardClosing}>
+            If you want Simulactic to keep growing in scope and quality, donating is the most direct
+            way to move it forward.
           </p>
         </article>
 
         <article className={styles.placeholderCard}>
+          <p className={styles.cardEyebrow}>Clear and safe</p>
           <h2 className={styles.cardTitle}>Donation Terms</h2>
-          <p className={commonStyles.meta}>
-            Donations are voluntary and processed through Stripe. You can choose one-time or monthly
-            support and cancel monthly subscriptions from your account/provider controls.
+          <p className={styles.cardLead}>
+            Support is completely voluntary and handled through Stripe, so you get a familiar,
+            secure checkout flow with clear pricing before you confirm anything.
           </p>
-          <p className={commonStyles.meta}>
-            Charges are shown before confirmation. Billing handling, payment methods, and transaction
-            validation are managed by the payment provider.
+          <ul className={styles.cardList}>
+            <li>Choose a one-time contribution or recurring monthly support depending on how you want to help.</li>
+            <li>Monthly support can be canceled later through your payment-provider controls.</li>
+            <li>Payment methods, billing validation, and charge handling stay with Stripe during checkout.</li>
+          </ul>
+          <p className={styles.cardClosing}>
+            No hidden mechanics, no pressure. Just a straightforward way to support the app at the
+            level that makes sense for you.
           </p>
         </article>
 
         <article className={styles.placeholderCard}>
+          <p className={styles.cardEyebrow}>What you unlock</p>
           <h2 className={styles.cardTitle}>Supporter Benefits</h2>
-          <p className={commonStyles.meta}>
-            Supporter status unlocks unlimited galaxy creation and badge progression that tracks both
-            total contribution and support duration over time.
+          <p className={styles.cardLead}>
+            Becoming a supporter does more than help the project. It upgrades your place inside
+            Simulactic and gives your account a progression layer that keeps rewarding long-term
+            support.
           </p>
-          <p className={commonStyles.meta}>
-            Supporters are also included in roadmap-focused update communications with transparent
-            progress notes and upcoming feature priorities.
+          <ul className={styles.cardList}>
+            <li>Unlock unlimited galaxy creation instead of staying capped at the standard free-user limit.</li>
+            <li>Advance through the supporter badge wall with progress tracked by both donation amount and monthly loyalty.</li>
+            <li>Follow roadmap-oriented updates with better visibility into what is being built next and why.</li>
+          </ul>
+          <p className={styles.cardClosing}>
+            If you plan to spend time building worlds in Simulactic, supporter status is the best
+            way to back the app and expand what your account can do.
           </p>
         </article>
       </section>

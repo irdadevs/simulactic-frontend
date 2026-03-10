@@ -37,8 +37,8 @@ Important rules:
 - `/`: landing page
 - `/login`, `/signup`
 - `/dashboard`: galaxy and system renderer
-- `/me`: profile, settings, donations history
-- `/donations`
+- `/me`: profile, account settings, supporter progress, donations history
+- `/donations`: Stripe donation flow and supporter guide
 - `/admin`: admin dashboard
 - `/privacy-policy`, `/terms`
 
@@ -125,6 +125,13 @@ HTTP access is centralized in `src/infra/api/client.ts`.
 
 Feature-specific adapters live in `src/infra/api/*.api.ts`.
 
+Relevant recent endpoints used by the frontend:
+
+- `POST /users/verify`
+- `POST /users/verify/resend`
+- `GET /users/me/supporter-progress`
+- `GET /donations/badges`
+
 ## Traffic Analytics
 
 Traffic page views are tracked from the app layout and reported through the metrics pipeline.
@@ -161,6 +168,18 @@ Frontend behavior:
 - clearing an admin note preserves audit metadata in the UI to match backend behavior
 - resolved non-info logs can be reopened
 
+## Auth and Verification
+
+Authentication flows now include a verification-code modal.
+
+Current behavior:
+
+- signup stores the authenticated user response and opens a verification modal when the returned user is not verified
+- login does the same when the returned user is unverified
+- login also handles `USERS.EMAIL_NOT_VERIFIED` by opening the same modal even if the backend rejects the session
+- the modal supports both code submission and resend
+- verification codes are treated as 8-character codes to match the current backend generation behavior
+
 ## Admin Dashboard
 
 The admin panel is split into these sections:
@@ -189,6 +208,18 @@ The main dashboard page is intentionally being decomposed into reusable UI compo
 - `src/ui/components/admin`
 - `src/ui/components/admin/sections`
 - `src/ui/components/admin/charts`
+
+## Profile and Supporter Progress
+
+The `/me` route is split into smaller profile components and a page-level data hook.
+
+Current supporter behavior:
+
+- supporter progress is loaded from `GET /users/me/supporter-progress`
+- the badge wall uses the real backend catalog from `GET /donations/badges`
+- unlocked state comes from real supporter progress, not client-side inference
+- if the badge catalog is empty in the current environment, the UI falls back to the seeded definitions so the wall can still render
+- locked and unlocked badges are visually differentiated in the profile UI
 
 ## Privacy and Metadata
 
