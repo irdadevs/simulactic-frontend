@@ -11,11 +11,12 @@ import { mapUserApiToDomain, mapUserDomainToView } from "../../domain/user/mappe
 import { donationApi } from "../../infra/api/donation.api";
 import { galaxyApi } from "../../infra/api/galaxy.api";
 import { logApi } from "../../infra/api/log.api";
-import { metricApi, TrafficAnalyticsResponse } from "../../infra/api/metric.api";
-import { ActiveBansResponse, AdminUserListItemApiResponse, userApi } from "../../infra/api/user.api";
+import { metricApi } from "../../infra/api/metric.api";
+import { AdminUserListItemApiResponse, userApi } from "../../infra/api/user.api";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
-import { BanModal } from "../../ui/components/admin/BanModal";
-import { LogDetailsModal } from "../../ui/components/admin/LogDetailsModal";
+import { AdminDateFilterCard } from "../../ui/components/admin/AdminDateFilterCard";
+import { AdminOverlayModals } from "../../ui/components/admin/AdminOverlayModals";
+import { AdminSidebar } from "../../ui/components/admin/AdminSidebar";
 import { BansSection } from "../../ui/components/admin/sections/BansSection";
 import { DonationsSection } from "../../ui/components/admin/sections/DonationsSection";
 import { EntitiesSection } from "../../ui/components/admin/sections/EntitiesSection";
@@ -26,67 +27,49 @@ import { TrafficSection } from "../../ui/components/admin/sections/TrafficSectio
 import { UsersSection } from "../../ui/components/admin/sections/UsersSection";
 import styles from "../../styles/admin.module.css";
 import commonStyles from "../../styles/skeleton.module.css";
+import { AdminSection } from "./admin.shared";
+import {
+  ActiveIpBanRow,
+  ActiveUserBanRow,
+  addDays,
+  BanDraft,
+  BANS_PAGE_SIZE,
+  csv,
+  dateText,
+  donationStatusClassName,
+  DONATIONS_PAGE_SIZE,
+  end,
+  ENTITIES_PAGE_SIZE,
+  euro,
+  GalaxyRow,
+  getBanIpTarget,
+  getBanUserTarget,
+  LOGS_PAGE_SIZE,
+  logLevelClassName,
+  MAX_FETCH,
+  PAGE_SIZE,
+  parseDateInput,
+  pct,
+  SectionLoadState,
+  start,
+  toDateInput,
+  toDateTimeInput,
+  totalDaysInRange,
+  TRAFFIC_MAX_RANGE_DAYS,
+  TrafficAnalyticsState,
+  TRAFFIC_RECENT_PAGE_SIZE,
+  TRAFFIC_ROUTES_PAGE_SIZE,
+  useDebouncedValue,
+  USERS_PAGE_SIZE,
+  userRoleClassName,
+} from "./admin.utils";
 import { DonationApiResponse, DonationProps } from "../../types/donation.types";
 import { GalaxyApiResponse, GalaxyCountsResponse, GalaxyShapeValue, GlobalGalaxyCountsResponse } from "../../types/galaxy.types";
 import { LogApiResponse, LogProps } from "../../types/log.types";
 import { MetricApiResponse, MetricProps } from "../../types/metric.types";
 import { UserApiResponse, UserProps, UserRole } from "../../types/user.types";
 
-type Section = "overview" | "entities" | "users" | "donations" | "logs" | "bans" | "metrics" | "traffic";
-type GalaxyRow = Omit<GalaxyApiResponse, "createdAt"> & { createdAt: Date };
-type ActiveUserBanRow = Omit<ActiveBansResponse["users"][number], "createdAt" | "expiresAt"> & {
-  createdAt: Date;
-  expiresAt: Date | null;
-};
-type ActiveIpBanRow = Omit<ActiveBansResponse["ips"][number], "createdAt" | "expiresAt"> & {
-  createdAt: Date;
-  expiresAt: Date | null;
-};
-type TrafficAnalyticsState = {
-  overview: TrafficAnalyticsResponse["overview"];
-  viewsByDay: Array<{ date: Date; views: number }>;
-  routes: TrafficAnalyticsResponse["routes"];
-  referrers: TrafficAnalyticsResponse["referrers"];
-  recentViews: Array<{
-    id: string;
-    occurredAt: Date;
-    path: string | null;
-    fullPath: string | null;
-    referrerHost: string | null;
-    sessionId: string | null;
-    viewport: { width: number; height: number } | null;
-    durationMs: number;
-  }>;
-};
-type BanDraft =
-  | { kind: "user"; logId: string; userId: string; ipAddress: null }
-  | { kind: "ip"; logId: string; userId: null; ipAddress: string };
-type SectionLoadState = {
-  loading: boolean;
-  error: string | null;
-};
-
-function useDebouncedValue<T>(value: T, delayMs: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebounced(value), delayMs);
-    return () => window.clearTimeout(timer);
-  }, [delayMs, value]);
-  return debounced;
-}
-
-const PAGE_SIZE = 100;
-const MAX_FETCH = 1000;
-const LOGS_PAGE_SIZE = 30;
-const USERS_PAGE_SIZE = 30;
-const DONATIONS_PAGE_SIZE = 30;
-const ENTITIES_PAGE_SIZE = 30;
-const BANS_PAGE_SIZE = 30;
-const TRAFFIC_ROUTES_PAGE_SIZE = 30;
-const TRAFFIC_RECENT_PAGE_SIZE = 30;
-const TRAFFIC_MAX_RANGE_DAYS = 366;
-const sections: Section[] = ["overview", "entities", "users", "donations", "logs", "bans", "metrics", "traffic"];
-const createSectionState = (): Record<Section, SectionLoadState> => ({
+const createSectionState = (): Record<AdminSection, SectionLoadState> => ({
   overview: { loading: false, error: null },
   entities: { loading: false, error: null },
   users: { loading: false, error: null },
@@ -97,112 +80,13 @@ const createSectionState = (): Record<Section, SectionLoadState> => ({
   traffic: { loading: false, error: null },
 });
 
-const toDateInput = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-const toDateTimeInput = (d: Date) => `${toDateInput(d)}T${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-const parseDateInput = (value: string) => {
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(year, month - 1, day);
-};
-const start = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
-const end = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
-const addDays = (d: Date, days: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
-const totalDaysInRange = (fromDate: Date, toDate: Date) =>
-  Math.max(1, Math.floor((start(toDate).getTime() - start(fromDate).getTime()) / (24 * 60 * 60 * 1000)) + 1);
-const euro = (minor: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR" }).format(minor / 100);
-const dateText = (d: Date) => new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(d);
-const pct = (n: number, t: number) => (t ? (n / t) * 100 : 0);
-const csv = (value: unknown) => {
-  const s = String(value ?? "");
-  return /[,"\n]/.test(s) ? `"${s.replace(/"/g, "\"\"")}"` : s;
-};
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const readContextString = (context: Record<string, unknown>, keys: string[]): string | null => {
-  for (const key of keys) {
-    const value = context[key];
-    if (typeof value === "string" && value.trim().length > 0) {
-      return value;
-    }
-  }
-  return null;
-};
-const readNestedContextString = (value: unknown, keys: Set<string>): string | null => {
-  if (value == null) return null;
-  if (typeof value === "string") return null;
-  if (Array.isArray(value)) {
-    for (const entry of value) {
-      const found = readNestedContextString(entry, keys);
-      if (found) return found;
-    }
-    return null;
-  }
-  if (typeof value !== "object") return null;
-
-  for (const [key, inner] of Object.entries(value as Record<string, unknown>)) {
-    if (keys.has(key) && typeof inner === "string" && inner.trim().length > 0) {
-      return inner;
-    }
-    const found = readNestedContextString(inner, keys);
-    if (found) return found;
-  }
-  return null;
-};
-const readFirstUuid = (value: unknown): string | null => {
-  if (typeof value === "string") {
-    return UUID_PATTERN.test(value.trim()) ? value.trim() : null;
-  }
-  if (Array.isArray(value)) {
-    for (const entry of value) {
-      const found = readFirstUuid(entry);
-      if (found) return found;
-    }
-    return null;
-  }
-  if (value && typeof value === "object") {
-    for (const inner of Object.values(value as Record<string, unknown>)) {
-      const found = readFirstUuid(inner);
-      if (found) return found;
-    }
-  }
-  return null;
-};
-const getBanUserTarget = (log: LogProps): string | null =>
-  log.userId ??
-  readContextString(log.context, ["userId", "targetUserId", "actorUserId", "subjectUserId", "ownerId"]) ??
-  readNestedContextString(log.context, new Set(["userId", "targetUserId", "actorUserId", "subjectUserId", "ownerId", "id"])) ??
-  readFirstUuid(log.context);
-const getBanIpTarget = (log: LogProps): string | null =>
-  log.ip ??
-  readContextString(log.context, ["ip", "ipAddress", "clientIp", "remoteIp"]);
-
-const userRoleClassName = (role: string, isSupporter: boolean) => {
-  if (role === "Admin") return styles.badgeToneInfo;
-  if (isSupporter) return styles.badgeToneSuccess;
-  return styles.badgeToneDefault;
-};
-
-const donationStatusClassName = (status: string) => {
-  if (status === "pending") return styles.badgeToneWarn;
-  if (status === "completed" || status === "active") return styles.badgeToneSuccess;
-  if (status === "failed" || status === "canceled" || status === "expired") return styles.badgeToneDanger;
-  return styles.badgeToneDefault;
-};
-
-const logLevelClassName = (level: string) => {
-  if (level === "debug") return styles.badgeToneDefault;
-  if (level === "info") return styles.badgeToneInfo;
-  if (level === "warn") return styles.badgeToneWarn;
-  if (level === "error") return styles.badgeToneError;
-  if (level === "critical") return styles.badgeToneDanger;
-  return styles.badgeToneDefault;
-};
 
 export default function AdminPage() {
   const router = useRouter();
   const { user, loadMe } = useAuth();
   const checkedRef = useRef(false);
 
-  const [section, setSection] = useState<Section>("overview");
+  const [section, setSection] = useState<AdminSection>("overview");
   const [isCompactChart, setIsCompactChart] = useState(false);
   const [from, setFrom] = useState(toDateInput(addDays(new Date(), -30)));
   const [to, setTo] = useState(toDateInput(new Date()));
@@ -246,7 +130,7 @@ export default function AdminPage() {
   const [globalCounts, setGlobalCounts] = useState<GlobalGalaxyCountsResponse | null>(null);
   const [focusGalaxyId, setFocusGalaxyId] = useState<string | null>(null);
   const [totals, setTotals] = useState({ users: 0, donations: 0, logs: 0, metrics: 0, galaxies: 0 });
-  const [sectionState, setSectionState] = useState<Record<Section, SectionLoadState>>(createSectionState);
+  const [sectionState, setSectionState] = useState<Record<AdminSection, SectionLoadState>>(createSectionState);
 
   const rangeFrom = useMemo(() => start(parseDateInput(from)), [from]);
   const rangeTo = useMemo(() => end(parseDateInput(to)), [to]);
@@ -273,7 +157,7 @@ export default function AdminPage() {
     return () => media.removeEventListener("change", apply);
   }, []);
 
-  const setSectionLoading = (target: Section, loadingState: boolean, error: string | null = null) => {
+  const setSectionLoading = (target: AdminSection, loadingState: boolean, error: string | null = null) => {
     setSectionState((prev) => ({
       ...prev,
       [target]: { loading: loadingState, error },
@@ -405,7 +289,7 @@ export default function AdminPage() {
       return;
     }
 
-    const loadSection = async (target: Section) => {
+    const loadSection = async (target: AdminSection) => {
       setSectionLoading(target, true);
       try {
         if (target === "overview") {
@@ -934,26 +818,10 @@ export default function AdminPage() {
 
   return (
     <section className={styles.page}>
-      <aside className={styles.sidebar}>
-        <h1 className={commonStyles.title}>Admin Dashboard</h1>
-        <p className={commonStyles.subtitle}>{currentSectionState.loading ? "Refreshing..." : "Live operational data"}</p>
-        <div className={styles.sidebarActions}>
-          {sections.map((s) => (
-            <button key={s} type="button" className={section === s ? styles.sidebarButtonActive : styles.sidebarButton} onClick={() => setSection(s)}>
-              {s[0].toUpperCase() + s.slice(1)}
-            </button>
-          ))}
-        </div>
-      </aside>
+      <AdminSidebar section={section} loading={currentSectionState.loading} onSectionChange={setSection} />
 
       <article className={styles.content}>
-        <section className={styles.card}>
-          <h2 className={commonStyles.panelTitle}>Global date filter</h2>
-          <div className={styles.filtersGrid}>
-            <div className={styles.filterField}><label>From</label><input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
-            <div className={styles.filterField}><label>To</label><input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
-          </div>
-        </section>
+        <AdminDateFilterCard from={from} to={to} onFromChange={setFrom} onToChange={setTo} />
 
         {section === "overview" && (
           <OverviewSection
@@ -1214,70 +1082,30 @@ export default function AdminPage() {
           />
         )}
       </article>
-      {focusGalaxyId && (
-        <div className={styles.fullscreenModal}>
-          <button className={styles.fullscreenClose} onClick={() => setFocusGalaxyId(null)}>Close</button>
-          <iframe className={styles.fullscreenFrame} src={`/dashboard?galaxyId=${focusGalaxyId}&embed=1`} title="Galaxy interactive view" />
-        </div>
-      )}
-      {selectedLog ? (
-        <LogDetailsModal
-          log={selectedLog}
-          adminNoteDraft={adminNoteDraft}
-          adminNoteSaving={adminNoteSaving}
-          canBanUser={Boolean(selectedLogBanUserTarget)}
-          canBanIp={Boolean(selectedLogBanIpTarget)}
-          dateText={dateText}
-          onClose={() => setSelectedLog(null)}
-          onNoteChange={setAdminNoteDraft}
-          onSaveNote={() => saveAdminNote(selectedLog.id)}
-          onDeleteNote={() => clearAdminNote(selectedLog.id)}
-          onBanUser={() => {
-            if (!selectedLogBanUserTarget) {
-              sileo.error({
-                title: "User unavailable",
-                description: "This log does not include a user target that can be banned.",
-              });
-              return;
-            }
-            openBanModal({
-              kind: "user",
-              logId: selectedLog.id,
-              userId: selectedLogBanUserTarget,
-              ipAddress: null,
-            });
-          }}
-          onBanIp={() => {
-            if (!selectedLogBanIpTarget) {
-              sileo.error({
-                title: "IP unavailable",
-                description: "This log does not include an IP target that can be banned.",
-              });
-              return;
-            }
-            openBanModal({
-              kind: "ip",
-              logId: selectedLog.id,
-              userId: null,
-              ipAddress: selectedLogBanIpTarget,
-            });
-          }}
-        />
-      ) : null}
-      {banDraft ? (
-        <BanModal
-          kind={banDraft.kind}
-          logId={banDraft.logId}
-          target={banDraft.kind === "user" ? banDraft.userId : banDraft.ipAddress}
-          reason={banReasonDraft}
-          expiresAt={banExpiresAtDraft}
-          saving={banSaving}
-          onClose={closeBanModal}
-          onReasonChange={setBanReasonDraft}
-          onExpiresAtChange={setBanExpiresAtDraft}
-          onConfirm={submitBan}
-        />
-      ) : null}
+      <AdminOverlayModals
+        focusGalaxyId={focusGalaxyId}
+        onCloseGalaxy={() => setFocusGalaxyId(null)}
+        selectedLog={selectedLog}
+        adminNoteDraft={adminNoteDraft}
+        adminNoteSaving={adminNoteSaving}
+        selectedLogBanUserTarget={selectedLogBanUserTarget}
+        selectedLogBanIpTarget={selectedLogBanIpTarget}
+        dateText={dateText}
+        onCloseLog={() => setSelectedLog(null)}
+        onNoteChange={setAdminNoteDraft}
+        onSaveNote={saveAdminNote}
+        onDeleteNote={clearAdminNote}
+        onOpenBanUser={(log, target) => openBanModal({ kind: "user", logId: log.id, userId: target, ipAddress: null })}
+        onOpenBanIp={(log, target) => openBanModal({ kind: "ip", logId: log.id, userId: null, ipAddress: target })}
+        banDraft={banDraft}
+        banReasonDraft={banReasonDraft}
+        banExpiresAtDraft={banExpiresAtDraft}
+        banSaving={banSaving}
+        onCloseBan={closeBanModal}
+        onBanReasonChange={setBanReasonDraft}
+        onBanExpiresAtChange={setBanExpiresAtDraft}
+        onConfirmBan={submitBan}
+      />
     </section>
   );
 }

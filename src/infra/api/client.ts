@@ -67,6 +67,11 @@ const buildUrl = (path: string, query?: QueryParams): string => {
   return `${base}${toQueryString(query)}`;
 };
 
+const buildDisplayUrl = (path: string, query?: QueryParams): string => {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${API_PREFIX}${normalizedPath}${toQueryString(query)}`;
+};
+
 const parseResponse = async <T>(response: Response): Promise<T> => {
   if (response.status === 204) {
     return undefined as T;
@@ -86,6 +91,7 @@ const request = async <T>(
   options?: RequestOptions,
 ): Promise<T> => {
   const url = buildUrl(path, options?.query);
+  const displayUrl = buildDisplayUrl(path, options?.query);
   const hasBody = options?.body !== undefined;
   const timeoutMs = options?.timeoutMs ?? API_REQUEST_TIMEOUT_MS;
   const controller = new AbortController();
@@ -117,10 +123,10 @@ const request = async <T>(
     });
   } catch (error: unknown) {
     if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error(`Request timeout after ${timeoutMs}ms: ${method} ${url}`);
+      throw new Error(`Request timeout after ${timeoutMs}ms: ${method} ${displayUrl}`);
     }
     const message = error instanceof Error ? error.message : "Unknown network error";
-    throw new Error(`Network request failed: ${method} ${url}. ${message}`);
+    throw new Error(`Network request failed: ${method} ${displayUrl}. ${message}`);
   } finally {
     cleanupAbortForward?.();
     clearTimeout(timeout);

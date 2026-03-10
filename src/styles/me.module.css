@@ -208,6 +208,40 @@
   opacity: 0.78;
 }
 
+.supporterToggleBar {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.supporterToggle,
+.supporterToggleActive {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: var(--carbon-black-100);
+  background: color-mix(in srgb, var(--carbon-black-900) 85%, transparent);
+  cursor: pointer;
+}
+
+.supporterToggleActive {
+  border-color: color-mix(in srgb, var(--main-turquoise-surf) 48%, var(--carbon-black-700));
+  background: color-mix(in srgb, var(--main-turquoise-surf) 18%, transparent);
+}
+
+.badgePlaceholderMark {
+  color: var(--main-ivory);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.badgePlaceholderNote {
+  color: var(--carbon-black-300);
+  font-size: 11px;
+}
+
 .empty {
   color: var(--carbon-black-300);
   font-size: 13px;
