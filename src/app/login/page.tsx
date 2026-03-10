@@ -1,18 +1,31 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { sileo } from "sileo";
 import { useAuth } from "../../application/hooks/useAuth";
-import { describeApiError } from "../../lib/errors/apiErrorMessage";
+import { useVerificationCodeFlow } from "../../application/hooks/useVerificationCodeFlow";
+import { describeApiError, getApiErrorCode } from "../../lib/errors/apiErrorMessage";
 import { ActionButton } from "../../ui/components/buttons/ActionButton";
 import { AuthCard } from "../../ui/components/layout/auth/AuthCard";
+import { VerificationCodeModal } from "../../ui/components/modals/VerificationCodeModal";
 import styles from "../../styles/skeleton.module.css";
 
 export default function LoginPage() {
   const router = useRouter();
   const { isAuthenticated, loadMe, login } = useAuth();
+  const verificationFlow = useVerificationCodeFlow({
+    onVerified: async () => {
+      try {
+        await loadMe();
+      } catch {
+        await login({ email, rawPassword });
+      }
+      router.push("/dashboard");
+    },
+  });
 
   const [email, setEmail] = useState("");
   const [rawPassword, setRawPassword] = useState("");
@@ -43,13 +56,29 @@ export default function LoginPage() {
     event.preventDefault();
     setIsSubmitting(true);
     try {
-      await login({ email, rawPassword });
+      const signedInUser = await login({ email, rawPassword });
+      if (!signedInUser.verified) {
+        sileo.success({
+          title: "Verification required",
+          description: "Enter the code sent to your email to finish signing in.",
+        });
+        verificationFlow.open(signedInUser.email);
+        return;
+      }
       sileo.success({
         title: "Welcome back",
         description: "Login successful. Redirecting to your dashboard.",
       });
       router.push("/dashboard");
     } catch (err: unknown) {
+      if (getApiErrorCode(err) === "USERS.EMAIL_NOT_VERIFIED") {
+        sileo.success({
+          title: "Verification required",
+          description: "Enter the code sent to your email to finish signing in.",
+        });
+        verificationFlow.open(email);
+        return;
+      }
       sileo.error({
         title: "Login failed",
         description: describeApiError(
@@ -103,10 +132,12 @@ export default function LoginPage() {
               onClick={() => setShowPassword((current) => !current)}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              <img
+              <Image
                 src={showPassword ? "/icons/hide.svg" : "/icons/view.svg"}
                 alt=""
                 aria-hidden="true"
+                width={18}
+                height={18}
               />
             </button>
           </div>
@@ -116,6 +147,17 @@ export default function LoginPage() {
           {isSubmitting ? "Signing in..." : "Sign In"}
         </ActionButton>
       </form>
+      <VerificationCodeModal
+        open={verificationFlow.isOpen}
+        email={verificationFlow.email}
+        code={verificationFlow.code}
+        isVerifying={verificationFlow.isVerifying}
+        isResending={verificationFlow.isResending}
+        onClose={verificationFlow.close}
+        onCodeChange={verificationFlow.setCode}
+        onSubmit={verificationFlow.submit}
+        onResend={verificationFlow.resend}
+      />
     </AuthCard>
   );
 }

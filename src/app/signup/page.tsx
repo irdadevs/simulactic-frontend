@@ -1,18 +1,24 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { sileo } from "sileo";
 import { useAuth } from "../../application/hooks/useAuth";
+import { useVerificationCodeFlow } from "../../application/hooks/useVerificationCodeFlow";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import { ActionButton } from "../../ui/components/buttons/ActionButton";
 import { AuthCard } from "../../ui/components/layout/auth/AuthCard";
+import { VerificationCodeModal } from "../../ui/components/modals/VerificationCodeModal";
 import styles from "../../styles/skeleton.module.css";
 
 export default function SignupPage() {
   const router = useRouter();
   const { isAuthenticated, loadMe, signup } = useAuth();
+  const verificationFlow = useVerificationCodeFlow({
+    onVerified: () => router.push("/dashboard"),
+  });
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -44,7 +50,15 @@ export default function SignupPage() {
     event.preventDefault();
     setIsSubmitting(true);
     try {
-      await signup({ username, email, rawPassword });
+      const createdUser = await signup({ username, email, rawPassword });
+      if (!createdUser.verified) {
+        sileo.success({
+          title: "Account created",
+          description: "Enter the verification code sent to your email to finish setup.",
+        });
+        verificationFlow.open(createdUser.email);
+        return;
+      }
       sileo.success({
         title: "Account created",
         description: "Your account is ready. Redirecting to dashboard.",
@@ -118,10 +132,12 @@ export default function SignupPage() {
               onClick={() => setShowPassword((current) => !current)}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              <img
+              <Image
                 src={showPassword ? "/icons/hide.svg" : "/icons/view.svg"}
                 alt=""
                 aria-hidden="true"
+                width={18}
+                height={18}
               />
             </button>
           </div>
@@ -131,6 +147,17 @@ export default function SignupPage() {
           {isSubmitting ? "Creating account..." : "Sign up"}
         </ActionButton>
       </form>
+      <VerificationCodeModal
+        open={verificationFlow.isOpen}
+        email={verificationFlow.email}
+        code={verificationFlow.code}
+        isVerifying={verificationFlow.isVerifying}
+        isResending={verificationFlow.isResending}
+        onClose={verificationFlow.close}
+        onCodeChange={verificationFlow.setCode}
+        onSubmit={verificationFlow.submit}
+        onResend={verificationFlow.resend}
+      />
     </AuthCard>
   );
 }
