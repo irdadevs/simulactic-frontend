@@ -89,6 +89,7 @@ export default function MePage() {
           <div className={styles.sectionGrid}>
             <SupporterProgressSection
               supporterProgress={me.supporterProgress}
+              supporterBadges={me.supporterBadges}
               euro={euro}
               toDate={toDate}
             />

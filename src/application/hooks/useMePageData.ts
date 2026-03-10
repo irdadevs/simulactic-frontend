@@ -6,6 +6,7 @@ import { sileo } from "sileo";
 import { useAuth } from "./useAuth";
 import { useDonations } from "./useDonations";
 import { useGalaxy } from "./useGalaxy";
+import { donationApi, SupporterBadgeCatalogItemResponse } from "../../infra/api/donation.api";
 import { galaxyApi } from "../../infra/api/galaxy.api";
 import { SupporterProgressResponse, userApi } from "../../infra/api/user.api";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
@@ -44,6 +45,7 @@ export function useMePageData() {
   const [savingPassword, setSavingPassword] = useState(false);
 
   const [supporterProgress, setSupporterProgress] = useState<SupporterProgressResponse | null>(null);
+  const [supporterBadges, setSupporterBadges] = useState<SupporterBadgeCatalogItemResponse[]>([]);
   const [galaxyStats, setGalaxyStats] = useState<Record<string, GalaxyStats>>({});
 
   const hasBootstrappedRef = useRef(false);
@@ -60,11 +62,13 @@ export function useMePageData() {
 
         const galaxiesResult = await loadGalaxies({ orderBy: "createdAt", orderDir: "desc" });
 
-        const [, supporter] = await Promise.all([
+        const [, supporter, badgeCatalog] = await Promise.all([
           list({ orderBy: "createdAt", orderDir: "desc", limit: 100 }),
           userApi.mySupporterProgress().catch(() => null),
+          donationApi.listBadges().then((response) => response.rows).catch(() => []),
         ]);
         setSupporterProgress(supporter);
+        setSupporterBadges(badgeCatalog);
 
         if (galaxiesResult.rows.length > 0) {
           const entries = await Promise.all(
@@ -231,6 +235,7 @@ export function useMePageData() {
     savingEmail,
     savingPassword,
     supporterProgress,
+    supporterBadges,
     galaxyStats,
     totalStats,
     sortedGalaxies,

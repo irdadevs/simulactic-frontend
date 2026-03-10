@@ -127,7 +127,11 @@
   border: 1px solid var(--carbon-black-700);
   border-radius: 12px;
   padding: 10px;
-  background: color-mix(in srgb, var(--carbon-black-950) 86%, #12222a);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--carbon-black-900) 92%, #12222a),
+    color-mix(in srgb, var(--carbon-black-950) 96%, #091116)
+  );
 }
 
 .summaryCard span {
@@ -195,17 +199,42 @@
   place-items: center;
   font-size: 12px;
   margin-bottom: 8px;
-  background: color-mix(in srgb, var(--carbon-black-800) 80%, #0e1a20);
+  background: radial-gradient(circle at 50% 35%, rgba(255,255,255,0.08), transparent 55%),
+    color-mix(in srgb, var(--carbon-black-800) 80%, #0e1a20);
 }
 
 .badgeUnlocked {
   border-color: #d4af37;
-  box-shadow: 0 0 16px color-mix(in srgb, #d4af37 40%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #5b4710 26%, var(--carbon-black-900)),
+    color-mix(in srgb, #2f2506 20%, var(--carbon-black-950))
+  );
+  box-shadow: 0 0 16px color-mix(in srgb, #d4af37 32%, transparent);
 }
 
 .badgeLocked {
+  border-color: color-mix(in srgb, #9aa0a6 28%, var(--carbon-black-700));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #6c737c 10%, var(--carbon-black-900)),
+    color-mix(in srgb, #545b64 8%, var(--carbon-black-950))
+  );
+}
+
+.badgeLocked .badgeArtPlaceholder {
   filter: grayscale(1);
-  opacity: 0.78;
+  opacity: 0.72;
+}
+
+.badgeUnlocked .badgeArtPlaceholder {
+  border-color: color-mix(in srgb, #d4af37 65%, var(--carbon-black-600));
+  background: radial-gradient(circle at 50% 30%, rgba(212,175,55,0.18), transparent 58%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, #3e3110 65%, var(--carbon-black-850)),
+      color-mix(in srgb, #171203 82%, var(--carbon-black-950))
+    );
 }
 
 .supporterToggleBar {
