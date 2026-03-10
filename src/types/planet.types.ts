@@ -3,13 +3,37 @@ export type PlanetType = "solid" | "gas";
 export type PlanetSize = "proto" | "dwarf" | "medium" | "giant" | "supergiant";
 
 export type PlanetBiome =
+  | "none"
+  | "gaia"
   | "temperate"
+  | "continental"
   | "desert"
   | "ocean"
+  | "archipelago"
+  | "forest"
+  | "jungle"
+  | "savanna"
+  | "wetlands"
+  | "meadow"
+  | "arid"
+  | "dune"
+  | "volcanic"
+  | "lava"
   | "ice"
+  | "tundra"
+  | "glacial"
+  | "snow"
+  | "permafrost"
+  | "frozen_ocean"
+  | "ice_canyon"
+  | "cryo_volcanic"
+  | "polar_desert"
+  | "frost_crystal"
   | "toxic"
   | "radioactive"
-  | "crystal";
+  | "sulfuric"
+  | "crystal"
+  | "barren";
 
 export type PlanetProps = {
   id: string;
