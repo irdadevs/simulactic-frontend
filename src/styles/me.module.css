@@ -213,6 +213,15 @@
   font-size: 13px;
 }
 
+.preferenceRow {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 980px) {
   .page {
     grid-template-columns: 1fr;

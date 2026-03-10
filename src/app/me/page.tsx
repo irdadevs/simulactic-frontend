@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { sileo } from "sileo";
@@ -10,6 +11,7 @@ import { galaxyApi } from "../../infra/api/galaxy.api";
 import { SupporterProgressResponse, userApi } from "../../infra/api/user.api";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import { ActionButton } from "../../ui/components/buttons/ActionButton";
+import { AnalyticsPreferenceCard } from "../../ui/components/settings/AnalyticsPreferenceCard";
 import commonStyles from "../../styles/skeleton.module.css";
 import styles from "../../styles/me.module.css";
 
@@ -32,21 +34,100 @@ type BadgeLevel = {
 };
 
 const amountBadges: BadgeLevel[] = [
-  { id: "amount_l1", branch: "amount", name: "Bronze Patron", quantityLabel: "5 EUR", threshold: 5 },
-  { id: "amount_l2", branch: "amount", name: "Silver Patron", quantityLabel: "20 EUR", threshold: 20 },
-  { id: "amount_l3", branch: "amount", name: "Gold Patron", quantityLabel: "50 EUR", threshold: 50 },
-  { id: "amount_l4", branch: "amount", name: "Platinum Patron", quantityLabel: "100 EUR", threshold: 100 },
-  { id: "amount_l5", branch: "amount", name: "Titan Patron", quantityLabel: "250 EUR", threshold: 250 },
-  { id: "amount_l6", branch: "amount", name: "Legend Patron", quantityLabel: "500 EUR", threshold: 500 },
+  {
+    id: "amount_l1",
+    branch: "amount",
+    name: "Bronze Patron",
+    quantityLabel: "5 EUR",
+    threshold: 5,
+  },
+  {
+    id: "amount_l2",
+    branch: "amount",
+    name: "Silver Patron",
+    quantityLabel: "20 EUR",
+    threshold: 20,
+  },
+  {
+    id: "amount_l3",
+    branch: "amount",
+    name: "Gold Patron",
+    quantityLabel: "50 EUR",
+    threshold: 50,
+  },
+  {
+    id: "amount_l4",
+    branch: "amount",
+    name: "Platinum Patron",
+    quantityLabel: "100 EUR",
+    threshold: 100,
+  },
+  {
+    id: "amount_l5",
+    branch: "amount",
+    name: "Titan Patron",
+    quantityLabel: "250 EUR",
+    threshold: 250,
+  },
+  {
+    id: "amount_l6",
+    branch: "amount",
+    name: "Legend Patron",
+    quantityLabel: "500 EUR",
+    threshold: 500,
+  },
 ];
 
 const monthlyBadges: BadgeLevel[] = [
-  { id: "months_l1", branch: "months", name: "Monthly Initiate", quantityLabel: "1 month", threshold: 1 },
-  { id: "months_l2", branch: "months", name: "Monthly Cadet", quantityLabel: "3 months", threshold: 3 },
-  { id: "months_l3", branch: "months", name: "Monthly Officer", quantityLabel: "6 months", threshold: 6 },
-  { id: "months_l4", branch: "months", name: "Monthly Captain", quantityLabel: "12 months", threshold: 12 },
-  { id: "months_l5", branch: "months", name: "Monthly Admiral", quantityLabel: "24 months", threshold: 24 },
-  { id: "months_l6", branch: "months", name: "Monthly Sovereign", quantityLabel: "36 months", threshold: 36 },
+  {
+    id: "months_l1",
+    branch: "months",
+    name: "Monthly Initiate",
+    quantityLabel: "1 month",
+    threshold: 1,
+  },
+  {
+    id: "months_l2",
+    branch: "months",
+    name: "Monthly Cadet",
+    quantityLabel: "3 months",
+    threshold: 3,
+  },
+  {
+    id: "months_l3",
+    branch: "months",
+    name: "Monthly Officer",
+    quantityLabel: "6 months",
+    threshold: 6,
+  },
+  {
+    id: "months_l4",
+    branch: "months",
+    name: "Monthly Captain",
+    quantityLabel: "12 months",
+    threshold: 12,
+  },
+  {
+    id: "months_l5",
+    branch: "months",
+    name: "Monthly Admiral",
+    quantityLabel: "24 months",
+    threshold: 24,
+  },
+  {
+    id: "months_l6",
+    branch: "months",
+    name: "Monthly Sovereign",
+    quantityLabel: "36 months",
+    threshold: 36,
+  },
+  {
+    id: "months_l7",
+    branch: "months",
+    name: "Monthly Sovereign",
+    quantityLabel: "36 months",
+    threshold: 48,
+  },
 ];
 
 const allBadges = [...amountBadges, ...monthlyBadges];
@@ -86,7 +167,9 @@ export default function MePage() {
   const { donations, list } = useDonations();
 
   const [activeSection, setActiveSection] = useState<SectionId>("personal");
-  const [creationOrder, setCreationOrder] = useState<"created" | "name" | "systems" | "stars">("created");
+  const [creationOrder, setCreationOrder] = useState<"created" | "name" | "systems" | "stars">(
+    "created",
+  );
   const [bootstrapping, setBootstrapping] = useState(true);
 
   const [newUsername, setNewUsername] = useState("");
@@ -100,7 +183,9 @@ export default function MePage() {
   const [savingEmail, setSavingEmail] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
-  const [supporterProgress, setSupporterProgress] = useState<SupporterProgressResponse | null>(null);
+  const [supporterProgress, setSupporterProgress] = useState<SupporterProgressResponse | null>(
+    null,
+  );
   const [galaxyStats, setGalaxyStats] = useState<Record<string, GalaxyStats>>({});
 
   const hasBootstrappedRef = useRef(false);
@@ -274,26 +359,34 @@ export default function MePage() {
     <section className={styles.page}>
       <aside className={styles.sidebar}>
         <h1 className={commonStyles.title}>My Profile</h1>
-        <p className={commonStyles.subtitle}>Manage account data, creations and supporter status.</p>
+        <p className={commonStyles.subtitle}>
+          Manage account data, creations and supporter status.
+        </p>
 
         <div className={styles.sidebarActions}>
           <button
             type="button"
-            className={activeSection === "personal" ? styles.sidebarButtonActive : styles.sidebarButton}
+            className={
+              activeSection === "personal" ? styles.sidebarButtonActive : styles.sidebarButton
+            }
             onClick={() => setActiveSection("personal")}
           >
             Personal info
           </button>
           <button
             type="button"
-            className={activeSection === "creations" ? styles.sidebarButtonActive : styles.sidebarButton}
+            className={
+              activeSection === "creations" ? styles.sidebarButtonActive : styles.sidebarButton
+            }
             onClick={() => setActiveSection("creations")}
           >
             My creations
           </button>
           <button
             type="button"
-            className={activeSection === "donations" ? styles.sidebarButtonActive : styles.sidebarButton}
+            className={
+              activeSection === "donations" ? styles.sidebarButtonActive : styles.sidebarButton
+            }
             onClick={() => setActiveSection("donations")}
           >
             Donations and badges
@@ -391,12 +484,16 @@ export default function MePage() {
                       type="button"
                       className={commonStyles.passwordToggle}
                       onClick={() => setShowCurrentPassword((current) => !current)}
-                      aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
+                      aria-label={
+                        showCurrentPassword ? "Hide current password" : "Show current password"
+                      }
                     >
-                      <img
+                      <Image
                         src={showCurrentPassword ? "/icons/hide.svg" : "/icons/view.svg"}
                         alt=""
                         aria-hidden="true"
+                        width={18}
+                        height={18}
                       />
                     </button>
                   </div>
@@ -418,7 +515,13 @@ export default function MePage() {
                       onClick={() => setShowNewPassword((current) => !current)}
                       aria-label={showNewPassword ? "Hide new password" : "Show new password"}
                     >
-                      <img src={showNewPassword ? "/icons/hide.svg" : "/icons/view.svg"} alt="" aria-hidden="true" />
+                      <Image
+                        src={showNewPassword ? "/icons/hide.svg" : "/icons/view.svg"}
+                        alt=""
+                        aria-hidden="true"
+                        width={18}
+                        height={18}
+                      />
                     </button>
                   </div>
                 </div>
@@ -428,6 +531,7 @@ export default function MePage() {
               </form>
             </section>
 
+            <AnalyticsPreferenceCard />
           </div>
         )}
 
@@ -442,7 +546,9 @@ export default function MePage() {
                     id="creation-order"
                     value={creationOrder}
                     onChange={(event) =>
-                      setCreationOrder(event.target.value as "created" | "name" | "systems" | "stars")
+                      setCreationOrder(
+                        event.target.value as "created" | "name" | "systems" | "stars",
+                      )
                     }
                   >
                     <option value="created">Latest</option>
@@ -503,7 +609,9 @@ export default function MePage() {
                     </article>
                   );
                 })}
-                {sortedGalaxies.length === 0 ? <p className={styles.empty}>No galaxies yet.</p> : null}
+                {sortedGalaxies.length === 0 ? (
+                  <p className={styles.empty}>No galaxies yet.</p>
+                ) : null}
               </div>
             </section>
           </div>
@@ -550,7 +658,9 @@ export default function MePage() {
                     >
                       <div className={styles.badgeArtPlaceholder}>Badge image slot</div>
                       <h3 className={styles.cardTitle}>{badge.name}</h3>
-                      <p className={styles.metaText}>{badge.branch === "amount" ? "Total donation" : "Monthly streak"}</p>
+                      <p className={styles.metaText}>
+                        {badge.branch === "amount" ? "Total donation" : "Monthly streak"}
+                      </p>
                       <p className={styles.metaText}>Quantity: {unlocked ? 1 : 0}</p>
                       <p className={styles.metaText}>Target: {badge.quantityLabel}</p>
                       <p className={styles.metaText}>Progress: {progressValue}</p>
@@ -572,14 +682,19 @@ export default function MePage() {
                       <h3 className={styles.cardTitle}>
                         {donation.donationType === "monthly" ? "Monthly" : "One-time"} donation
                       </h3>
-                      <span className={`${styles.badge} ${styles.statusBadge} ${donationBadgeClassByStatus(donation.status)}`}>
+                      <span
+                        className={`${styles.badge} ${styles.statusBadge} ${donationBadgeClassByStatus(donation.status)}`}
+                      >
                         {donation.status}
                       </span>
                     </div>
-                    <p className={styles.metaText}>Amount: {euro.format(donation.amountMinor / 100)}</p>
+                    <p className={styles.metaText}>
+                      Amount: {euro.format(donation.amountMinor / 100)}
+                    </p>
                     <p className={styles.metaText}>Created: {toDate(donation.createdAt)}</p>
                     <p className={styles.metaText}>
-                      Current period: {donation.currentPeriodStart ? toDate(donation.currentPeriodStart) : "-"} to {" "}
+                      Current period:{" "}
+                      {donation.currentPeriodStart ? toDate(donation.currentPeriodStart) : "-"} to{" "}
                       {donation.currentPeriodEnd ? toDate(donation.currentPeriodEnd) : "-"}
                     </p>
                   </article>

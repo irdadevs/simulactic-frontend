@@ -2,6 +2,9 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
+import { publicEnv } from "../../../config/env";
+import { logger } from "../../../lib/logger";
+import { shouldTrackTraffic } from "../../../lib/telemetry/preferences";
 
 const SESSION_KEY = "simulactic:traffic:session-id";
 const API_PREFIX = "/api/v1";
@@ -40,6 +43,7 @@ export function TrafficTracker() {
 
   useEffect(() => {
     if (!pathname) return;
+    if (!shouldTrackTraffic(publicEnv.trafficTrackingEnabled)) return;
 
     const sessionId = getSessionId();
     const referrer = document.referrer || "";
@@ -100,6 +104,7 @@ export function TrafficTracker() {
         keepalive: reason === "page_hide",
       }).catch(() => {
         // Traffic metrics must never affect navigation.
+        logger.warn("Traffic metric send failed", { pathname, fullPath });
       });
     };
 

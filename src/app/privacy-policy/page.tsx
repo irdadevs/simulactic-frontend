@@ -69,6 +69,10 @@ export default function PrivacyPolicyPage() {
             Simulactic may use secure session mechanisms and authentication cookies/tokens to keep you
             logged in and protect account access. Some features may not work correctly if these are blocked.
           </p>
+          <p className={legalStyles.text}>
+            Anonymous traffic analytics can be disabled from your profile settings. Browser Do Not Track
+            preferences are respected automatically when supported.
+          </p>
         </section>
 
         <section className={legalStyles.section}>
