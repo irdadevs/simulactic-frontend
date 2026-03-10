@@ -29,6 +29,9 @@ export const mapLogApiToDomain = (input: LogApiResponse): Log =>
     occurredAt: parseDateOrThrow(input.occurredAt, "occurredAt"),
     resolvedAt: parseOptionalDate(input.resolvedAt, "resolvedAt"),
     resolvedBy: input.resolvedBy,
+    adminNote: input.adminNote ?? null,
+    adminNoteUpdatedAt: parseOptionalDate(input.adminNoteUpdatedAt ?? null, "adminNoteUpdatedAt"),
+    adminNoteUpdatedBy: input.adminNoteUpdatedBy ?? null,
   });
 
 export const mapLogDomainToDTO = (log: Log): LogDTO => log.toDB();

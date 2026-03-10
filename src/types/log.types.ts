@@ -21,6 +21,9 @@ export type LogProps = {
   occurredAt: Date;
   resolvedAt: Date | null;
   resolvedBy: string | null;
+  adminNote: string | null;
+  adminNoteUpdatedAt: Date | null;
+  adminNoteUpdatedBy: string | null;
 };
 
 export type LogCreateProps = {
@@ -42,6 +45,9 @@ export type LogCreateProps = {
   occurredAt?: Date;
   resolvedAt?: Date | null;
   resolvedBy?: string | null;
+  adminNote?: string | null;
+  adminNoteUpdatedAt?: Date | null;
+  adminNoteUpdatedBy?: string | null;
 };
 
 export type LogDTO = {
@@ -63,6 +69,9 @@ export type LogDTO = {
   occurred_at: Date;
   resolved_at: Date | null;
   resolved_by: string | null;
+  admin_note: string | null;
+  admin_note_updated_at: Date | null;
+  admin_note_updated_by: string | null;
 };
 
 export type LogApiResponse = {
@@ -84,4 +93,7 @@ export type LogApiResponse = {
   occurredAt: string | Date;
   resolvedAt: string | Date | null;
   resolvedBy: string | null;
+  adminNote?: string | null;
+  adminNoteUpdatedAt?: string | Date | null;
+  adminNoteUpdatedBy?: string | null;
 };

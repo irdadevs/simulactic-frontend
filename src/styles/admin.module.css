@@ -39,6 +39,26 @@
   background: color-mix(in srgb, var(--main-turquoise-surf) 18%, transparent);
 }
 
+.inlineToggleGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.inlineToggle,
+.inlineToggleActive {
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: var(--carbon-black-100);
+  background: color-mix(in srgb, var(--carbon-black-900) 85%, transparent);
+  cursor: pointer;
+}
+
+.inlineToggleActive {
+  border-color: color-mix(in srgb, var(--main-turquoise-surf) 48%, var(--carbon-black-700));
+  background: color-mix(in srgb, var(--main-turquoise-surf) 18%, transparent);
+}
+
 .content {
   min-width: 0;
   display: grid;
@@ -121,6 +141,42 @@
   margin-top: 4px;
   color: var(--main-ivory);
   font-size: 20px;
+}
+
+.bulkResolveBar {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+}
+
+.bulkResolveControls {
+  width: min(100%, 460px);
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bulkResolveField {
+  min-width: 180px;
+  display: grid;
+  gap: 6px;
+}
+
+.bulkResolveField label {
+  color: var(--carbon-black-200);
+  font-size: 12px;
+  text-align: center;
+}
+
+.bulkResolveField select {
+  width: 100%;
+  border: 1px solid var(--carbon-black-700);
+  background: var(--carbon-black-950);
+  color: var(--main-ivory);
+  border-radius: 10px;
+  padding: 9px 10px;
 }
 
 .tableWrap {
@@ -306,6 +362,35 @@
   font-size: 12px;
 }
 
+.paginationBar {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paginationSummary {
+  color: var(--carbon-black-200);
+  font-size: 12px;
+}
+
+.paginationBarCentered {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .fullscreenModal {
   position: fixed;
   inset: 0;
@@ -355,6 +440,47 @@
   padding: 14px;
 }
 
+.adminNoteBlock {
+  margin-top: 10px;
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 10px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--carbon-black-950) 86%, #12222a);
+}
+
+.adminNoteLabel {
+  color: var(--main-ivory);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.adminNoteMeta {
+  margin-top: 4px;
+  color: var(--carbon-black-300);
+  font-size: 12px;
+}
+
+.adminNoteTextarea {
+  width: 100%;
+  margin-top: 10px;
+  border: 1px solid var(--carbon-black-700);
+  border-radius: 10px;
+  padding: 10px;
+  resize: vertical;
+  min-height: 110px;
+  background: var(--carbon-black-950);
+  color: var(--main-ivory);
+  font: inherit;
+}
+
+.adminNoteActions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .logDetailsPre {
   margin-top: 10px;
   border: 1px solid var(--carbon-black-700);
@@ -374,5 +500,9 @@
 
   .sidebar {
     position: static;
+  }
+
+  .paginationBar {
+    justify-content: center;
   }
 }

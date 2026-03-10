@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import "sileo/styles.css";
 import "../styles/globals.css";
 import layoutStyles from "../styles/layout.module.css";
+import { TrafficTracker } from "../ui/components/layout/TrafficTracker";
 import { Footer } from "../ui/components/layout/navigation/Footer";
 import { NavBar } from "../ui/components/layout/navigation/NavBar";
 import { ToastViewport } from "../ui/components/layout/ToastViewport";
@@ -64,6 +65,9 @@ export default function RootLayout({
       <body className={`${robotoCondensed.variable} ${montserrat.variable}`}>
         <Suspense fallback={null}>
           <NavBar />
+        </Suspense>
+        <Suspense fallback={null}>
+          <TrafficTracker />
         </Suspense>
         <ToastViewport />
         <main className={layoutStyles.appShell}>{children}</main>

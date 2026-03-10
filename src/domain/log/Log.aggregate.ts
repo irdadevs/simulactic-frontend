@@ -27,6 +27,9 @@ type LogState = {
   occurredAt: Date;
   resolvedAt: Date | null;
   resolvedBy: string | null;
+  adminNote: string | null;
+  adminNoteUpdatedAt: Date | null;
+  adminNoteUpdatedBy: string | null;
 };
 
 export class Log {
@@ -73,6 +76,9 @@ export class Log {
       occurredAt: input.occurredAt ?? new Date(),
       resolvedAt: input.resolvedAt ?? null,
       resolvedBy,
+      adminNote: input.adminNote?.trim() || null,
+      adminNoteUpdatedAt: input.adminNoteUpdatedAt ?? null,
+      adminNoteUpdatedBy: input.adminNoteUpdatedBy?.trim() || null,
     });
   }
 
@@ -152,6 +158,18 @@ export class Log {
     return this.props.resolvedBy;
   }
 
+  get adminNote(): string | null {
+    return this.props.adminNote;
+  }
+
+  get adminNoteUpdatedAt(): Date | null {
+    return this.props.adminNoteUpdatedAt;
+  }
+
+  get adminNoteUpdatedBy(): string | null {
+    return this.props.adminNoteUpdatedBy;
+  }
+
   resolve(byUserId: string, at: Date = new Date()): void {
     this.props.resolvedAt = at;
     this.props.resolvedBy = Uuid.create(byUserId).toString();
@@ -177,6 +195,9 @@ export class Log {
       occurredAt: this.occurredAt,
       resolvedAt: this.resolvedAt,
       resolvedBy: this.resolvedBy,
+      adminNote: this.adminNote,
+      adminNoteUpdatedAt: this.adminNoteUpdatedAt,
+      adminNoteUpdatedBy: this.adminNoteUpdatedBy,
     };
   }
 
@@ -200,6 +221,9 @@ export class Log {
       occurred_at: this.occurredAt,
       resolved_at: this.resolvedAt,
       resolved_by: this.resolvedBy,
+      admin_note: this.adminNote,
+      admin_note_updated_at: this.adminNoteUpdatedAt,
+      admin_note_updated_by: this.adminNoteUpdatedBy,
     };
   }
 }

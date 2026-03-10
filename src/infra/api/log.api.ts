@@ -1,5 +1,5 @@
 import { LogApiResponse, LogCategory, LogLevel } from "../../types/log.types";
-import { apiGet, apiPatch, apiPost, ApiListResponse } from "./client";
+import { apiDelete, apiGet, apiPatch, apiPost, ApiListResponse } from "./client";
 
 export type CreateLogRequest = {
   source: string;
@@ -15,6 +15,10 @@ export type CreateLogRequest = {
   ip?: string | null;
   userAgent?: string | null;
   tags?: string[];
+};
+
+export type SetAdminNoteRequest = {
+  note: string;
 };
 
 export type ListLogsQuery = {
@@ -42,6 +46,14 @@ export const logApi = {
     apiPost(`${BASE}`, view ? { body, query: { view } } : { body }),
 
   resolve: (id: string): Promise<void> => apiPatch(`${BASE}/${encodeURIComponent(id)}/resolve`),
+
+  reopen: (id: string): Promise<void> => apiPatch(`${BASE}/${encodeURIComponent(id)}/reopen`),
+
+  setAdminNote: (id: string, body: SetAdminNoteRequest): Promise<void> =>
+    apiPatch(`${BASE}/${encodeURIComponent(id)}/admin-note`, { body }),
+
+  deleteAdminNote: (id: string): Promise<void> =>
+    apiDelete(`${BASE}/${encodeURIComponent(id)}/admin-note`),
 
   list: (query?: ListLogsQuery): Promise<ApiListResponse<LogApiResponse>> =>
     apiGet(`${BASE}`, { query }),
