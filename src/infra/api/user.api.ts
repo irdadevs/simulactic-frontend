@@ -30,6 +30,12 @@ export type ChangeRoleRequest = {
   newRole: UserRole;
 };
 
+export type CreateAdminRequest = {
+  email: string;
+  username: string;
+  rawPassword: string;
+};
+
 export type SoftDeleteRequest = {
   id: string;
 };
@@ -136,6 +142,9 @@ export const userApi = {
       `${BASE}/username/${encodeURIComponent(username)}`,
       view ? { query: { view } } : undefined,
     ),
+
+  createAdmin: (body: CreateAdminRequest): Promise<UserEnvelope> =>
+    apiPost(`${BASE}/admins`, { body }),
 
   changeRole: (id: string, body: ChangeRoleRequest): Promise<void> =>
     apiPatch(`${BASE}/${encodeURIComponent(id)}/role`, { body }),
