@@ -10,6 +10,7 @@ import { useRenderCoordinator } from "../../application/hooks/useRenderCoordinat
 import { ApiError } from "../../infra/api/client";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import { useRenderStore } from "../../state/render.store";
+import { useAuthStore } from "../../state/auth.store";
 import { GalaxyListPanel } from "../../ui/components/layout/galaxy/GalaxyListPanel";
 import styles from "../../styles/layout.module.css";
 
@@ -42,6 +43,7 @@ function DashboardPageContent() {
     isLoading,
     error,
     loadGalaxies,
+    loadGalaxiesForOwner,
     loadGalaxyById,
     createGalaxy,
     deleteGalaxy,
@@ -78,7 +80,11 @@ function DashboardPageContent() {
         if (!isAuthenticated) {
           await loadMe();
         }
-        const result = await loadGalaxies();
+        const currentUserId = user?.id ?? useAuthStore.getState().user?.id ?? null;
+        const result =
+          isAdmin && currentUserId
+            ? await loadGalaxiesForOwner(currentUserId)
+            : await loadGalaxies();
         if (result.rows.length > 0) {
           const requestedGalaxyId = searchParams.get("galaxyId");
           const initialGalaxyId =
@@ -101,7 +107,7 @@ function DashboardPageContent() {
       }
     };
     void bootstrap();
-  }, [isAuthenticated, loadGalaxies, loadGalaxyById, loadGalaxyForRender, loadMe, router, searchParams]);
+  }, [isAdmin, isAuthenticated, loadGalaxies, loadGalaxiesForOwner, loadGalaxyById, loadGalaxyForRender, loadMe, router, searchParams, user?.id]);
 
   const onCreateGalaxy = async (payload: {
     name: string;
