@@ -50,11 +50,8 @@ export const donationApi = {
   createCheckout: (body: CreateDonationCheckoutRequest): Promise<CreateDonationCheckoutResponse> =>
     apiPost(`${BASE}/checkout`, { body }),
 
-  createPortalSession: (
-    id: string,
-    body: CreateCustomerPortalSessionRequest,
-  ): Promise<CreateCustomerPortalSessionResponse> =>
-    apiPost(`${BASE}/${encodeURIComponent(id)}/portal`, { body }),
+  createPortalSession: (body: CreateCustomerPortalSessionRequest): Promise<CreateCustomerPortalSessionResponse> =>
+    apiPost(`${BASE}/portal`, { body }),
 
   confirmBySession: (sessionId: string): Promise<void> =>
     apiPost(`${BASE}/checkout/${encodeURIComponent(sessionId)}/confirm`),
