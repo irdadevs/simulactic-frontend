@@ -9,7 +9,6 @@
 }
 
 .verificationCodeInput {
-  text-transform: uppercase;
   letter-spacing: 0.42em;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
