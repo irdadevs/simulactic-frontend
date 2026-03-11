@@ -42,6 +42,7 @@
 .inlineToggleGroup {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .inlineToggle,
@@ -79,6 +80,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .filtersGrid {
@@ -357,6 +359,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .paginationSummary {
@@ -514,5 +517,51 @@
 
   .paginationBar {
     justify-content: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .sidebar,
+  .card,
+  .logDetailsCard,
+  .banModalCard {
+    padding: 12px;
+  }
+
+  .summaryGrid,
+  .filtersGrid,
+  .chartGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bulkResolveControls {
+    width: 100%;
+  }
+
+  .bulkResolveField {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .table th,
+  .table td {
+    font-size: 12px;
+    padding: 7px 6px;
+  }
+
+  .exportButton {
+    width: 100%;
+    text-align: center;
+  }
+
+  .paginationControls {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .logDetailsBackdrop,
+  .nestedModalBackdrop,
+  .fullscreenModal {
+    padding: 12px;
   }
 }

@@ -56,13 +56,13 @@ export function VerificationCodeModal({
               className={styles.verificationCodeInput}
               type="text"
               inputMode="text"
-              autoCapitalize="characters"
+              autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
               maxLength={8}
               value={code}
-              onChange={(event) => onCodeChange(event.target.value.toUpperCase())}
-              placeholder="XXXXXXXX"
+              onChange={(event) => onCodeChange(event.target.value)}
+              placeholder="Aa0Bb1Cc"
               required
             />
           </div>

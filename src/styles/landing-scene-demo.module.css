@@ -17,6 +17,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .eyebrow {
@@ -51,6 +52,24 @@
     radial-gradient(circle at 28% 26%, rgba(51, 135, 163, 0.16), transparent 28%),
     radial-gradient(circle at 74% 74%, rgba(79, 55, 124, 0.16), transparent 30%),
     linear-gradient(180deg, #04070b, #020305 70%);
+}
+
+@media (max-width: 720px) {
+  .card {
+    padding: 12px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .viewport {
+    height: 250px;
+  }
+
+  .livePill {
+    font-size: 11px;
+  }
 }
 
 .nebulaBackdrop,

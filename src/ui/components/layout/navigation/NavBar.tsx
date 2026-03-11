@@ -17,6 +17,7 @@ export function NavBar() {
   const isEmbeddedDashboard = pathname === "/dashboard" && searchParams.get("embed") === "1";
   const [authResolved, setAuthResolved] = useState(false);
   const hasResolvedRef = useRef(false);
+  const navRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (hasResolvedRef.current) return;
@@ -40,11 +41,20 @@ export function NavBar() {
   const shouldShowNav = authResolved && !isPublicAuthPage && !isEmbeddedDashboard && isAuthenticated;
 
   useEffect(() => {
-    document.documentElement.style.setProperty(
-      "--app-topbar-offset",
-      shouldShowNav ? "72px" : "0px",
-    );
+    if (!shouldShowNav) {
+      document.documentElement.style.setProperty("--app-topbar-offset", "0px");
+      return;
+    }
+
+    const applyOffset = () => {
+      const height = navRef.current?.offsetHeight ?? 0;
+      document.documentElement.style.setProperty("--app-topbar-offset", `${height}px`);
+    };
+
+    applyOffset();
+    window.addEventListener("resize", applyOffset);
     return () => {
+      window.removeEventListener("resize", applyOffset);
       document.documentElement.style.setProperty("--app-topbar-offset", "0px");
     };
   }, [shouldShowNav]);
@@ -62,7 +72,7 @@ export function NavBar() {
   }
 
   return (
-    <header className={styles.topbar}>
+    <header ref={navRef} className={styles.topbar}>
       <div className={styles.topbarContent}>
         <Link href="/" className={styles.brand}>
           Simulactic

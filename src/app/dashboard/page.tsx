@@ -62,10 +62,10 @@ function DashboardPageContent() {
     document.documentElement.style.setProperty("--app-shell-top-pad", "0px");
     document.documentElement.style.setProperty("--app-footer-offset", "0px");
     return () => {
-      document.documentElement.style.setProperty("--app-shell-max-width", "1200px");
-      document.documentElement.style.setProperty("--app-shell-side-pad", "20px");
-      document.documentElement.style.setProperty("--app-shell-top-pad", "20px");
-      document.documentElement.style.setProperty("--app-footer-offset", "114px");
+      document.documentElement.style.removeProperty("--app-shell-max-width");
+      document.documentElement.style.removeProperty("--app-shell-side-pad");
+      document.documentElement.style.removeProperty("--app-shell-top-pad");
+      document.documentElement.style.removeProperty("--app-footer-offset");
     };
   }, [isEmbedded]);
 

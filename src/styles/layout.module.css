@@ -31,6 +31,8 @@
   font-size: 14px;
   color: var(--carbon-black-200);
   justify-self: center;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .donateLink {
@@ -59,6 +61,7 @@
   padding: calc(var(--app-topbar-offset, 0px) + var(--app-shell-top-pad, 0px))
     var(--app-shell-side-pad, 20px)
     calc(var(--app-footer-offset, 0px) + var(--app-shell-bottom-pad, 0px));
+  min-width: 0;
 }
 
 .globalFooter {
@@ -142,6 +145,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
   padding: 14px;
   border-bottom: 1px solid var(--carbon-black-700);
 }
@@ -187,6 +191,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   border-bottom: 1px solid var(--carbon-black-800);
+  min-width: 0;
 }
 
 .listItemMain {
@@ -197,6 +202,7 @@
   color: var(--carbon-black-100);
   padding: 12px 14px;
   cursor: pointer;
+  min-width: 0;
 }
 
 .listItemDelete {
@@ -294,13 +300,102 @@
 }
 
 @media (max-width: 900px) {
+  .topbarContent {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .navActions {
+    justify-self: center;
+  }
+
   .dashboardGrid {
-    grid-template-rows: minmax(180px, 34vh) minmax(520px, 1fr);
+    grid-template-rows: auto minmax(420px, 1fr);
   }
 
   .renderStage,
   .canvasWrap,
   .placeholder {
-    min-height: 520px;
+    min-height: 420px;
+  }
+
+  .fullViewFloating {
+    right: 10px;
+    bottom: 10px;
+    max-width: calc(100% - 20px);
+  }
+}
+
+@media (max-width: 720px) {
+  .appShell {
+    padding:
+      calc(var(--app-topbar-offset, 0px) + 12px)
+      12px
+      18px;
+  }
+
+  .topbarContent {
+    padding: 10px 12px;
+  }
+
+  .brand {
+    font-size: 18px;
+  }
+
+  .nav {
+    gap: 10px 14px;
+    font-size: 13px;
+  }
+
+  .globalFooter {
+    position: static;
+    padding: 14px 12px 18px;
+  }
+
+  .globalFooterInner {
+    justify-content: center;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  .globalFooterLinks {
+    justify-content: center;
+  }
+
+  .authCard {
+    padding: 18px 14px;
+  }
+
+  .panelHeader {
+    align-items: stretch;
+  }
+
+  .listItemMain {
+    padding: 10px 12px;
+  }
+
+  .listItemDelete {
+    width: 44px;
+  }
+
+  .placeholder {
+    min-height: 320px;
+    padding: 16px;
+  }
+
+  .renderStage,
+  .canvasWrap {
+    min-height: 320px;
+  }
+
+  .modalBackdrop {
+    padding: 12px;
+  }
+
+  .modalCard {
+    padding: 14px;
   }
 }

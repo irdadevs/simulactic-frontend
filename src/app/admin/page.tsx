@@ -17,6 +17,8 @@ import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import { AdminDateFilterCard } from "../../ui/components/admin/AdminDateFilterCard";
 import { AdminOverlayModals } from "../../ui/components/admin/AdminOverlayModals";
 import { AdminSidebar } from "../../ui/components/admin/AdminSidebar";
+import { CreateAdminModal } from "../../ui/components/admin/CreateAdminModal";
+import { EditUserModal } from "../../ui/components/admin/EditUserModal";
 import { BansSection } from "../../ui/components/admin/sections/BansSection";
 import { DonationsSection } from "../../ui/components/admin/sections/DonationsSection";
 import { EntitiesSection } from "../../ui/components/admin/sections/EntitiesSection";
@@ -116,6 +118,14 @@ export default function AdminPage() {
   const [banReasonDraft, setBanReasonDraft] = useState("");
   const [banExpiresAtDraft, setBanExpiresAtDraft] = useState("");
   const [banSaving, setBanSaving] = useState(false);
+  const [createAdminOpen, setCreateAdminOpen] = useState(false);
+  const [createAdminUsername, setCreateAdminUsername] = useState("");
+  const [createAdminEmail, setCreateAdminEmail] = useState("");
+  const [createAdminPassword, setCreateAdminPassword] = useState("");
+  const [createAdminSaving, setCreateAdminSaving] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserProps | null>(null);
+  const [editingUserRole, setEditingUserRole] = useState<UserRole>("User");
+  const [editingUserSaving, setEditingUserSaving] = useState(false);
 
   const [users, setUsers] = useState<UserProps[]>([]);
   const [donations, setDonations] = useState<DonationProps[]>([]);
@@ -684,6 +694,13 @@ export default function AdminPage() {
     setSelectedLog((prev) => (prev && prev.id === logId ? { ...prev, ...patch } : prev));
   };
 
+  const patchUserState = (userId: string, patch: Partial<UserProps>) => {
+    setUsers((prev) =>
+      prev.map((item) => (item.id === userId ? { ...item, ...patch } : item)),
+    );
+    setEditingUser((prev) => (prev?.id === userId ? { ...prev, ...patch } : prev));
+  };
+
   const openLogDetails = async (logId: string) => {
     setLoadingLogDetails(true);
     try {
@@ -810,6 +827,109 @@ export default function AdminPage() {
     }
   };
 
+  const closeCreateAdminModal = () => {
+    setCreateAdminOpen(false);
+    setCreateAdminUsername("");
+    setCreateAdminEmail("");
+    setCreateAdminPassword("");
+  };
+
+  const submitCreateAdmin = async () => {
+    setCreateAdminSaving(true);
+    try {
+      const created = await userApi.createAdmin({
+        username: createAdminUsername.trim(),
+        email: createAdminEmail.trim(),
+        rawPassword: createAdminPassword,
+      });
+      const mapped = mapUserDomainToView(mapUserApiToDomain(created.user as UserApiResponse));
+      setUsers((prev) => [mapped, ...prev]);
+      setTotals((prev) => ({ ...prev, users: prev.users + 1 }));
+      closeCreateAdminModal();
+      sileo.success({
+        title: "Admin created",
+        description: "The new admin user was created successfully.",
+      });
+    } catch (error: unknown) {
+      sileo.error({
+        title: "Admin creation failed",
+        description: describeApiError(error, "Could not create the admin user."),
+      });
+    } finally {
+      setCreateAdminSaving(false);
+    }
+  };
+
+  const openEditUserModal = (target: UserProps) => {
+    setEditingUser(target);
+    setEditingUserRole(target.role);
+  };
+
+  const closeEditUserModal = () => {
+    setEditingUser(null);
+    setEditingUserRole("User");
+  };
+
+  const saveEditedUserRole = async () => {
+    if (!editingUser) return;
+    setEditingUserSaving(true);
+    try {
+      await userApi.changeRole(editingUser.id, { newRole: editingUserRole });
+      patchUserState(editingUser.id, { role: editingUserRole });
+      sileo.success({
+        title: "User updated",
+        description: "The user role was updated successfully.",
+      });
+    } catch (error: unknown) {
+      sileo.error({
+        title: "User update failed",
+        description: describeApiError(error, "Could not update the selected user."),
+      });
+    } finally {
+      setEditingUserSaving(false);
+    }
+  };
+
+  const softDeleteEditedUser = async () => {
+    if (!editingUser) return;
+    setEditingUserSaving(true);
+    try {
+      await userApi.softDelete({ id: editingUser.id });
+      patchUserState(editingUser.id, { isDeleted: true, deletedAt: new Date() });
+      sileo.success({
+        title: "User deleted",
+        description: "The user was soft-deleted successfully.",
+      });
+    } catch (error: unknown) {
+      sileo.error({
+        title: "Delete failed",
+        description: describeApiError(error, "Could not soft-delete the selected user."),
+      });
+    } finally {
+      setEditingUserSaving(false);
+    }
+  };
+
+  const restoreEditedUser = async () => {
+    if (!editingUser) return;
+    setEditingUserSaving(true);
+    try {
+      await userApi.restore({ id: editingUser.id });
+      patchUserState(editingUser.id, { isDeleted: false, deletedAt: null });
+      sileo.success({
+        title: "User restored",
+        description: "The user was restored successfully.",
+      });
+    } catch (error: unknown) {
+      sileo.error({
+        title: "Restore failed",
+        description: describeApiError(error, "Could not restore the selected user."),
+      });
+    } finally {
+      setEditingUserSaving(false);
+    }
+  };
+
   if (!user) return <p className={commonStyles.meta}>Checking permissions...</p>;
   if (user.role !== "Admin") return null;
 
@@ -851,6 +971,7 @@ export default function AdminPage() {
             onRoleChange={setRole}
             onSupporterChange={setSupporter}
             onExportCsv={onExportUsersCsv}
+            onOpenCreateAdmin={() => setCreateAdminOpen(true)}
             userGlobalCards={userGlobalCards}
             loading={sectionState.users.loading}
             error={sectionState.users.error}
@@ -860,6 +981,7 @@ export default function AdminPage() {
             usersTotalPages={usersTotalPages}
             onPrevPage={() => setUsersPage((prev) => Math.max(1, prev - 1))}
             onNextPage={() => setUsersPage((prev) => Math.min(usersTotalPages, prev + 1))}
+            onEditUser={openEditUserModal}
             userRoleClassName={userRoleClassName}
             dateText={dateText}
           />
@@ -1105,6 +1227,29 @@ export default function AdminPage() {
         onBanReasonChange={setBanReasonDraft}
         onBanExpiresAtChange={setBanExpiresAtDraft}
         onConfirmBan={submitBan}
+      />
+      <CreateAdminModal
+        open={createAdminOpen}
+        username={createAdminUsername}
+        email={createAdminEmail}
+        rawPassword={createAdminPassword}
+        saving={createAdminSaving}
+        onClose={closeCreateAdminModal}
+        onUsernameChange={setCreateAdminUsername}
+        onEmailChange={setCreateAdminEmail}
+        onPasswordChange={setCreateAdminPassword}
+        onSubmit={submitCreateAdmin}
+      />
+      <EditUserModal
+        user={editingUser}
+        draftRole={editingUserRole}
+        saving={editingUserSaving}
+        dateText={dateText}
+        onClose={closeEditUserModal}
+        onRoleChange={setEditingUserRole}
+        onSaveRole={saveEditedUserRole}
+        onSoftDelete={softDeleteEditedUser}
+        onRestore={restoreEditedUser}
       />
     </section>
   );

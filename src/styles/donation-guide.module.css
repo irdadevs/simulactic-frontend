@@ -2,6 +2,7 @@
   position: relative;
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .checkoutBackdrop {
@@ -24,6 +25,7 @@
 .checkoutCard,
 .placeholderCard {
   padding: 18px;
+  min-width: 0;
 }
 
 .cardTitle {
@@ -158,4 +160,30 @@
   background:
     radial-gradient(circle at top right, color-mix(in srgb, var(--main-turquoise-surf) 10%, transparent), transparent 42%),
     linear-gradient(180deg, color-mix(in srgb, var(--carbon-black-900) 92%, #10232b), color-mix(in srgb, var(--carbon-black-950) 96%, #091116));
+}
+
+@media (max-width: 720px) {
+  .header,
+  .checkoutCard,
+  .placeholderCard {
+    padding: 14px;
+  }
+
+  .typeSwitch {
+    grid-template-columns: 1fr;
+  }
+
+  .presetGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cardLead,
+  .cardList,
+  .cardClosing {
+    font-size: 13px;
+  }
+
+  .placeholderGrid {
+    grid-template-columns: 1fr;
+  }
 }
