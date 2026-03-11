@@ -7,6 +7,7 @@ import {
   ChangePasswordRequest,
   ChangeUsernameRequest,
   LoginRequest,
+  ResetPasswordRequest,
   ResendVerificationRequest,
   SignupRequest,
   VerifyRequest,
@@ -86,6 +87,10 @@ export const useAuth = () => {
     await authApi.resendVerification(body);
   }, []);
 
+  const resetPassword = useCallback(async (body: ResetPasswordRequest): Promise<void> => {
+    await authApi.resetPassword(body);
+  }, []);
+
   return {
     user,
     isAuthenticated,
@@ -101,6 +106,7 @@ export const useAuth = () => {
     changeUsername,
     verify,
     resendVerification,
+    resetPassword,
     clearSession,
     toErrorMessage: toMessage,
   };

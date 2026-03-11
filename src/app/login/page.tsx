@@ -10,12 +10,13 @@ import { useVerificationCodeFlow } from "../../application/hooks/useVerification
 import { describeApiError, getApiErrorCode } from "../../lib/errors/apiErrorMessage";
 import { ActionButton } from "../../ui/components/buttons/ActionButton";
 import { AuthCard } from "../../ui/components/layout/auth/AuthCard";
+import { ResetPasswordModal } from "../../ui/components/modals/ResetPasswordModal";
 import { VerificationCodeModal } from "../../ui/components/modals/VerificationCodeModal";
 import styles from "../../styles/skeleton.module.css";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isAuthenticated, loadMe, login } = useAuth();
+  const { isAuthenticated, loadMe, login, resetPassword } = useAuth();
   const verificationFlow = useVerificationCodeFlow({
     onVerified: async () => {
       try {
@@ -31,6 +32,9 @@ export default function LoginPage() {
   const [rawPassword, setRawPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const hasCheckedAuthRef = useRef(false);
 
   useEffect(() => {
@@ -91,6 +95,38 @@ export default function LoginPage() {
     }
   };
 
+  const openResetModal = () => {
+    setResetEmail(email.trim());
+    setResetModalOpen(true);
+  };
+
+  const closeResetModal = () => {
+    if (isResettingPassword) return;
+    setResetModalOpen(false);
+  };
+
+  const onResetPassword = async () => {
+    setIsResettingPassword(true);
+    try {
+      await resetPassword({ email: resetEmail.trim() });
+      sileo.success({
+        title: "New password sent",
+        description: "Check your email for the newly generated password.",
+      });
+      setResetModalOpen(false);
+    } catch (err: unknown) {
+      sileo.error({
+        title: "Password reset failed",
+        description: describeApiError(
+          err,
+          "We could not send a new password right now. Please verify the email and try again.",
+        ),
+      });
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
   return (
     <AuthCard
       title="Login"
@@ -141,12 +177,25 @@ export default function LoginPage() {
               />
             </button>
           </div>
+          <div className={styles.fieldAside}>
+            <button type="button" className={styles.inlineLinkButton} onClick={openResetModal}>
+              Forgot your password?
+            </button>
+          </div>
         </div>
 
         <ActionButton type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Signing in..." : "Sign In"}
         </ActionButton>
       </form>
+      <ResetPasswordModal
+        open={resetModalOpen}
+        email={resetEmail}
+        isSubmitting={isResettingPassword}
+        onClose={closeResetModal}
+        onEmailChange={setResetEmail}
+        onSubmit={onResetPassword}
+      />
       <VerificationCodeModal
         open={verificationFlow.isOpen}
         email={verificationFlow.email}

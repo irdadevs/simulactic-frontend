@@ -25,6 +25,14 @@ export type CreateDonationCheckoutResponse = {
   sessionId: string;
 };
 
+export type CreateCustomerPortalSessionRequest = {
+  returnUrl: string;
+};
+
+export type CreateCustomerPortalSessionResponse = {
+  url: string;
+};
+
 export type ListDonationsQuery = {
   userId?: string;
   donationType?: DonationType;
@@ -41,6 +49,12 @@ const BASE = "/donations";
 export const donationApi = {
   createCheckout: (body: CreateDonationCheckoutRequest): Promise<CreateDonationCheckoutResponse> =>
     apiPost(`${BASE}/checkout`, { body }),
+
+  createPortalSession: (
+    id: string,
+    body: CreateCustomerPortalSessionRequest,
+  ): Promise<CreateCustomerPortalSessionResponse> =>
+    apiPost(`${BASE}/${encodeURIComponent(id)}/portal`, { body }),
 
   confirmBySession: (sessionId: string): Promise<void> =>
     apiPost(`${BASE}/checkout/${encodeURIComponent(sessionId)}/confirm`),

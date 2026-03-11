@@ -20,9 +20,18 @@
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
   font-weight: 700;
   letter-spacing: 0.6px;
   color: var(--main-ivory);
+}
+
+.brandLogo {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 148px;
 }
 
 .nav {
@@ -343,6 +352,10 @@
 
   .brand {
     font-size: 18px;
+  }
+
+  .brandLogo {
+    max-width: 124px;
   }
 
   .nav {

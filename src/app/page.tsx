@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ActionButton } from "../ui/components/buttons/ActionButton";
 import { LandingSnapController } from "../ui/components/landing/LandingSnapController";
@@ -18,7 +19,14 @@ export default function Home() {
       <header className={styles.zoneHero} data-landing-section>
         <div className={styles.zoneInner}>
           <article className={styles.card}>
-            <h1 className={styles.title}>Simulactic</h1>
+            <Image
+              src="/logo.png"
+              alt="Simulactic"
+              width={220}
+              height={54}
+              priority
+              className={styles.heroLogo}
+            />
             <p className={styles.text}>
               Build a galaxy of your own in minutes, then fly straight into it.
             </p>

@@ -127,10 +127,12 @@ Feature-specific adapters live in `src/infra/api/*.api.ts`.
 
 Relevant recent endpoints used by the frontend:
 
+- `POST /users/password/reset`
 - `POST /users/verify`
 - `POST /users/verify/resend`
 - `GET /users/me/supporter-progress`
 - `GET /donations/badges`
+- `POST /donations/:id/portal`
 
 ## Traffic Analytics
 
@@ -177,6 +179,7 @@ Current behavior:
 - signup stores the authenticated user response and opens a verification modal when the returned user is not verified
 - login does the same when the returned user is unverified
 - login also handles `USERS.EMAIL_NOT_VERIFIED` by opening the same modal even if the backend rejects the session
+- login includes a `Forgot your password?` flow that opens a modal and calls `POST /users/password/reset` with the entered email
 - the modal supports both code submission and resend
 - verification codes are treated as 8-character codes to match the current backend generation behavior
 
@@ -220,6 +223,8 @@ Current supporter behavior:
 - unlocked state comes from real supporter progress, not client-side inference
 - if the badge catalog is empty in the current environment, the UI falls back to the seeded definitions so the wall can still render
 - locked and unlocked badges are visually differentiated in the profile UI
+- the donations section in `/me` includes a supporter-only Stripe billing portal button
+- that portal flow calls `POST /donations/:id/portal` using the latest monthly donation as the portal anchor and opens the returned Stripe URL in a centered popup window
 
 ## Privacy and Metadata
 

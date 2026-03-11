@@ -62,6 +62,10 @@ export type ResendVerificationRequest = {
   email: string;
 };
 
+export type ResetPasswordRequest = {
+  email: string;
+};
+
 export type ChangeEmailRequest = {
   newEmail: string;
 };
@@ -107,4 +111,7 @@ export const authApi = {
 
   resendVerification: (body: ResendVerificationRequest): Promise<void> =>
     apiPost(`${BASE}/verify/resend`, { body }),
+
+  resetPassword: (body: ResetPasswordRequest): Promise<void> =>
+    apiPost(`${BASE}/password/reset`, { body }),
 };

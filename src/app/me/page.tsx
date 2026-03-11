@@ -45,6 +45,7 @@ export default function MePage() {
 
   return (
     <section className={styles.page}>
+      {me.portalPopupOpen ? <div className={styles.portalBackdrop} aria-hidden="true" /> : null}
       <ProfileSidebar activeSection={me.activeSection} onSectionChange={me.setActiveSection} />
 
       <article className={styles.content}>
@@ -95,9 +96,13 @@ export default function MePage() {
             />
             <DonationsHistorySection
               donations={me.donations}
+              isSupporter={Boolean(me.user?.isSupporter)}
+              openingPortal={me.openingPortal}
+              portalPopupOpen={me.portalPopupOpen}
               euro={euro}
               toDate={toDate}
               donationBadgeClassByStatus={donationBadgeClassByStatus}
+              onOpenCustomerPortal={() => void me.onOpenCustomerPortal()}
             />
           </div>
         )}
