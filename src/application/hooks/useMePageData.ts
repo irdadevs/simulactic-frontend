@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { sileo } from "sileo";
 import { useAuth } from "./useAuth";
@@ -25,7 +25,7 @@ export function useMePageData() {
   const router = useRouter();
   const { user, isAuthenticated, loadMe, changeEmail, changePassword, changeUsername } = useAuth();
   const { galaxies, loadGalaxies } = useGalaxy();
-  const { donations, list } = useDonations();
+  const { donations, list, createPortalSession } = useDonations();
 
   const [activeSection, setActiveSection] = useState<MeSectionId>("personal");
   const [creationOrder, setCreationOrder] = useState<"created" | "name" | "systems" | "stars">(
@@ -43,12 +43,16 @@ export function useMePageData() {
   const [savingUsername, setSavingUsername] = useState(false);
   const [savingEmail, setSavingEmail] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [openingPortal, setOpeningPortal] = useState(false);
+  const [portalPopupOpen, setPortalPopupOpen] = useState(false);
 
   const [supporterProgress, setSupporterProgress] = useState<SupporterProgressResponse | null>(null);
   const [supporterBadges, setSupporterBadges] = useState<SupporterBadgeCatalogItemResponse[]>([]);
   const [galaxyStats, setGalaxyStats] = useState<Record<string, GalaxyStats>>({});
 
   const hasBootstrappedRef = useRef(false);
+  const portalPopupRef = useRef<Window | null>(null);
+  const portalPopupWatcherRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (hasBootstrappedRef.current) return;
@@ -140,6 +144,12 @@ export function useMePageData() {
     });
   }, [creationOrder, galaxies, galaxyStats]);
 
+  const latestPortalEligibleDonation = useMemo(() => {
+    return [...donations]
+      .filter((donation) => donation.donationType === "monthly")
+      .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())[0] ?? null;
+  }, [donations]);
+
   const onUsernameSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSavingUsername(true);
@@ -210,6 +220,80 @@ export function useMePageData() {
     }
   };
 
+  const onOpenCustomerPortal = useCallback(async () => {
+    if (!user?.isSupporter) {
+      return;
+    }
+
+    if (!latestPortalEligibleDonation) {
+      sileo.error({
+        title: "Portal unavailable",
+        description: "No monthly supporter billing record was found for this account.",
+      });
+      return;
+    }
+
+    setOpeningPortal(true);
+    try {
+      const returnUrl = `${window.location.origin}/me`;
+      const result = await createPortalSession(latestPortalEligibleDonation.id, { returnUrl });
+
+      const width = 520;
+      const height = 760;
+      const left = Math.max(0, Math.floor(window.screenX + (window.outerWidth - width) / 2));
+      const top = Math.max(0, Math.floor(window.screenY + (window.outerHeight - height) / 2));
+      const features =
+        `popup=yes,width=${width},height=${height},left=${left},top=${top},` +
+        "resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=yes";
+
+      const popup = window.open(result.url, "simulactic_stripe_customer_portal", features);
+      if (!popup) {
+        sileo.error({
+          title: "Popup blocked",
+          description: "Please allow popups for this site to continue to Stripe customer portal.",
+        });
+        return;
+      }
+
+      portalPopupRef.current = popup;
+      setPortalPopupOpen(true);
+      popup.focus();
+
+      if (portalPopupWatcherRef.current) {
+        window.clearInterval(portalPopupWatcherRef.current);
+      }
+
+      portalPopupWatcherRef.current = window.setInterval(() => {
+        if (!portalPopupRef.current || portalPopupRef.current.closed) {
+          setPortalPopupOpen(false);
+          if (portalPopupWatcherRef.current) {
+            window.clearInterval(portalPopupWatcherRef.current);
+            portalPopupWatcherRef.current = null;
+          }
+        }
+      }, 400);
+    } catch (error: unknown) {
+      sileo.error({
+        title: "Could not open customer portal",
+        description: describeApiError(
+          error,
+          "We could not create your Stripe customer portal session right now.",
+        ),
+      });
+    } finally {
+      setOpeningPortal(false);
+    }
+  }, [createPortalSession, latestPortalEligibleDonation, user?.isSupporter]);
+
+  useEffect(() => {
+    return () => {
+      if (portalPopupWatcherRef.current) {
+        window.clearInterval(portalPopupWatcherRef.current);
+        portalPopupWatcherRef.current = null;
+      }
+    };
+  }, []);
+
   return {
     user,
     donations,
@@ -236,11 +320,15 @@ export function useMePageData() {
     savingPassword,
     supporterProgress,
     supporterBadges,
+    latestPortalEligibleDonation,
+    openingPortal,
+    portalPopupOpen,
     galaxyStats,
     totalStats,
     sortedGalaxies,
     onUsernameSubmit,
     onEmailSubmit,
     onPasswordSubmit,
+    onOpenCustomerPortal,
   };
 }

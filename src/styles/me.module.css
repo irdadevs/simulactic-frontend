@@ -50,6 +50,14 @@
   min-width: 0;
 }
 
+.portalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  z-index: 20;
+}
+
 .sectionGrid {
   display: grid;
   gap: 14px;
@@ -151,6 +159,42 @@
 .cardTitle {
   font-size: 16px;
   color: var(--main-ivory);
+}
+
+.portalButtonEnabled,
+.portalButtonDisabled {
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.portalButtonEnabled {
+  border: 1px solid color-mix(in srgb, var(--main-turquoise-surf) 42%, var(--carbon-black-700));
+  color: var(--carbon-black-100);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--main-turquoise-surf) 22%, transparent),
+    color-mix(in srgb, #0f3245 72%, var(--carbon-black-900))
+  );
+  cursor: pointer;
+}
+
+.portalButtonEnabled:hover,
+.portalButtonEnabled:focus-visible {
+  border-color: color-mix(in srgb, var(--main-turquoise-surf) 58%, var(--carbon-black-700));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--main-turquoise-surf) 28%, transparent),
+    color-mix(in srgb, #124158 76%, var(--carbon-black-900))
+  );
+}
+
+.portalButtonDisabled {
+  border: 1px solid var(--carbon-black-700);
+  color: var(--carbon-black-400);
+  background: transparent;
+  cursor: not-allowed;
 }
 
 .badge {

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { mapDonationApiToDomain, mapDonationDomainToView } from "../../domain/donation/mappers";
 import {
   CreateDonationCheckoutRequest,
+  CreateCustomerPortalSessionRequest,
   donationApi,
   ListDonationsQuery,
 } from "../../infra/api/donation.api";
@@ -41,6 +42,12 @@ export const useDonations = () => {
 
   const confirmBySession = useCallback(
     (sessionId: string) => withLoading(async () => donationApi.confirmBySession(sessionId)),
+    [withLoading],
+  );
+
+  const createPortalSession = useCallback(
+    (id: string, body: CreateCustomerPortalSessionRequest) =>
+      withLoading(async () => donationApi.createPortalSession(id, body)),
     [withLoading],
   );
 
@@ -90,6 +97,7 @@ export const useDonations = () => {
     isLoading,
     error,
     createCheckout,
+    createPortalSession,
     confirmBySession,
     cancel,
     list,
