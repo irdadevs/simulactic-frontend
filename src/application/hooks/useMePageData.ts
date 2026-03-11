@@ -10,6 +10,7 @@ import { donationApi, SupporterBadgeCatalogItemResponse } from "../../infra/api/
 import { galaxyApi } from "../../infra/api/galaxy.api";
 import { SupporterProgressResponse, userApi } from "../../infra/api/user.api";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
+import { useAuthStore } from "../../state/auth.store";
 
 export type MeSectionId = "personal" | "creations" | "donations";
 
@@ -24,7 +25,7 @@ export type GalaxyStats = {
 export function useMePageData() {
   const router = useRouter();
   const { user, isAuthenticated, loadMe, changeEmail, changePassword, changeUsername } = useAuth();
-  const { galaxies, loadGalaxies } = useGalaxy();
+  const { galaxies, loadGalaxiesForOwner } = useGalaxy();
   const { donations, list, createPortalSession } = useDonations();
 
   const [activeSection, setActiveSection] = useState<MeSectionId>("personal");
@@ -63,9 +64,13 @@ export function useMePageData() {
 
     const task = (async () => {
       await loadMe();
+      const currentUserId = user?.id ?? useAuthStore.getState().user?.id;
+      if (!currentUserId) {
+        throw new Error("Authenticated user id is required to load profile donations.");
+      }
 
       const [, supporter] = await Promise.all([
-        list({ orderBy: "createdAt", orderDir: "desc", limit: 100 }),
+        list({ userId: currentUserId, orderBy: "createdAt", orderDir: "desc", limit: 100 }),
         userApi.mySupporterProgress().catch(() => null),
       ]);
 
@@ -78,7 +83,7 @@ export function useMePageData() {
     } finally {
       supporterRefreshInFlightRef.current = null;
     }
-  }, [list, loadMe]);
+  }, [list, loadMe, user?.id]);
 
   useEffect(() => {
     if (hasBootstrappedRef.current) return;
@@ -90,10 +95,18 @@ export function useMePageData() {
           await loadMe();
         }
 
-        const galaxiesResult = await loadGalaxies({ orderBy: "createdAt", orderDir: "desc" });
+        const currentUserId = user?.id ?? useAuthStore.getState().user?.id;
+        if (!currentUserId) {
+          throw new Error("Authenticated user id is required to load profile data.");
+        }
+
+        const galaxiesResult = await loadGalaxiesForOwner(currentUserId, {
+          orderBy: "createdAt",
+          orderDir: "desc",
+        });
 
         const [, supporter, badgeCatalog] = await Promise.all([
-          list({ orderBy: "createdAt", orderDir: "desc", limit: 100 }),
+          list({ userId: currentUserId, orderBy: "createdAt", orderDir: "desc", limit: 100 }),
           userApi.mySupporterProgress().catch(() => null),
           donationApi.listBadges().then((response) => response.rows).catch(() => []),
         ]);
@@ -134,7 +147,7 @@ export function useMePageData() {
     };
 
     void bootstrap();
-  }, [isAuthenticated, list, loadGalaxies, loadMe, router, user]);
+  }, [isAuthenticated, list, loadGalaxiesForOwner, loadMe, router, user]);
 
   useEffect(() => {
     const onFocus = () => {
