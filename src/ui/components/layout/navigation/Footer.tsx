@@ -18,6 +18,10 @@ export function Footer() {
     }
 
     const applyOffset = () => {
+      if (window.matchMedia("(max-width: 720px)").matches) {
+        document.documentElement.style.setProperty("--app-footer-offset", "0px");
+        return;
+      }
       const height = footerRef.current?.offsetHeight ?? 0;
       document.documentElement.style.setProperty("--app-footer-offset", `${height}px`);
     };

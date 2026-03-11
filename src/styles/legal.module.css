@@ -3,6 +3,7 @@
   margin: 0 auto;
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .card {
@@ -10,6 +11,7 @@
   border-radius: 14px;
   background: color-mix(in srgb, var(--carbon-black-900) 94%, #0f1d24);
   padding: 18px;
+  min-width: 0;
 }
 
 .section + .section {
@@ -40,4 +42,19 @@
 
 .list li + li {
   margin-top: 6px;
+}
+
+@media (max-width: 720px) {
+  .card {
+    padding: 14px;
+  }
+
+  .heading {
+    font-size: 16px;
+  }
+
+  .text,
+  .list {
+    font-size: 14px;
+  }
 }
