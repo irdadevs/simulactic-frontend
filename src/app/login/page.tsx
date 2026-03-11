@@ -18,10 +18,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { isAuthenticated, loadMe, login, resetPassword } = useAuth();
   const verificationFlow = useVerificationCodeFlow({
-    onVerified: async () => {
-      try {
-        await loadMe();
-      } catch {
+    onVerified: async ({ hasActiveSession }) => {
+      if (!hasActiveSession) {
         await login({ email, rawPassword });
       }
       router.push("/dashboard");

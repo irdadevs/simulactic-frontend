@@ -97,6 +97,19 @@ export const useGalaxy = () => {
     [withLoading],
   );
 
+  const loadGalaxiesForOwner = useCallback(
+    (ownerId: string, query?: ListGalaxiesQuery) =>
+      withLoading(async () => {
+        const result = await galaxyApi.list(query);
+        const mapped = result.rows
+          .map((item) => mapGalaxyDomainToView(mapGalaxyApiToDomain(item)))
+          .filter((item) => item.ownerId === ownerId);
+        setGalaxies(mapped);
+        return { rows: mapped, total: mapped.length };
+      }),
+    [withLoading],
+  );
+
   const loadGalaxyById = useCallback(
     (id: string) =>
       withLoading(async () => {
@@ -167,6 +180,7 @@ export const useGalaxy = () => {
     error,
     createGalaxy,
     loadGalaxies,
+    loadGalaxiesForOwner,
     loadGalaxyById,
     loadGalaxyPopulation,
     changeGalaxyName,
