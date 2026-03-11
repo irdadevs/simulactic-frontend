@@ -46,8 +46,8 @@ export const useDonations = () => {
   );
 
   const createPortalSession = useCallback(
-    (id: string, body: CreateCustomerPortalSessionRequest) =>
-      withLoading(async () => donationApi.createPortalSession(id, body)),
+    (body: CreateCustomerPortalSessionRequest) =>
+      withLoading(async () => donationApi.createPortalSession(body)),
     [withLoading],
   );
 

@@ -189,12 +189,6 @@ export function useMePageData() {
     });
   }, [creationOrder, galaxies, galaxyStats]);
 
-  const latestPortalEligibleDonation = useMemo(() => {
-    return [...donations]
-      .filter((donation) => donation.donationType === "monthly")
-      .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())[0] ?? null;
-  }, [donations]);
-
   const onUsernameSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSavingUsername(true);
@@ -270,18 +264,10 @@ export function useMePageData() {
       return;
     }
 
-    if (!latestPortalEligibleDonation) {
-      sileo.error({
-        title: "Portal unavailable",
-        description: "No monthly supporter billing record was found for this account.",
-      });
-      return;
-    }
-
     setOpeningPortal(true);
     try {
       const returnUrl = `${window.location.origin}/me`;
-      const result = await createPortalSession(latestPortalEligibleDonation.id, { returnUrl });
+      const result = await createPortalSession({ returnUrl });
 
       const width = 520;
       const height = 760;
@@ -329,7 +315,7 @@ export function useMePageData() {
     } finally {
       setOpeningPortal(false);
     }
-  }, [createPortalSession, latestPortalEligibleDonation, refreshSupporterData, user?.isSupporter]);
+  }, [createPortalSession, refreshSupporterData, user?.isSupporter]);
 
   useEffect(() => {
     return () => {
@@ -366,7 +352,6 @@ export function useMePageData() {
     savingPassword,
     supporterProgress,
     supporterBadges,
-    latestPortalEligibleDonation,
     openingPortal,
     portalPopupOpen,
     galaxyStats,

@@ -132,7 +132,7 @@ Relevant recent endpoints used by the frontend:
 - `POST /users/verify/resend`
 - `GET /users/me/supporter-progress`
 - `GET /donations/badges`
-- `POST /donations/:id/portal`
+- `POST /donations/portal`
 - `POST /donations/checkout/:sessionId/confirm`
 
 ## Traffic Analytics
@@ -225,7 +225,7 @@ Current supporter behavior:
 - if the badge catalog is empty in the current environment, the UI falls back to the seeded definitions so the wall can still render
 - locked and unlocked badges are visually differentiated in the profile UI
 - the donations section in `/me` includes a supporter-only Stripe billing portal button
-- that portal flow calls `POST /donations/:id/portal` using the latest monthly donation as the portal anchor and opens the returned Stripe URL in a centered popup window
+- that portal flow calls `POST /donations/portal` for the authenticated user and opens the returned Stripe URL in a centered popup window
 - `/me` revalidates user state, donations, and supporter progress on window focus, tab visibility return, and Stripe portal popup close so async Stripe webhook updates are reflected
 
 ## Stripe Sync Behavior
