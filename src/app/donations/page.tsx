@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { sileo } from "sileo";
 import { useAuth } from "../../application/hooks/useAuth";
@@ -28,8 +28,24 @@ function DonationGuidePageContent() {
   const [isCheckoutPopupOpen, setIsCheckoutPopupOpen] = useState(false);
 
   const hasHandledReturnRef = useRef(false);
+  const authRefreshInFlightRef = useRef<Promise<void> | null>(null);
   const checkoutPopupRef = useRef<Window | null>(null);
   const popupWatcherRef = useRef<number | null>(null);
+
+  const refreshAuthState = useCallback(async () => {
+    if (authRefreshInFlightRef.current) {
+      await authRefreshInFlightRef.current;
+      return;
+    }
+
+    const task = loadMe().catch(() => undefined);
+    authRefreshInFlightRef.current = task;
+    try {
+      await task;
+    } finally {
+      authRefreshInFlightRef.current = null;
+    }
+  }, [loadMe]);
 
   const selectedPresets = useMemo(
     () => (donationType === "monthly" ? monthlyPresets : oneTimePresets),
@@ -75,6 +91,7 @@ function DonationGuidePageContent() {
 
         try {
           await confirmBySession(sessionId);
+          await refreshAuthState();
           sileo.success({
             title: "Donation confirmed",
             description: "Payment completed and donation saved successfully.",
@@ -101,7 +118,26 @@ function DonationGuidePageContent() {
     };
 
     void handleReturn();
-  }, [confirmBySession, router, searchParams]);
+  }, [confirmBySession, refreshAuthState, router, searchParams]);
+
+  useEffect(() => {
+    const onFocus = () => {
+      void refreshAuthState();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void refreshAuthState();
+      }
+    };
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [refreshAuthState]);
 
   const onStartDonation = async () => {
     if (!user) {
@@ -163,6 +199,7 @@ function DonationGuidePageContent() {
       popupWatcherRef.current = window.setInterval(() => {
         if (!checkoutPopupRef.current || checkoutPopupRef.current.closed) {
           setIsCheckoutPopupOpen(false);
+          void refreshAuthState();
           if (popupWatcherRef.current) {
             window.clearInterval(popupWatcherRef.current);
             popupWatcherRef.current = null;

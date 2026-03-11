@@ -51,8 +51,34 @@ export function useMePageData() {
   const [galaxyStats, setGalaxyStats] = useState<Record<string, GalaxyStats>>({});
 
   const hasBootstrappedRef = useRef(false);
+  const supporterRefreshInFlightRef = useRef<Promise<void> | null>(null);
   const portalPopupRef = useRef<Window | null>(null);
   const portalPopupWatcherRef = useRef<number | null>(null);
+
+  const refreshSupporterData = useCallback(async () => {
+    if (supporterRefreshInFlightRef.current) {
+      await supporterRefreshInFlightRef.current;
+      return;
+    }
+
+    const task = (async () => {
+      await loadMe();
+
+      const [, supporter] = await Promise.all([
+        list({ orderBy: "createdAt", orderDir: "desc", limit: 100 }),
+        userApi.mySupporterProgress().catch(() => null),
+      ]);
+
+      setSupporterProgress(supporter);
+    })();
+
+    supporterRefreshInFlightRef.current = task;
+    try {
+      await task;
+    } finally {
+      supporterRefreshInFlightRef.current = null;
+    }
+  }, [list, loadMe]);
 
   useEffect(() => {
     if (hasBootstrappedRef.current) return;
@@ -109,6 +135,25 @@ export function useMePageData() {
 
     void bootstrap();
   }, [isAuthenticated, list, loadGalaxies, loadMe, router, user]);
+
+  useEffect(() => {
+    const onFocus = () => {
+      void refreshSupporterData();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void refreshSupporterData();
+      }
+    };
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [refreshSupporterData]);
 
   useEffect(() => {
     if (!user) return;
@@ -266,6 +311,7 @@ export function useMePageData() {
       portalPopupWatcherRef.current = window.setInterval(() => {
         if (!portalPopupRef.current || portalPopupRef.current.closed) {
           setPortalPopupOpen(false);
+          void refreshSupporterData();
           if (portalPopupWatcherRef.current) {
             window.clearInterval(portalPopupWatcherRef.current);
             portalPopupWatcherRef.current = null;
@@ -283,7 +329,7 @@ export function useMePageData() {
     } finally {
       setOpeningPortal(false);
     }
-  }, [createPortalSession, latestPortalEligibleDonation, user?.isSupporter]);
+  }, [createPortalSession, latestPortalEligibleDonation, refreshSupporterData, user?.isSupporter]);
 
   useEffect(() => {
     return () => {
