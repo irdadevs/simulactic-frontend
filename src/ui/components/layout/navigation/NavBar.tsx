@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -75,7 +76,7 @@ export function NavBar() {
     <header ref={navRef} className={styles.topbar}>
       <div className={styles.topbarContent}>
         <Link href="/" className={styles.brand}>
-          Simulactic
+          <Image src="/logo.png" alt="Simulactic" width={148} height={36} priority className={styles.brandLogo} />
         </Link>
         <nav className={styles.nav}>
           {isAuthenticated && <Link href="/me">Me</Link>}
