@@ -17,7 +17,9 @@ export default function SignupPage() {
   const router = useRouter();
   const { isAuthenticated, loadMe, signup } = useAuth();
   const verificationFlow = useVerificationCodeFlow({
-    onVerified: () => router.push("/dashboard"),
+    onVerified: ({ hasActiveSession }) => {
+      router.push(hasActiveSession ? "/dashboard" : "/login");
+    },
   });
 
   const [username, setUsername] = useState("");

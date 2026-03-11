@@ -6,7 +6,7 @@ import { useAuth } from "./useAuth";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
 
 type UseVerificationCodeFlowOptions = {
-  onVerified?: () => Promise<void> | void;
+  onVerified?: (result: { hasActiveSession: boolean }) => Promise<void> | void;
 };
 
 export function useVerificationCodeFlow(options?: UseVerificationCodeFlowOptions) {
@@ -42,13 +42,18 @@ export function useVerificationCodeFlow(options?: UseVerificationCodeFlowOptions
     setIsVerifying(true);
     try {
       await verify({ email, code: trimmedCode });
-      await loadMe().catch(() => undefined);
+      let hasActiveSession = true;
+      try {
+        await loadMe();
+      } catch {
+        hasActiveSession = false;
+      }
       sileo.success({
         title: "Email verified",
         description: "Your account has been verified successfully.",
       });
       close();
-      await options?.onVerified?.();
+      await options?.onVerified?.({ hasActiveSession });
     } catch (error: unknown) {
       sileo.error({
         title: "Verification failed",
