@@ -1,5 +1,4 @@
 import { sileo } from "sileo";
-import { describeApiError } from "../../../lib/errors/apiErrorMessage";
 import styles from "../../../styles/admin.module.css";
 import { LogProps } from "../../../types/log.types";
 import { BanModal } from "./BanModal";
@@ -82,15 +81,7 @@ export function AdminOverlayModals(props: AdminOverlayModalsProps) {
           onClose={props.onCloseBan}
           onReasonChange={props.onBanReasonChange}
           onExpiresAtChange={props.onBanExpiresAtChange}
-          onConfirm={() =>
-            props.onConfirmBan().catch((error: unknown) => {
-              sileo.error({
-                title: "Ban failed",
-                description: describeApiError(error, "Could not create the ban."),
-              });
-              throw error;
-            })
-          }
+          onConfirm={props.onConfirmBan}
         />
       ) : null}
     </>

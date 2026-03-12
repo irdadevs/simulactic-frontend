@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { sileo } from "sileo";
+import { isHandledSessionExpiryError } from "../../../infra/api/client";
 import { describeApiError } from "../../../lib/errors/apiErrorMessage";
 import { GalaxyShapeValue } from "../../../types/galaxy.types";
 import layoutStyles from "../../../styles/layout.module.css";
@@ -53,6 +54,9 @@ export function CreateGalaxyModal({
       });
       onClose();
     } catch (err: unknown) {
+      if (isHandledSessionExpiryError(err)) {
+        return;
+      }
       sileo.error({
         title: "Could not create galaxy",
         description: describeApiError(

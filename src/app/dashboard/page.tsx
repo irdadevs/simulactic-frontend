@@ -7,7 +7,7 @@ import { sileo } from "sileo";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useGalaxy } from "../../application/hooks/useGalaxy";
 import { useRenderCoordinator } from "../../application/hooks/useRenderCoordinator";
-import { ApiError } from "../../infra/api/client";
+import { isHandledSessionExpiryError } from "../../infra/api/client";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import { useRenderStore } from "../../state/render.store";
 import { useAuthStore } from "../../state/auth.store";
@@ -41,7 +41,6 @@ function DashboardPageContent() {
     galaxies,
     selectedGalaxy,
     isLoading,
-    error,
     loadGalaxies,
     loadGalaxiesForOwner,
     loadGalaxyById,
@@ -95,8 +94,7 @@ function DashboardPageContent() {
           await loadGalaxyForRender(initialGalaxyId);
         }
       } catch (error: unknown) {
-        if (error instanceof ApiError && error.status === 401) {
-          router.push("/login");
+        if (isHandledSessionExpiryError(error)) {
           return;
         }
 
@@ -148,6 +146,9 @@ function DashboardPageContent() {
         description: `"${target.name}" was removed successfully.`,
       });
     } catch (error: unknown) {
+      if (isHandledSessionExpiryError(error)) {
+        return;
+      }
       sileo.error({
         title: "Delete failed",
         description: describeApiError(error, "Could not delete galaxy."),
@@ -206,7 +207,6 @@ function DashboardPageContent() {
           onCreateClick={() => setShowCreateModal(true)}
           canCreateGalaxy={canCreateGalaxy}
           isSupporter={isSupporter}
-          error={error}
         />
 
         <MockCanvasPanel

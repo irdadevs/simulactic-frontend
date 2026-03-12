@@ -10,9 +10,11 @@ type UsersSectionProps = {
   userSearch: string;
   role: "all" | UserRole;
   supporter: "all" | "yes" | "no";
+  verified: "all" | "yes" | "no";
   onUserSearchChange: (value: string) => void;
   onRoleChange: (value: "all" | UserRole) => void;
   onSupporterChange: (value: "all" | "yes" | "no") => void;
+  onVerifiedChange: (value: "all" | "yes" | "no") => void;
   onExportCsv: () => void;
   onOpenCreateAdmin: () => void;
   userGlobalCards: { total: number; week: number; month: number; year: number };
@@ -71,6 +73,19 @@ export function UsersSection(props: UsersSectionProps) {
               value={props.supporter}
               onChange={(event) =>
                 props.onSupporterChange(event.target.value as "all" | "yes" | "no")
+              }
+            >
+              <option value="all">All</option>
+              <option value="yes">True</option>
+              <option value="no">False</option>
+            </select>
+          </div>
+          <div className={styles.filterField}>
+            <label>Verified</label>
+            <select
+              value={props.verified}
+              onChange={(event) =>
+                props.onVerifiedChange(event.target.value as "all" | "yes" | "no")
               }
             >
               <option value="all">All</option>

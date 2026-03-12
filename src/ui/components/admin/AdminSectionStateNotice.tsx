@@ -17,10 +17,6 @@ export function AdminSectionStateNotice({
     return <p className={commonStyles.meta}>Loading section data...</p>;
   }
 
-  if (error) {
-    return <p className={commonStyles.error}>{error}</p>;
-  }
-
   if (empty) {
     return <p className={commonStyles.meta}>{emptyMessage}</p>;
   }

@@ -2,6 +2,7 @@
 
 import { sileo } from "sileo";
 import { LogProps } from "../../../types/log.types";
+import { isHandledSessionExpiryError } from "../../../infra/api/client";
 import { describeApiError } from "../../../lib/errors/apiErrorMessage";
 import commonStyles from "../../../styles/skeleton.module.css";
 import styles from "../../../styles/admin.module.css";
@@ -71,6 +72,9 @@ export function LogDetailsModal({
                     description: "The log note was updated.",
                   });
                 }).catch((error: unknown) => {
+                  if (isHandledSessionExpiryError(error)) {
+                    return;
+                  }
                   sileo.error({
                     title: "Admin note save failed",
                     description: describeApiError(error, "Could not save the admin note."),
@@ -90,6 +94,9 @@ export function LogDetailsModal({
                     description: "The log note was cleared.",
                   });
                 }).catch((error: unknown) => {
+                  if (isHandledSessionExpiryError(error)) {
+                    return;
+                  }
                   sileo.error({
                     title: "Admin note delete failed",
                     description: describeApiError(error, "Could not delete the admin note."),

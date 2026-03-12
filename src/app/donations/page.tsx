@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { sileo } from "sileo";
 import { useAuth } from "../../application/hooks/useAuth";
 import { useDonations } from "../../application/hooks/useDonations";
+import { isHandledSessionExpiryError } from "../../infra/api/client";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import { DonationType } from "../../types/donation.types";
 import { ActionButton } from "../../ui/components/buttons/ActionButton";
@@ -97,6 +98,9 @@ function DonationGuidePageContent() {
             description: "Payment completed and donation saved successfully.",
           });
         } catch (error: unknown) {
+          if (isHandledSessionExpiryError(error)) {
+            return;
+          }
           sileo.error({
             title: "Donation confirmation failed",
             description: describeApiError(
@@ -207,6 +211,10 @@ function DonationGuidePageContent() {
         }
       }, 400);
     } catch (error: unknown) {
+      if (isHandledSessionExpiryError(error)) {
+        setIsRedirecting(false);
+        return;
+      }
       setIsRedirecting(false);
       sileo.error({
         title: "Could not start donation",
