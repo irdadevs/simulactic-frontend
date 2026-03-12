@@ -10,6 +10,7 @@ import { mapMetricApiToDomain, mapMetricDomainToView } from "../../domain/metric
 import { mapUserApiToDomain, mapUserDomainToView } from "../../domain/user/mappers";
 import { donationApi } from "../../infra/api/donation.api";
 import { galaxyApi } from "../../infra/api/galaxy.api";
+import { isHandledSessionExpiryError } from "../../infra/api/client";
 import { logApi } from "../../infra/api/log.api";
 import { metricApi } from "../../infra/api/metric.api";
 import { AdminUserListItemApiResponse, userApi } from "../../infra/api/user.api";
@@ -96,6 +97,7 @@ export default function AdminPage() {
   const [userSearch, setUserSearch] = useState("");
   const [role, setRole] = useState<"all" | UserRole>("all");
   const [supporter, setSupporter] = useState<"all" | "yes" | "no">("all");
+  const [verified, setVerified] = useState<"all" | "yes" | "no">("yes");
   const [shape, setShape] = useState<"all" | GalaxyShapeValue>("all");
   const [entitySearch, setEntitySearch] = useState("");
   const [logState, setLogState] = useState<"all" | "open" | "resolved">("all");
@@ -330,6 +332,10 @@ export default function AdminPage() {
         }
         setSectionLoading(target, false);
       } catch (error: unknown) {
+        if (isHandledSessionExpiryError(error)) {
+          setSectionLoading(target, false);
+          return;
+        }
         const message = describeApiError(error, "Could not load admin section data.");
         setSectionLoading(target, false, message);
         sileo.error({ title: "Admin data load failed", description: message });
@@ -348,8 +354,9 @@ export default function AdminPage() {
         .filter((u) => u.createdAt >= rangeFrom && u.createdAt <= rangeTo)
         .filter((u) => `${u.username} ${u.email}`.toLowerCase().includes(debouncedUserSearch.toLowerCase()))
         .filter((u) => (role === "all" ? true : u.role === role))
-        .filter((u) => (supporter === "all" ? true : supporter === "yes" ? u.isSupporter : !u.isSupporter)),
-    [debouncedUserSearch, rangeFrom, rangeTo, role, supporter, users],
+        .filter((u) => (supporter === "all" ? true : supporter === "yes" ? u.isSupporter : !u.isSupporter))
+        .filter((u) => (verified === "all" ? true : verified === "yes" ? u.verified : !u.verified)),
+    [debouncedUserSearch, rangeFrom, rangeTo, role, supporter, users, verified],
   );
 
   const galaxiesFiltered = useMemo(
@@ -553,7 +560,7 @@ export default function AdminPage() {
         const topVisibleIds = galaxiesFiltered.slice(0, 40).map((g) => g.id);
         await loadGalaxyCounts(topVisibleIds);
       } catch (error: unknown) {
-        if (!cancelled) {
+        if (!cancelled && !isHandledSessionExpiryError(error)) {
           sileo.error({ title: "Entity count load failed", description: describeApiError(error, "Could not load galaxy counts.") });
         }
       }
@@ -580,7 +587,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     setUsersPage(1);
-  }, [userSearch, role, supporter, from, to]);
+  }, [userSearch, role, supporter, verified, from, to]);
 
   useEffect(() => {
     setDonationsPage(1);
@@ -851,6 +858,9 @@ export default function AdminPage() {
         description: "The new admin user was created successfully.",
       });
     } catch (error: unknown) {
+      if (isHandledSessionExpiryError(error)) {
+        return;
+      }
       sileo.error({
         title: "Admin creation failed",
         description: describeApiError(error, "Could not create the admin user."),
@@ -881,6 +891,9 @@ export default function AdminPage() {
         description: "The user role was updated successfully.",
       });
     } catch (error: unknown) {
+      if (isHandledSessionExpiryError(error)) {
+        return;
+      }
       sileo.error({
         title: "User update failed",
         description: describeApiError(error, "Could not update the selected user."),
@@ -901,6 +914,9 @@ export default function AdminPage() {
         description: "The user was soft-deleted successfully.",
       });
     } catch (error: unknown) {
+      if (isHandledSessionExpiryError(error)) {
+        return;
+      }
       sileo.error({
         title: "Delete failed",
         description: describeApiError(error, "Could not soft-delete the selected user."),
@@ -921,6 +937,9 @@ export default function AdminPage() {
         description: "The user was restored successfully.",
       });
     } catch (error: unknown) {
+      if (isHandledSessionExpiryError(error)) {
+        return;
+      }
       sileo.error({
         title: "Restore failed",
         description: describeApiError(error, "Could not restore the selected user."),
@@ -967,9 +986,11 @@ export default function AdminPage() {
             userSearch={userSearch}
             role={role}
             supporter={supporter}
+            verified={verified}
             onUserSearchChange={setUserSearch}
             onRoleChange={setRole}
             onSupporterChange={setSupporter}
+            onVerifiedChange={setVerified}
             onExportCsv={onExportUsersCsv}
             onOpenCreateAdmin={() => setCreateAdminOpen(true)}
             userGlobalCards={userGlobalCards}
@@ -1037,6 +1058,9 @@ export default function AdminPage() {
                   description: `${bulkResolvableLogs.length} log(s) marked as resolved.`,
                 });
               }).catch((error: unknown) => {
+                if (isHandledSessionExpiryError(error)) {
+                  return;
+                }
                 sileo.error({
                   title: "Bulk resolve failed",
                   description: describeApiError(error, "Could not resolve selected logs."),
@@ -1050,6 +1074,9 @@ export default function AdminPage() {
                   description: "The selected log was marked as resolved.",
                 });
               }).catch((error: unknown) => {
+                if (isHandledSessionExpiryError(error)) {
+                  return;
+                }
                 sileo.error({ title: "Log update failed", description: describeApiError(error, "Could not resolve log.") });
               });
             }}
@@ -1060,6 +1087,9 @@ export default function AdminPage() {
                   description: "The selected log was marked as open again.",
                 });
               }).catch((error: unknown) => {
+                if (isHandledSessionExpiryError(error)) {
+                  return;
+                }
                 sileo.error({
                   title: "Log reopen failed",
                   description: describeApiError(error, "Could not reopen log."),
@@ -1068,6 +1098,9 @@ export default function AdminPage() {
             }}
             onOpenDetails={(logId) => {
               void openLogDetails(logId).catch((error: unknown) => {
+                if (isHandledSessionExpiryError(error)) {
+                  return;
+                }
                 sileo.error({
                   title: "Log load failed",
                   description: describeApiError(error, "Could not load log details."),
@@ -1153,6 +1186,9 @@ export default function AdminPage() {
                   description: "The selected user ban was removed.",
                 });
               }).catch((error: unknown) => {
+                if (isHandledSessionExpiryError(error)) {
+                  return;
+                }
                 sileo.error({
                   title: "User unban failed",
                   description: describeApiError(error, "Could not unban the selected user."),
@@ -1166,6 +1202,9 @@ export default function AdminPage() {
                   description: "The selected IP ban was removed.",
                 });
               }).catch((error: unknown) => {
+                if (isHandledSessionExpiryError(error)) {
+                  return;
+                }
                 sileo.error({
                   title: "IP unban failed",
                   description: describeApiError(error, "Could not unban the selected IP."),

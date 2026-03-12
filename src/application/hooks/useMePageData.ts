@@ -8,6 +8,7 @@ import { useDonations } from "./useDonations";
 import { useGalaxy } from "./useGalaxy";
 import { donationApi, SupporterBadgeCatalogItemResponse } from "../../infra/api/donation.api";
 import { galaxyApi } from "../../infra/api/galaxy.api";
+import { isHandledSessionExpiryError } from "../../infra/api/client";
 import { SupporterProgressResponse, userApi } from "../../infra/api/user.api";
 import { describeApiError } from "../../lib/errors/apiErrorMessage";
 import { useAuthStore } from "../../state/auth.store";
@@ -213,6 +214,9 @@ export function useMePageData() {
         description: "Your new username has been saved successfully.",
       });
     } catch (error: unknown) {
+      if (isHandledSessionExpiryError(error)) {
+        return;
+      }
       sileo.error({
         title: "Could not update username",
         description: describeApiError(
@@ -236,6 +240,9 @@ export function useMePageData() {
         description: "Your account email has been updated successfully.",
       });
     } catch (error: unknown) {
+      if (isHandledSessionExpiryError(error)) {
+        return;
+      }
       sileo.error({
         title: "Could not update email",
         description: describeApiError(
@@ -260,6 +267,9 @@ export function useMePageData() {
         description: "Your password has been changed successfully.",
       });
     } catch (error: unknown) {
+      if (isHandledSessionExpiryError(error)) {
+        return;
+      }
       sileo.error({
         title: "Could not update password",
         description: describeApiError(
@@ -318,6 +328,9 @@ export function useMePageData() {
         }
       }, 400);
     } catch (error: unknown) {
+      if (isHandledSessionExpiryError(error)) {
+        return;
+      }
       sileo.error({
         title: "Could not open customer portal",
         description: describeApiError(

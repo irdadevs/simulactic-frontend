@@ -362,6 +362,15 @@
   flex-wrap: wrap;
 }
 
+.paginationControlsTop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1 1 0;
+}
+
 .paginationSummary {
   color: var(--carbon-black-200);
   font-size: 12px;

@@ -13,7 +13,6 @@ type GalaxyListPanelProps = {
   onCreateClick: () => void;
   canCreateGalaxy: boolean;
   isSupporter: boolean;
-  error?: string | null;
 };
 
 export function GalaxyListPanel({
@@ -26,7 +25,6 @@ export function GalaxyListPanel({
   onCreateClick,
   canCreateGalaxy,
   isSupporter,
-  error,
 }: GalaxyListPanelProps) {
   return (
     <aside className={layoutStyles.panel}>
@@ -48,12 +46,6 @@ export function GalaxyListPanel({
           Non-supporters can create up to 3 galaxies.
         </p>
       )}
-      {error && (
-        <p className={commonStyles.error} style={{ margin: 14 }}>
-          {error}
-        </p>
-      )}
-
       <div
         className={`${layoutStyles.list} ${galaxies.length === 0 ? layoutStyles.listEmpty : ""}`}
       >

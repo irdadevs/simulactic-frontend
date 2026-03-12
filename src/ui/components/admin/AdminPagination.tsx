@@ -18,11 +18,12 @@ export function AdminPagination({
   centered = false,
 }: AdminPaginationProps) {
   const wrapperClassName = centered ? styles.paginationBarCentered : styles.paginationBar;
+  const controlsClassName = summary && !centered ? styles.paginationControlsTop : styles.paginationControls;
 
   return (
     <div className={wrapperClassName}>
       {summary ? <span className={styles.paginationSummary}>{summary}</span> : null}
-      <div className={styles.paginationControls}>
+      <div className={controlsClassName}>
         <button className={styles.exportButton} disabled={currentPage <= 1} onClick={onPrev}>
           Prev
         </button>

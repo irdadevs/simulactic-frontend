@@ -1,6 +1,7 @@
 "use client";
 
 import { sileo } from "sileo";
+import { isHandledSessionExpiryError } from "../../../infra/api/client";
 import { describeApiError } from "../../../lib/errors/apiErrorMessage";
 import commonStyles from "../../../styles/skeleton.module.css";
 import styles from "../../../styles/admin.module.css";
@@ -77,6 +78,9 @@ export function BanModal({
                   description: "The ban was created successfully.",
                 });
               }).catch((error: unknown) => {
+                if (isHandledSessionExpiryError(error)) {
+                  return;
+                }
                 sileo.error({
                   title: "Ban failed",
                   description: describeApiError(error, "Could not create the ban."),

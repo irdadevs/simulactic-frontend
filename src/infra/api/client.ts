@@ -1,4 +1,6 @@
 import { publicEnv } from "../../config/env";
+import { sileo } from "sileo";
+import { useAuthStore } from "../../state/auth.store";
 
 export type QueryPrimitive = string | number | boolean | Date | null | undefined;
 export type QueryValue = QueryPrimitive | QueryPrimitive[];
@@ -12,12 +14,14 @@ export type ApiListResponse<T> = {
 export class ApiError extends Error {
   readonly status: number;
   readonly body: unknown;
+  handledSessionExpiry: boolean;
 
   constructor(status: number, body: unknown, message?: string) {
     super(message ?? `API request failed with status ${status}`);
     this.name = "ApiError";
     this.status = status;
     this.body = body;
+    this.handledSessionExpiry = false;
   }
 }
 
@@ -32,6 +36,14 @@ type RequestOptions = {
 const API_BASE_URL = publicEnv.apiBaseUrl;
 const API_PREFIX = "/api/v1";
 const API_REQUEST_TIMEOUT_MS = 60000;
+const PUBLIC_401_PATHS = new Set([
+  "/users/login",
+  "/users/signup",
+  "/users/password/reset",
+  "/users/verify",
+  "/users/verify/resend",
+]);
+let lastHandledSessionExpiryAt = 0;
 
 const toQueryString = (query?: QueryParams): string => {
   if (!query) return "";
@@ -70,6 +82,41 @@ const buildUrl = (path: string, query?: QueryParams): string => {
 const buildDisplayUrl = (path: string, query?: QueryParams): string => {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   return `${API_PREFIX}${normalizedPath}${toQueryString(query)}`;
+};
+
+const isProtectedRoute = (pathname: string): boolean =>
+  pathname.startsWith("/admin") ||
+  pathname.startsWith("/dashboard") ||
+  pathname.startsWith("/me") ||
+  pathname.startsWith("/donations");
+
+const shouldHandleSessionExpiry = (path: string): boolean => {
+  if (typeof window === "undefined") return false;
+  if (PUBLIC_401_PATHS.has(path)) return false;
+
+  const { isAuthenticated } = useAuthStore.getState();
+  if (isAuthenticated) return true;
+
+  return isProtectedRoute(window.location.pathname);
+};
+
+const handleSessionExpiry = (): void => {
+  if (typeof window === "undefined") return;
+
+  useAuthStore.getState().clearSession();
+  const now = Date.now();
+  if (now - lastHandledSessionExpiryAt > 2500) {
+    lastHandledSessionExpiryAt = now;
+    sileo.error({
+      title: "Session expired",
+      description: "Your session is no longer valid. Please log in again.",
+    });
+  }
+
+  window.dispatchEvent(new CustomEvent("simulactic:session-expired"));
+  if (window.location.pathname !== "/login") {
+    window.location.replace("/login");
+  }
 };
 
 const parseResponse = async <T>(response: Response): Promise<T> => {
@@ -134,7 +181,12 @@ const request = async <T>(
 
   if (!response.ok) {
     const errorBody = await parseResponse<unknown>(response);
-    throw new ApiError(response.status, errorBody);
+    const apiError = new ApiError(response.status, errorBody);
+    if (response.status === 401 && shouldHandleSessionExpiry(path)) {
+      apiError.handledSessionExpiry = true;
+      handleSessionExpiry();
+    }
+    throw apiError;
   }
 
   return parseResponse<T>(response);
@@ -154,3 +206,6 @@ export const apiPut = <T>(path: string, options?: RequestOptions): Promise<T> =>
 
 export const apiDelete = <T>(path: string, options?: RequestOptions): Promise<T> =>
   request<T>("DELETE", path, options);
+
+export const isHandledSessionExpiryError = (error: unknown): error is ApiError =>
+  error instanceof ApiError && error.handledSessionExpiry;
